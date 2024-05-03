@@ -5,6 +5,7 @@
 #include <map>
 #include <functional>
 #include <memory>
+#include "behavior/behavior.hpp"
 
 using namespace rapidxml;
 
@@ -138,7 +139,9 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
 }
 
 // Returns all attributes for the given XML node.
-std::map<std::string, std::string> parser::all_attributes(xml_node<> *node) {
+std::map<std::string, std::string> parser::all_attributes(xml_node<> *node,
+    std::map<std::string, std::string> const& defaults)
+{
     std::map<std::string, std::string> map;
     auto attribute = node->first_attribute();
     while (attribute != NULL) {
@@ -148,6 +151,11 @@ std::map<std::string, std::string> parser::all_attributes(xml_node<> *node) {
         }
         map[name] = attribute->value();
         attribute = attribute->next_attribute();
+    }
+    for (auto const& pair : defaults) {
+        if (map.count(pair.first) == 0) {
+            map[pair.first] = pair.second;
+        }
     }
     return map;
 }
@@ -161,7 +169,7 @@ std::shared_ptr<action::base> parser::parse_action(xml_node<> *action, bool is_c
         // ActionReference may be referencing an Action that comes after
         // itself
         auto ref = std::make_shared<action::reference>();
-        references.push_back(ref);
+        action_refs.push_back(ref);
         ref->init_attr = attributes;
         return ref;
     }
@@ -200,8 +208,6 @@ std::shared_ptr<action::base> parser::parse_action(xml_node<> *action, bool is_c
 }
 
 void parser::parse_actions(std::string const& actions_xml) {
-    actions.clear();
-    references.clear();
     xml_doc(doc, actions_xml);
     auto mascot = doc.first_node("Mascot");
     if (mascot == nullptr) {
@@ -217,7 +223,7 @@ void parser::parse_actions(std::string const& actions_xml) {
         action_list = action_list->next_sibling("ActionList");
     }
     bool linked = true;
-    for (auto &ref : references) {
+    for (auto &ref : action_refs) {
         auto &target_name = ref->init_attr.at("Name");
         if (actions.count(target_name) == 0) {
             linked = false;
@@ -231,8 +237,89 @@ void parser::parse_actions(std::string const& actions_xml) {
     }
 }
 
-void parser::parse_behaviors(std::string const& behaviors) {
+behavior::list parser::parse_behavior_list(rapidxml::xml_node<> *root,
+    bool allow_references)
+{
+    behavior::list list;
+    auto node = root->first_node();
+    while (node != nullptr) {
+        std::string name = node->name();
+        if (name == "Behavior" || name == "BehaviorReference") {
+            bool reference = (name == "BehaviorReference");
+            if (reference && !allow_references) {
+                throw std::logic_error("allow_references == false");
+            }
+            auto attr = all_attributes(node, {{ "Name", "" }, { "Condition", "true" },
+                { "Hidden", "false" }, { "Frequency", "0" }});
+            int freq = std::stoi(attr.at("Frequency"));
+            bool hidden = (attr.at("Hidden") == "true");
+            auto behavior = std::make_shared<behavior::base>(attr.at("Name"),
+                freq, hidden, attr.at("Condition"));
+            auto subnode = node->first_node("NextBehaviorList");
+            if (subnode != nullptr) {
+                behavior->next_list = std::make_unique<behavior::list>(
+                    parse_behavior_list(subnode, true));
+                subnode = subnode->next_sibling("NextBehaviorList");
+                if (subnode != nullptr) {
+                    throw std::invalid_argument("Multiple NextBehaviorList nodes");
+                }
+            }
+            list.children.push_back(behavior);
+            if (reference) {
+                behavior_refs.push_back(behavior);
+            }
+        }
+        else if (name == "Condition") {
+            scripting::condition cond = root->first_attribute("Condition");
+            behavior::list sublist = parse_behavior_list(node, allow_references);
+            list.sublists.push_back(sublist);
+        }
+        else {
+            throw std::invalid_argument("Invalid node: " + name);
+        }
+        node = node->next_sibling();
+    }
+    return list;
+}
 
+void parser::connect_actions(behavior::list &behaviors) {
+    for (auto &child : behaviors.children) {
+        child->action = actions.at(child->name);
+    }
+    for (auto &sublist : behaviors.sublists) {
+        connect_actions(sublist);
+    }
+}
+
+void parser::cleanup() {
+    behavior_refs.clear();
+    actions.clear();
+    action_refs.clear();
+}
+
+void parser::parse_behaviors(std::string const& behaviors_xml) {
+    xml_doc(doc, behaviors_xml);
+    auto mascot = doc.first_node("Mascot");
+    if (mascot == nullptr) {
+        throw std::invalid_argument("Root node is not named Mascot");
+    }
+    auto list_node = mascot->first_node("BehaviorList");
+    while (list_node != nullptr) {
+        behavior_list.sublists.push_back(parse_behavior_list(list_node, false));
+        list_node = list_node->next_sibling("BehaviorList");
+    }
+
+    // Build references
+    for (auto &ref : behavior_refs) {
+        auto target = behavior_list.find(ref->name);
+        if (target == nullptr) {
+            throw std::logic_error("list::find(name) == nullptr");
+        }
+        ref->referenced = target;
+    }
+
+    // Connect actions and behaviors
+    connect_actions(behavior_list);
 }
 
 }

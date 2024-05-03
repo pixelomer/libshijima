@@ -18,30 +18,9 @@ endif()
 
 add_library(
     libshijima
-    shijima/action/animate.cc
-    shijima/action/dragged.cc
-    shijima/action/jump.cc
-    shijima/action/animation.cc
-    shijima/action/base.cc
-    shijima/action/fall.cc
-    shijima/action/instant.cc
-    shijima/action/look.cc
-    shijima/action/move.cc
-    shijima/action/offset.cc
-    shijima/action/reference.cc
-    shijima/action/select.cc
-    shijima/action/sequence.cc
-    shijima/action/stay.cc
-    shijima/animation.cc
-    shijima/mascot/environment.cc
-    shijima/mascot/mascot.cc
-    shijima/mascot/state.cc
-    shijima/parser.cc
-    shijima/pose.cc
     shijima/scripting/context.cc
     shijima/scripting/duktape/duktape.cc
-    shijima/scripting/variables.cc
-    shijima/variable.cc
+    shijima/parser.cc
 )
 
 add_executable(shijima-cli main.cc)

@@ -16,6 +16,9 @@
 !shijima/scripting/duktape/
 !shijima/scripting/duktape/*.h
 !shijima/scripting/duktape/*.cc
+!shijima/behavior/
+!shijima/behavior/*.hpp
+!shijima/behavior/*.cc
 !tests/
 !tests/shimeji/
 !tests/shimeji/*/

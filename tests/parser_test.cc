@@ -11,14 +11,14 @@ struct shimeji_test_data {
 
 shimeji_test_data load_shimeji(std::string name) {
     shimeji_test_data data;
-    std::stringstream buf;
     {
+        std::stringstream buf;
         std::ifstream f("tests/shimeji/" + name + "/actions.xml");
         buf << f.rdbuf();
         data.actions_xml = buf.str();
     }
-    buf.clear();
-    {
+    {   
+        std::stringstream buf;
         std::ifstream f("tests/shimeji/" + name + "/behaviors.xml");
         buf << f.rdbuf();
         data.behaviors_xml = buf.str();
@@ -29,7 +29,7 @@ shimeji_test_data load_shimeji(std::string name) {
 TEST(Parser, ParseWithoutException) {
     auto shimeji = load_shimeji("test1");
     shijima::parser parser;
-    parser.parse(shimeji.actions_xml, shimeji.behaviors_xml);
+    ASSERT_NO_THROW(parser.parse(shimeji.actions_xml, shimeji.behaviors_xml));
 }
 
 TEST(Scripting, MascotState) {

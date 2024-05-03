@@ -6,10 +6,10 @@
 namespace shijima {
 namespace mascot {
 
-class mascot {
+class manager {
 public:
     std::shared_ptr<shijima::mascot::state> state;
-    mascot() {
+    manager() {
         state = std::make_shared<shijima::mascot::state>();
     }
 
