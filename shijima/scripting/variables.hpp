@@ -28,6 +28,16 @@ private:
         return end != str.c_str() && *end == '\0' && val != HUGE_VAL;
     }
 public:
+    void add_attr(std::map<std::string, double> const& attr) {
+        for (auto const& pair : attr) {
+            auto &key = pair.first;
+            auto val = pair.second;
+            dynamic_attr.erase(key);
+            attr_keys.insert(key);
+            duk_push_number(ctx->duk, val);
+            duk_put_global_string(ctx->duk, key.c_str());
+        }
+    }
     void add_attr(std::map<std::string, std::string> const& attr) {
         for (auto const& pair : attr) {
             auto &key = pair.first;
@@ -119,6 +129,18 @@ public:
         bool ret;
         if (duk_get_type(ctx->duk, -1) == DUK_TYPE_BOOLEAN) {
             ret = duk_get_boolean(ctx->duk, -1);
+        }
+        else {
+            ret = fallback;
+        }
+        duk_pop(ctx->duk);
+        return ret;
+    }
+    std::string get_string(std::string const& key, std::string const& fallback = "") {
+        duk_get_global_string(ctx->duk, key.c_str());
+        std::string ret;
+        if (duk_get_type(ctx->duk, -1) == DUK_TYPE_STRING) {
+            ret = duk_get_string(ctx->duk, -1);
         }
         else {
             ret = fallback;

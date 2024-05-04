@@ -18,14 +18,14 @@ public:
         foot_dx = 0;
         foot_x = mascot->env.cursor.x + offset_x;
         time_to_resist = 250;
-        vars.add_attr({{ "FootX", std::to_string(foot_x) }});
+        vars.add_attr({{ "FootX", foot_x }});
     }
     virtual bool tick() {
+        mascot->looking_right = false;
         auto cursor = mascot->env.cursor;
         foot_dx = (foot_dx + ((cursor.x - foot_x) * 0.1)) * 0.8;
         foot_x += foot_dx;
-        vars.add_attr({ { "FootX", std::to_string(foot_x) },
-            { "FootDX", std::to_string(foot_dx) } });
+        vars.add_attr({ { "FootX", foot_x }, { "FootDX", foot_dx } });
         auto offset_x = vars.get_num("OffsetX", 0);
         auto offset_y = vars.get_num("OffsetY", 120);
         if (std::abs(cursor.x - mascot->anchor.x + offset_x) >= 5) {

@@ -9,6 +9,9 @@ protected:
     bool did_execute = false;
     virtual std::shared_ptr<base> next_action() override {
         if (did_execute) {
+            if (action != nullptr) {
+                action->finalize();
+            }
             action = nullptr;
             return nullptr;
         }

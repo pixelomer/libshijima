@@ -44,6 +44,11 @@ std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
     std::vector<pose> poses;
     auto pose_node = node->first_node();
     while (pose_node != nullptr) {
+        //FIXME: Hotspots are ignored
+        if (std::string(pose_node->name()) == "Hotspot") {
+            pose_node = pose_node->next_sibling();
+            continue;
+        }
         auto pose = parse_pose(pose_node);
         poses.push_back(pose);
         pose_node = pose_node->next_sibling();

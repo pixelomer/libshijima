@@ -4,9 +4,20 @@ namespace mascot {
 
 class environment {
 public:
+    class dvec2 : public math::vec2 {
+    public:
+        int dx;
+        int dy;
+        dvec2(): math::vec2(), dx(0), dy(0) {}
+        dvec2(double x, double y): math::vec2(x, y), dx(0), dy(0) {}
+        dvec2(double x, double y, double dx, double dy): math::vec2(x, y),
+            dx(dx), dy(dy) {}
+        dvec2(std::string const& str): math::vec2(str), dx(0), dy(0) {}
+    };
+
     class border {
     public:
-        virtual bool is_on(math::vec2) = 0;
+        virtual bool is_on(math::vec2) const = 0;
     };
 
     class hborder : public border {
@@ -17,7 +28,7 @@ public:
         hborder(int y, int xstart, int xend): y(y), xstart(xstart),
             xend(xend) {}
         hborder() {}
-        virtual bool is_on(math::vec2 p) {
+        virtual bool is_on(math::vec2 p) const {
             return p.y == y && p.x >= xstart && p.x <= xend;
         }
     };
@@ -30,7 +41,7 @@ public:
         vborder(int x, int ystart, int yend): x(x), ystart(ystart),
             yend(yend) {}
         vborder() {}
-        virtual bool is_on(math::vec2 p) {
+        virtual bool is_on(math::vec2 p) const {
             return p.x == x && p.y >= ystart && p.y <= yend;
         }
     };
@@ -41,12 +52,14 @@ public:
         int right;
         int bottom;
         int left;
-        hborder bottom_border() { return { bottom, left, right  }; }
-        hborder top_border()    { return { top,    left, right  }; }
-        vborder left_border()   { return { left,   top,  bottom }; }
-        vborder right_border()  { return { right,  top,  bottom }; }
+        bool visible;
+        hborder bottom_border() const { return { bottom, left, right  }; }
+        hborder top_border()    const { return { top,    left, right  }; }
+        vborder left_border()   const { return { left,   top,  bottom }; }
+        vborder right_border()  const { return { right,  top,  bottom }; }
         int width() { return right - left; }
         int height() { return bottom - top; }
+        area(bool visible): visible(visible) {}
         area(int top, int right, int bottom, int left): top(top),
             right(right), bottom(bottom), left(left) {}
         area() {}
@@ -54,9 +67,10 @@ public:
 
     hborder ceiling;
     hborder floor;
-    area work_area;
-    area active_ie;
-    math::vec2 cursor;
+    area screen { true };
+    area work_area { true };
+    area active_ie { false };
+    dvec2 cursor;
 };
 
 }

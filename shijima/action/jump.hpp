@@ -4,26 +4,33 @@
 namespace shijima {
 namespace action {
 
-class jump : public move {
-private:
-    static double absceil(double val) {
-        if (val >= 0) return std::ceil(val);
-        else return -std::ceil(std::abs(val));
-    }
+class jump : public animation {
 public:
+    virtual void init(std::shared_ptr<mascot::state> mascot,
+        std::map<std::string, std::string> const& extra)
+    {
+        animation::init(mascot, extra);
+    }
     virtual bool tick() {
-        if (!move::tick()) {
+        math::vec2 target { vars.get_num("TargetX", 0),
+            vars.get_num("TargetY", 0) };
+        mascot->looking_right = mascot->anchor.x < target.x;
+        math::vec2 distance;
+        distance.x = target.x - mascot->anchor.x,
+        distance.y = target.y - mascot->anchor.y - std::abs(distance.x);
+        double velocity_abs = vars.get_num("VelocityParam", 20);
+        double distance_abs = std::sqrtf(distance.x*distance.x + distance.y*distance.y);
+        if (distance_abs != 0) {
+            math::vec2 velocity { velocity_abs * distance.x / distance_abs,
+                velocity_abs * distance.y / distance_abs };
+            mascot->anchor.x += velocity.x;
+            mascot->anchor.y += velocity.y;
+        }
+        if (distance_abs <= velocity_abs) {
+            mascot->anchor = target;
             return false;
         }
-        double tx = vars.get_num("TargetX", 0);
-        double ty = vars.get_num("TargetY", 0);
-        double dx = mascot->anchor.x - tx;
-        double dy = mascot->anchor.y - ty;
-        double distance = std::sqrt(dx*dx + dy*dy); // will never be 0
-        double vel = vars.get_num("VelocityParam", 20);
-        mascot->anchor.x += (int)absceil(vel * dx/distance);
-        mascot->anchor.y += (int)absceil(vel * dx/distance);
-        return true;
+        return animation::tick();
     }
 };
 

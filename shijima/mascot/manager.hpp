@@ -13,18 +13,22 @@ private:
     behavior::manager behaviors;
     std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
-    mascot::state prev_state;
     void next_behavior(std::string const& name = "") {
         if (name != "") {
             behaviors.set_next(name);
         }
         if (action != nullptr) {
+            std::cout << "(behavior) " << behavior->name << "::finalize()" << std::endl;
             action->finalize();
         }
         behavior = behaviors.next(state);
+        std::cout << "(behavior) " << behavior->name << "::init()" << std::endl;
         action = behavior->action;
         action->init(state, {});
-        std::cout << "new behavior: " << behavior->name << std::endl;
+    }
+    bool action_tick() {
+        bool ret = action->tick();
+        return ret;
     }
 public:
     std::shared_ptr<mascot::state> state;
@@ -43,23 +47,19 @@ public:
         state->time++;
         if (behavior == nullptr) {
             // First tick
-            prev_state = *state;
             next_behavior();
         }
         if (state->dragging && behavior->name != "Dragged") {
             next_behavior("Dragged");
         }
         else if (!state->dragging && behavior->name == "Dragged") {
-            next_behavior("Fall");
+            next_behavior("Thrown");
         }
         while (true) {
-            prev_state = *state;
-            if (action->tick()) {
+            if (action_tick()) {
                 break;
             }
-            if (!state->env.active_ie.top_border().is_on(state->anchor) &&
-                !state->env.floor.is_on(state->anchor))
-            {
+            if (!state->on_land()) {
                 next_behavior("Fall");
             }
             else {

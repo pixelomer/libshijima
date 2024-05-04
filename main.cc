@@ -10,40 +10,42 @@
 using namespace shijima;
 
 struct shimeji_data {
+    mascot::manager manager;
     std::string actions_xml;
     std::string behaviors_xml;
     std::string path;
 };
 
 shimeji_data load_shimeji(std::string path) {
-    shimeji_data data;
-    data.path = path;
+    std::string actions, behaviors;
     {
         std::stringstream buf;
         std::ifstream f(path + "/actions.xml");
         buf << f.rdbuf();
-        data.actions_xml = buf.str();
+        actions = buf.str();
     }
     {   
         std::stringstream buf;
         std::ifstream f(path + "/behaviors.xml");
         buf << f.rdbuf();
-        data.behaviors_xml = buf.str();
+        behaviors = buf.str();
     }
+    shimeji_data data = { { actions, behaviors }, actions, behaviors, path };
+    data.manager.state->anchor.x = 200 + random() % 400;
+    data.manager.state->anchor.y = 300;
     return data;
 }
 
 SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Surface *window_surface;
-shimeji_data shimeji;
 
 std::map<std::string, SDL_Texture *> loaded_images;
-SDL_Texture *get_image(std::string const& name) {
-    if (loaded_images.count(name) == 1) {
-        return loaded_images.at(name);
+SDL_Texture *get_image(std::string const& path) {
+    if (loaded_images.count(path) == 1) {
+        return loaded_images.at(path);
     }
-    SDL_Surface *loaded = IMG_Load((shimeji.path + "/img" + name).c_str());
+    SDL_Surface *loaded = IMG_Load(path.c_str());
     assert(loaded != NULL);
     SDL_Surface *optimized = SDL_ConvertSurface(loaded, window_surface->format, 0);
     assert(optimized != NULL);
@@ -51,7 +53,7 @@ SDL_Texture *get_image(std::string const& name) {
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, optimized);
     assert(texture != NULL);
     SDL_FreeSurface(optimized);
-    loaded_images[name] = texture;
+    loaded_images[path] = texture;
     return texture;
 }
 
@@ -62,19 +64,26 @@ void run_console(std::shared_ptr<mascot::state> state) {
         std::string line;
         std::cout << "duktape> ";
         std::getline(std::cin, line);
+        SDL_Event ev;
+        if (line != "q") {
+            try {
+                std::cout << ctx->eval_string(line) << std::endl;
+            }
+            catch (std::exception& err) {
+                std::cerr << "error: " << err.what() << std::endl;
+            }
+        }
+        while (SDL_PollEvent(&ev)); // ignore all events
         if (line == "q") {
             break;
-        }
-        try {
-            std::cout << ctx->eval_string(line) << std::endl;
-        }
-        catch (std::exception& err) {
-            std::cerr << "error: " << err.what() << std::endl;
         }
     }
 }
 
 bool running;
+bool speed_up;
+
+std::vector<shimeji_data> mascots;
 
 Uint32 timer_callback(Uint32 interval, void *param) {
     SDL_Event event;
@@ -82,10 +91,10 @@ Uint32 timer_callback(Uint32 interval, void *param) {
     event.type = SDL_USEREVENT;
 
     SDL_PushEvent(&event);
-    return interval;
+    return speed_up ? (1000 / 200) : (1000 / 25);
 }
 
-bool handle_event(SDL_Event event, mascot::manager &mascot) {
+bool handle_event(SDL_Event event) {
     switch (event.type) {
         case SDL_QUIT:
             return false;
@@ -93,16 +102,22 @@ bool handle_event(SDL_Event event, mascot::manager &mascot) {
             switch (event.key.keysym.sym) {
                 case SDLK_c:
                     running = false;
-                    run_console(mascot.state);
+                    run_console(mascots[0].manager.state);
                     running = true;
                     break;
+                case SDLK_s:
+                    speed_up = !speed_up;
+                    SDL_SetWindowTitle(window,
+                        speed_up ? "Shimeji (Fast forward)" : "Shimeji");
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            mascot.state->dragging = true;
+            mascots[random() % mascots.size()].manager.state->dragging = true;
             break;
         case SDL_MOUSEBUTTONUP:
-            mascot.state->dragging = false;
+            for (auto &mascot : mascots) {
+                mascot.manager.state->dragging = false;
+            }
             break;
         case SDL_USEREVENT: {
             // Update
@@ -110,23 +125,40 @@ bool handle_event(SDL_Event event, mascot::manager &mascot) {
             SDL_GetWindowSize(window, &w, &h);
             int mx, my;
             SDL_GetMouseState(&mx, &my);
-            mascot.state->env.work_area = { 0, w, h, 0 };
-            mascot.state->env.floor = { h-50, 0, w };
-            mascot.state->env.ceiling = { 0, 0, w };
-            mascot.state->env.active_ie = { 0, 0, 0, 0 };
-            mascot.state->env.cursor = { (double)mx, (double)my };
-            mascot.tick();
+            for (auto &mascot : mascots) {
+                auto &manager = mascot.manager;
+                manager.state->env.work_area = manager.state->env.screen = { 0, w, h, 0 };
+                manager.state->env.floor = { h-50, 0, w };
+                manager.state->env.ceiling = { 0, 0, w };
+                manager.state->env.active_ie = { 0, 0, 0, 0 };
+                auto old = manager.state->env.cursor;
+                manager.state->env.cursor = { (double)mx, (double)my,
+                    (double)(mx - old.x), (double)(my - old.y) };
+                manager.tick();
+            }
 
             // Render
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderClear(renderer);
-            SDL_Texture *texture = get_image(mascot.state->active_frame.name);
-            SDL_Rect src = {}, dest;
-            SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
-            dest = { .w = src.w, .h = src.h,
-                .x = (int)(mascot.state->anchor.x - mascot.state->active_frame.anchor.x),
-                .y = (int)(mascot.state->anchor.y - mascot.state->active_frame.anchor.y) };
-            SDL_RenderCopy(renderer, texture, &src, &dest);
+            for (auto &mascot : mascots) {
+                auto &manager = mascot.manager;
+                SDL_Texture *texture = get_image(mascot.path + "/img" +
+                    manager.state->active_frame.name);
+                SDL_Rect src = {}, dest;
+                SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
+                if (manager.state->looking_right) {
+                    dest = { .w = src.w, .h = src.h,
+                        .x = (int)(manager.state->anchor.x - src.w + manager.state->active_frame.anchor.x),
+                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y) };
+                }
+                else {
+                    dest = { .w = src.w, .h = src.h,
+                        .x = (int)(manager.state->anchor.x - manager.state->active_frame.anchor.x),
+                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y) };
+                }
+                SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
+                    manager.state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+            }
 
             SDL_RenderPresent(renderer);
 
@@ -142,10 +174,8 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-    shimeji = load_shimeji("tests/shimeji/test1");
-    mascot::manager mascot(shimeji.actions_xml, shimeji.behaviors_xml);
+    mascots.push_back(load_shimeji("tests/shimeji/test1"));
 
-    mascot.state->anchor = { 375, 400 };
     /*while (1) {
         tick(mascot);
         std::this_thread::sleep_for(std::chrono::nanoseconds(1000000000LL / 25)); // 1/25 secs
@@ -171,11 +201,12 @@ int main(int argc, char **argv) {
 
     SDL_AddTimer(1000/25, timer_callback, NULL);
     running = true;
+    speed_up = false;
 
     while (true) {
         SDL_Event event;
         while (SDL_WaitEvent(&event)) {
-            if (!handle_event(event, mascot)) {
+            if (!handle_event(event)) {
                 goto out;
             }
         }

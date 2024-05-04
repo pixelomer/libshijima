@@ -22,6 +22,18 @@ public:
                 mascot->looking_right = (x > mascot->anchor.x);
             }
         }
+        if (vars.has("TargetY")) {
+            if (mascot->env.work_area.left_border().is_on(mascot->anchor) ||
+                mascot->env.active_ie.right_border().is_on(mascot->anchor))
+            {
+                mascot->looking_right = false;
+            }
+            if (mascot->env.work_area.right_border().is_on(mascot->anchor) ||
+                mascot->env.active_ie.left_border().is_on(mascot->anchor))
+            {
+                mascot->looking_right = true;
+            }
+        }
 
         auto start = mascot->anchor;
         if (!animation::tick()) {

@@ -53,6 +53,7 @@ private:
     duk_idx_t build_environment();
     duk_idx_t build_rectangle(std::function<math::rec&()> getter);
     duk_idx_t build_vec2(std::function<math::vec2&()> getter);
+    duk_idx_t build_dvec2(std::function<mascot::environment::dvec2&()> getter);
     static void duk_write_vararg_log(duk_context *ctx, std::ostream &out);
     static duk_ret_t duk_console_log(duk_context *ctx);
     static duk_ret_t duk_console_error(duk_context *ctx);

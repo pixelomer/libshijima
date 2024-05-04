@@ -232,6 +232,10 @@ duk_idx_t context::build_area(std::function<mascot::environment::area&()> getter
     // area.height
     register_number_property("height", [getter]() { return getter().height(); }, \
         nullptr);
+    
+    // area.visible
+    register_boolean_property("visible", [getter]() { return getter().visible; },
+        nullptr);
 
     // area.left, area.right, area.top, area.bottom
     #define reg(side) \
@@ -258,12 +262,16 @@ duk_idx_t context::build_environment() {
     build_area([this]() -> mascot::environment::area& { return this->state->env.work_area; });
     put_prop(-2, "workArea");
 
+    // environment.screen
+    build_area([this]() -> mascot::environment::area& { return this->state->env.screen; });
+    put_prop(-2, "screen");
+
     // environment.activeIE
     build_area([this]() -> mascot::environment::area& { return this->state->env.active_ie; });
     put_prop(-2, "activeIE");
 
     // environment.cursor
-    build_vec2([this]() -> math::vec2& { return this->state->env.cursor; });
+    build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->env.cursor; });
     put_prop(-2, "cursor");
 
     return env;
@@ -285,6 +293,16 @@ duk_idx_t context::build_vec2(std::function<math::vec2&()> getter) {
         register_number_property(#x, [getter]() { return getter().x; }, \
         [getter](double val) { getter().x = val; })
     reg(x); reg(y);
+    #undef reg
+    return vec2;
+}
+
+duk_idx_t context::build_dvec2(std::function<mascot::environment::dvec2&()> getter) {
+    auto vec2 = duk_push_bare_object(duk);
+    #define reg(x) \
+        register_number_property(#x, [getter]() { return getter().x; }, \
+        [getter](double val) { getter().x = val; })
+    reg(x); reg(y); reg(dx); reg(dy);
     #undef reg
     return vec2;
 }
