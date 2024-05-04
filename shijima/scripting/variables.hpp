@@ -68,6 +68,21 @@ public:
         ctx->state = mascot;
         add_attr(attr);
     }
+    std::string dump() {
+        auto duk = ctx->duk;
+        duk_get_global_string(duk, "JSON");
+        duk_get_prop_string(duk, -1, "stringify");
+        duk_remove(duk, -2);
+        duk_push_bare_object(duk);
+        for (auto const& key : attr_keys) {
+            duk_get_global_string(duk, key.c_str());
+            duk_put_prop_string(duk, -2, key.c_str());
+        }
+        duk_call(duk, 1);
+        std::string dump = duk_to_string(duk, -1);
+        duk_pop(duk);
+        return dump;
+    }
     void tick() {
         for (auto const& pair : dynamic_attr) {
             auto &key = pair.first;
@@ -110,6 +125,9 @@ public:
         }
         duk_pop(ctx->duk);
         return ret;
+    }
+    bool get_bool(scripting::condition &cond) {
+        return cond.eval(*ctx);
     }
     bool has(std::string const& key) {
         return attr_keys.count(key) > 0;

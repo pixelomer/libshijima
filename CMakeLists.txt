@@ -11,10 +11,14 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if(CMAKE_BUILD_TYPE EQUAL "Release")
-    set(CMAKE_CXX_FLAGS "-O3 -Wall -Werror=return-type")
+    set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra -Werror=sign-compare -Werror=return-type")
 else()
-    set(CMAKE_CXX_FLAGS "-g -Wall -Werror=return-type")
+    set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -Werror=sign-compare -Werror=return-type")
 endif()
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+include_directories(${SDL2_INCLUDE_DIRS})
 
 add_library(
     libshijima
@@ -24,7 +28,7 @@ add_library(
 )
 
 add_executable(shijima-cli main.cc)
-target_link_libraries(shijima-cli libshijima)
+target_link_libraries(shijima-cli libshijima SDL2_image::SDL2_image-static ${SDL2_LIBRARIES})
 
 if(TEST)
     if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")

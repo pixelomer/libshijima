@@ -10,7 +10,7 @@ public:
         if (!animation::tick()) {
             return false;
         }
-        return get_animation()->get_duration() >= elapsed();
+        return get_animation()->get_duration() > elapsed();
     }
 };
 

@@ -35,6 +35,12 @@ std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
     if (std::string(node->name()) != "Animation") {
         throw std::invalid_argument("Expected Animation node");
     }
+    auto condition_attr = node->first_attribute("Condition");
+    scripting::condition cond = true;
+    if (condition_attr != nullptr) {
+        std::string js = condition_attr->value();
+        cond = js;
+    }
     std::vector<pose> poses;
     auto pose_node = node->first_node();
     while (pose_node != nullptr) {
@@ -46,6 +52,7 @@ std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
         throw std::invalid_argument("Animation has no Poses");
     }
     auto anim = std::make_shared<animation>(poses);
+    anim->condition = cond;
     return anim;
 }
 
@@ -257,8 +264,14 @@ behavior::list parser::parse_behavior_list(rapidxml::xml_node<> *root,
                 freq, hidden, attr.at("Condition"));
             auto subnode = node->first_node("NextBehaviorList");
             if (subnode != nullptr) {
+                auto add_attr = subnode->first_attribute("Add");
+                bool add = true;
+                if (add_attr != nullptr) {
+                    add = (std::string(add_attr->value()) == "true");
+                }
                 behavior->next_list = std::make_unique<behavior::list>(
                     parse_behavior_list(subnode, true));
+                behavior->add_next = add;
                 subnode = subnode->next_sibling("NextBehaviorList");
                 if (subnode != nullptr) {
                     throw std::invalid_argument("Multiple NextBehaviorList nodes");
@@ -270,8 +283,13 @@ behavior::list parser::parse_behavior_list(rapidxml::xml_node<> *root,
             }
         }
         else if (name == "Condition") {
-            scripting::condition cond = root->first_attribute("Condition");
+            scripting::condition cond = true;
+            auto attr = node->first_attribute("Condition");
+            if (attr != nullptr) {
+                cond = std::string(attr->value());
+            }
             behavior::list sublist = parse_behavior_list(node, allow_references);
+            sublist.condition = cond;
             list.sublists.push_back(sublist);
         }
         else {
@@ -312,9 +330,6 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
     // Build references
     for (auto &ref : behavior_refs) {
         auto target = behavior_list.find(ref->name);
-        if (target == nullptr) {
-            throw std::logic_error("list::find(name) == nullptr");
-        }
         ref->referenced = target;
     }
 

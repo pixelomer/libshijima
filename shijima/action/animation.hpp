@@ -11,18 +11,9 @@ protected:
     int anim_idx;
 
     std::shared_ptr<shijima::animation> &get_animation() {
-        for (int i=0; i<animations.size(); i++) {
-            auto &anim = animations[anim_idx];
-            bool valid;
-            if (anim->condition == "") {
-                valid = true;
-            }
-            else {
-                vars.add_attr({{ "_Condition", ((anim->condition == "") ?
-                    "${true}" : anim->condition) }});
-                valid = vars.get_bool("_Condition");
-            }
-            if (valid) {
+        for (int i=0; i<(int)animations.size(); i++) {
+            auto &anim = animations[i];
+            if (vars.get_bool(anim->condition)) {
                 if (anim_idx != i) {
                     anim_idx = i;
                     start_time = mascot->time;
@@ -31,6 +22,10 @@ protected:
             }
         }
         throw std::logic_error("no animation available");
+    }
+
+    pose const& get_pose() {
+        return get_animation()->get_pose(elapsed());
     }
 public:
     std::vector<std::shared_ptr<shijima::animation>> animations;
@@ -44,11 +39,10 @@ public:
         if (!base::tick()) {
             return false;
         }
-        auto &anim = get_animation();
-        auto &pose = anim->get_pose(elapsed());
+        auto &pose = get_pose();
         mascot->active_frame = pose;
-        mascot->anchor.x += pose.velocity.x;
-        mascot->anchor.y += pose.velocity.y;
+        mascot->anchor.x += dx(pose.velocity.x);
+        mascot->anchor.y += dy(pose.velocity.y);
         return true;
     }
 };

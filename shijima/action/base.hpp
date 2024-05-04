@@ -5,19 +5,34 @@ namespace shijima {
 namespace action {
 
 class base {
+private:
+    bool active = false;
 protected:
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
     int start_time;
 
+    void reset_elapsed() {
+        start_time = mascot->time;
+    }
     int elapsed() {
         return mascot->time - start_time;
+    }
+    int dx(int dx) {
+        return (mascot->looking_right ? -1 : 1) * dx;
+    }
+    int dy(int dy) {
+        return dy;
     }
 public:
     std::map<std::string, std::string> init_attr;
     virtual void init(std::shared_ptr<mascot::state> mascot,
         std::map<std::string, std::string> const& extra)
     {
+        if (active) {
+            throw std::logic_error("init() called twice");
+        }
+        active = true;
         start_time = mascot->time;
         this->mascot = mascot;
         std::map<std::string, std::string> attr = init_attr;
@@ -38,6 +53,7 @@ public:
     }
     virtual void finalize() {
         vars.finalize();
+        active = false;
     }
     virtual ~base() {}
 };

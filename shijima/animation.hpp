@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "scripting/condition.hpp"
 #include "pose.hpp"
 #include "math.hpp"
 
@@ -11,7 +12,7 @@ private:
     std::vector<pose> poses;
     int duration = 0;
 public:
-    std::string condition;
+    scripting::condition condition;
     // time is 0-indexed. The first frame happens at t=0
     pose const& get_pose(int time) {
         time %= duration;
@@ -26,7 +27,9 @@ public:
     int get_duration() {
         return duration;
     }
-    animation(std::vector<shijima::pose> const& poses): poses(poses) {
+    animation(std::vector<shijima::pose> const& poses): poses(poses),
+        condition(true)
+    {
         for (auto const& pose : poses) {
             duration += pose.duration;
         }

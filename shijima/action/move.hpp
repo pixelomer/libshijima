@@ -6,17 +6,48 @@ namespace action {
 
 class move : public animation {
 public:
+    virtual void init(std::shared_ptr<mascot::state> mascot,
+        std::map<std::string, std::string> const& extra)
+    {
+        animation::init(mascot, extra);
+    }
     virtual bool tick() {
+        if (vars.has("TargetX")) {
+            int x = vars.get_num("TargetX");
+            auto &pose = get_pose();
+            if (pose.velocity.x > 0) {
+                mascot->looking_right = (x < mascot->anchor.x);
+            }
+            else if (pose.velocity.x < 0) {
+                mascot->looking_right = (x > mascot->anchor.x);
+            }
+        }
+
+        auto start = mascot->anchor;
         if (!animation::tick()) {
             return false;
         }
-        if (vars.has("TargetX") && (int)vars.get_num("TargetX") != mascot->anchor.x) {
-            return true;
+        auto end = mascot->anchor;
+        #define passed(x) (start.x >= x && end.x <= x) || \
+            (start.x <= x && end.x >= x)
+        if (vars.has("TargetX")) {
+            int x = vars.get_num("TargetX");
+            if (passed(x)) {
+                mascot->anchor.x = x;
+                return false;
+            }
         }
-        if (vars.has("TargetY") && (int)vars.get_num("TargetY") != mascot->anchor.y) {
-            return true;
+        else if (vars.has("TargetY")) {
+            int y = vars.get_num("TargetY");
+            if (passed(y)) {
+                mascot->anchor.y = y;
+                return false;
+            }
         }
-        return false;
+        else {
+            throw std::logic_error("Neither TargetX nor TargetY defined");
+        }
+        return true;
     }
 };
 

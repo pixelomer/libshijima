@@ -27,17 +27,20 @@ public:
     }
 
     // Does not follow base::next_list
-    std::shared_ptr<base> find(std::string const& name) {
+    std::shared_ptr<base> find(std::string const& name, bool throws = true) {
         for (auto &child : children) {
             if (child->name == name) {
                 return child;
             }
         }
         for (auto &sublist : sublists) {
-            auto result = sublist.find(name);
+            auto result = sublist.find(name, false);
             if (result != nullptr) {
                 return result;
             }
+        }
+        if (throws) {
+            throw std::logic_error("could not find behavior");
         }
         return nullptr;
     }

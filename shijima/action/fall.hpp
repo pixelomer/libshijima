@@ -9,11 +9,15 @@ class fall : public animation {
         if (!animation::tick()) {
             return false;
         }
-        //FIXME: Most arguments ignored
-        int gravity = (int)vars.get_num("Gravity", 2);
+        if (mascot->env.floor.is_on(mascot->anchor) ||
+            mascot->env.floor.is_on(mascot->anchor))
+        {
+            return false;
+        }
+        int gravity = (int)vars.get_num("Gravity", 5);
         mascot->anchor.y += gravity;
-        if (mascot->anchor.y >= mascot->env.work_area.bottom) {
-            mascot->anchor.y = mascot->env.work_area.bottom;
+        if (mascot->anchor.y >= mascot->env.floor.y) {
+            mascot->anchor.y = mascot->env.floor.y;
             return false;
         }
         return true;

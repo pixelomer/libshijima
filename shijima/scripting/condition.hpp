@@ -6,28 +6,37 @@ namespace scripting {
 
 class condition {
 private:
-    bool constant;
+    bool is_constant;
     bool value;
     std::string js;
-public:
-    condition(std::string const& str) {
+    void init(std::string const& str) {
         if (str.size() > 3 && (str[0] == '$' || str[0] == '#') &&
             str[1] == '{' && str[str.size()-1] == '}')
         {
-            constant = false;
+            is_constant = false;
             js = str.substr(2, str.size()-3);
         }
         else {
-            constant = true;
+            is_constant = true;
             value = (str == "true");
         }
     }
+    void init(bool val) {
+        this->is_constant = true;
+        this->value = val;
+    }
+public:
+    condition(std::string const& str) {
+        init(str);
+    }
+    condition(const char *str) {
+        init(std::string(str));
+    }
     condition(bool value) {
-        this->constant = true;
-        this->value = value;
+        init(value);
     }
     bool eval(context &ctx) {
-        if (constant) {
+        if (is_constant) {
             return value;
         }
         return ctx.eval_bool(js);

@@ -11,7 +11,7 @@ protected:
     int action_idx = -1;
     std::shared_ptr<base> action;
     virtual std::shared_ptr<base> next_action() {
-        if (action_idx >= actions.size()) {
+        if (action_idx >= (int)actions.size()) {
             if (vars.get_bool("Loops", false)) {
                 action_idx = -1;
             }
@@ -24,7 +24,7 @@ protected:
             action = nullptr;
         }
         action_idx++;
-        if (action_idx >= actions.size()) {
+        if (action_idx >= (int)actions.size()) {
             if (vars.get_bool("Loops", false)) {
                 action_idx = 0;
             }
@@ -58,9 +58,11 @@ public:
         return action != nullptr;
     }
     virtual void finalize() {
+        if (action != nullptr) {
+            action->finalize();
+            action = nullptr;
+        }
         base::finalize();
-        action->finalize();
-        action = nullptr;
     }
 };
 
