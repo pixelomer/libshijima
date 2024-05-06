@@ -17,7 +17,11 @@ public:
     std::vector<std::shared_ptr<base>> flatten(scripting::context &ctx) {
         std::vector<std::shared_ptr<base>> flat;
         if (condition.eval(ctx)) {
-            flat = children;
+            for (auto &behavior : children) {
+                if (behavior->condition.eval(ctx)) {
+                    flat.push_back(behavior);
+                }
+            }
         }
         for (auto &sub : sublists) {
             auto sub_flat = sub.flatten(ctx);

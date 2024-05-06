@@ -91,18 +91,30 @@ public:
     bool eval_bool(std::string js) {
         duk_eval_string(duk, js.c_str());
         bool ret = duk_to_boolean(duk, -1);
+        for (size_t i; (i = js.find_first_of("\r\t\n")) != std::string::npos;) {
+            js[i] = ' ';
+        }
+        std::cout << "\"" << js << "\" = " << (ret ? "true" : "false") << std::endl;
         duk_pop(duk);
         return ret;
     }
     double eval_number(std::string js) {
         duk_eval_string(duk, js.c_str());
         double ret = duk_to_number(duk, -1);
+        for (size_t i; (i = js.find_first_of("\r\t\n")) != std::string::npos;) {
+            js[i] = ' ';
+        }
+        std::cout << "\"" << js << "\" = " << ret << std::endl;
         duk_pop(duk);
         return ret;
     }
     std::string eval_string(std::string js) {
         duk_eval_string(duk, js.c_str());
         std::string ret = duk_to_string(duk, -1);
+        for (size_t i; (i = js.find_first_of("\r\t\n")) != std::string::npos;) {
+            js[i] = ' ';
+        }
+        std::cout << "\"" << js << "\" = \"" << ret << "\"" << std::endl;
         duk_pop(duk);
         return ret;
     }

@@ -1,5 +1,6 @@
 #pragma once
 #include "move.hpp"
+#include <cmath>
 
 namespace shijima {
 namespace action {

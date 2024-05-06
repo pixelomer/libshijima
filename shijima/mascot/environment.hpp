@@ -52,14 +52,15 @@ public:
         int right;
         int bottom;
         int left;
-        bool visible;
+        bool visible() {
+            return (left != right) && (top != bottom);
+        }
         hborder bottom_border() const { return { bottom, left, right  }; }
         hborder top_border()    const { return { top,    left, right  }; }
         vborder left_border()   const { return { left,   top,  bottom }; }
         vborder right_border()  const { return { right,  top,  bottom }; }
         int width() { return right - left; }
         int height() { return bottom - top; }
-        area(bool visible): visible(visible) {}
         area(int top, int right, int bottom, int left): top(top),
             right(right), bottom(bottom), left(left) {}
         area() {}
@@ -67,9 +68,9 @@ public:
 
     hborder ceiling;
     hborder floor;
-    area screen { true };
-    area work_area { true };
-    area active_ie { false };
+    area screen;
+    area work_area;
+    area active_ie;
     dvec2 cursor;
 };
 

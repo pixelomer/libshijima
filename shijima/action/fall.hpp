@@ -6,9 +6,6 @@ namespace action {
 
 class fall : public animation {
 protected:
-    double modf(double a, double b) {
-        return std::modf(a, &b);
-    }
     math::vec2 velocity;
 public:
     virtual void init(std::shared_ptr<mascot::state> mascot,

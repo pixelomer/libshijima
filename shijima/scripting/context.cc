@@ -195,7 +195,7 @@ duk_idx_t context::build_mascot() {
     put_prop(-2, "anchor");
 
     // mascot.lookRight
-    register_boolean_property("looksRight",
+    register_boolean_property("lookRight",
         [this]() { return this->state->looking_right; },
         [this](bool value) { this->state->looking_right = value; });
     
@@ -234,7 +234,7 @@ duk_idx_t context::build_area(std::function<mascot::environment::area&()> getter
         nullptr);
     
     // area.visible
-    register_boolean_property("visible", [getter]() { return getter().visible; },
+    register_boolean_property("visible", [getter]() { return getter().visible(); },
         nullptr);
 
     // area.left, area.right, area.top, area.bottom
