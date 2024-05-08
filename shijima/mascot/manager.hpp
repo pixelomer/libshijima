@@ -21,7 +21,23 @@ private:
             std::cout << "(behavior) " << behavior->name << "::finalize()" << std::endl;
             action->finalize();
         }
+
         behavior = behaviors.next(state);
+        if (behavior == nullptr) {
+            // If the next behavior cannot be determined, reset
+            // the mascot as defined by Shimeji-EE
+            std::cerr << "warning: no next behavior" << std::endl;
+
+            auto &screen = state->env.screen;
+            int right = screen.right + screen.width() / 10;
+            int left = screen.left + screen.height() / 10;
+            double spawnX = (random() % std::max(1, right - left)) + left;
+            double spawnY = state->bounds.height + 128;
+            state->anchor = { spawnX, spawnY };
+            
+            behaviors.set_next("Fall");
+            behavior = behaviors.next(state);
+        }
         std::cout << "(behavior) " << behavior->name << "::init()" << std::endl;
         action = behavior->action;
         action->init(state, {});

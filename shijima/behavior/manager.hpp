@@ -50,7 +50,7 @@ public:
                 freq_sum += option->frequency;
             }
             if (freq_sum == 0) {
-                throw std::logic_error("freq_sum == 0");
+                return nullptr;
             }
 
             // Pick a random behavior
