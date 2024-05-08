@@ -4,7 +4,7 @@ namespace shijima {
 namespace scripting {
 
 int context::contexts_in_use = 0;
-std::vector<context *> context::available_contexts;
+std::vector<context *> *context::available_contexts = nullptr;
 
 duk_ret_t context::duk_getter(duk_context *ctx) {
     // 0      1      2

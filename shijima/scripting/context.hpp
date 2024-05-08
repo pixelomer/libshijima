@@ -7,13 +7,16 @@
 #include <iostream>
 #include <memory>
 
+//FIXME: Allocating hundreds of JavaScript contexts just to store
+//       different global objects is not ideal
+
 namespace shijima {
 namespace scripting {
 
 class context {
 private:
     static int contexts_in_use;
-    static std::vector<context *> available_contexts;
+    static std::vector<context *> *available_contexts;
     static math::vec2 duk_to_point(duk_context *ctx, duk_idx_t idx) {
         math::vec2 point;
         duk_get_prop_string(ctx, idx, "x");
@@ -68,23 +71,24 @@ private:
 public:
     duk_context *duk;
     static std::shared_ptr<context> get() {
-        if (available_contexts.size() == 0) {
+        if (available_contexts == nullptr) {
+            // available_contexts is a bare pointer rather than object because
+            // C++ static destructor order causes double-free problems on exit
+            available_contexts = new std::vector<context *>();
+        }
+        if (available_contexts->size() == 0) {
             context *ctx = new context();
             //std::cerr << "new context: " << (void *)ctx << std::endl;
-            available_contexts.push_back(ctx);
+            available_contexts->push_back(ctx);
         }
-        contexts_in_use++;
-        if (contexts_in_use >= 10) {
-            std::cerr << "too many contexts in use: " << contexts_in_use
-                << std::endl;
-        }
-        auto ctx = available_contexts.back();
+        ++contexts_in_use;
+        auto ctx = available_contexts->back();
         //std::cerr << "will lend context: " << (void *)ctx << std::endl;
-        available_contexts.pop_back();
+        available_contexts->pop_back();
         return std::shared_ptr<context>(ctx, [](context *ctx) {
             //std::cerr << "will recycle context: " << (void *)ctx << std::endl;
             context::contexts_in_use--;
-            context::available_contexts.push_back(ctx);
+            context::available_contexts->push_back(ctx);
         });
     }
     std::shared_ptr<mascot::state> state;
