@@ -1,6 +1,8 @@
 #pragma once
 #include "animation.hpp"
 
+// "目的地Y" and "目的地X" are required for backwards compatibility
+
 namespace shijima {
 namespace action {
 
@@ -13,7 +15,8 @@ public:
     }
     virtual bool tick() {
         if (vars.has("TargetX")) {
-            int x = vars.get_num("TargetX");
+            double x = vars.get_num("TargetX");
+            vars.add_attr({{ "目的地X", x }});
             auto &pose = get_pose();
             if (pose.velocity.x > 0) {
                 mascot->looking_right = (x < mascot->anchor.x);
@@ -23,6 +26,7 @@ public:
             }
         }
         if (vars.has("TargetY")) {
+            vars.add_attr({{ "目的地Y", vars.get_num("TargetY") }});
             if (mascot->env.work_area.left_border().is_on(mascot->anchor) ||
                 mascot->env.active_ie.right_border().is_on(mascot->anchor))
             {

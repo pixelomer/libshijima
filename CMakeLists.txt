@@ -24,6 +24,7 @@ add_library(
     libshijima
     shijima/scripting/context.cc
     shijima/scripting/duktape/duktape.cc
+    shijima/translator.cc
     shijima/parser.cc
 )
 
