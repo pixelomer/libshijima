@@ -9,14 +9,27 @@
 
 using namespace shijima;
 
-struct shimeji_data {
-    mascot::manager manager;
+std::shared_ptr<scripting::context> shared_ctx;
+
+struct shimeji_meta {
     std::string actions_xml;
     std::string behaviors_xml;
     std::string path;
+    shimeji_meta(std::string actions_xml, std::string behaviors_xml,
+        std::string path): actions_xml(actions_xml), behaviors_xml(behaviors_xml),
+        path(path) {}
 };
 
-shimeji_data load_shimeji(std::string path) {
+struct shimeji_data {
+    mascot::manager manager;
+    std::shared_ptr<shimeji_meta> meta;
+};
+
+std::map<std::string, std::shared_ptr<shimeji_meta>> meta;
+std::shared_ptr<shimeji_meta> load_meta(std::string path) {
+    if (meta.count(path) == 1) {
+        return meta.at(path);
+    }
     std::string actions, behaviors;
     {
         std::stringstream buf;
@@ -30,9 +43,15 @@ shimeji_data load_shimeji(std::string path) {
         buf << f.rdbuf();
         behaviors = buf.str();
     }
-    shimeji_data data = { { actions, behaviors }, actions, behaviors, path };
-    data.manager.state->anchor.x = 200 + random() % 400;
-    data.manager.state->anchor.y = 300;
+    return meta[path] = std::make_shared<shimeji_meta>(actions,
+        behaviors, path);
+}
+
+shimeji_data load_shimeji(std::string path) {
+    auto meta = load_meta(path);
+    shimeji_data data = { { meta->actions_xml, meta->behaviors_xml, shared_ctx }, meta };
+    data.manager.state->anchor.x = 50 + random() % 1200;
+    data.manager.state->anchor.y = 50 + random() % 700;
     return data;
 }
 
@@ -57,9 +76,11 @@ SDL_Texture *get_image(std::string const& path) {
     return texture;
 }
 
-void run_console(std::shared_ptr<mascot::state> state) {
-    auto ctx = scripting::context::get();
-    ctx->state = state;
+std::vector<shimeji_data> mascots;
+
+void run_console() {
+    scripting::context &ctx = *mascots[0].manager.script_ctx;
+    ctx.state = std::make_shared<mascot::state>();
     while (true) {
         std::string line;
         std::cout << "duktape> ";
@@ -67,7 +88,7 @@ void run_console(std::shared_ptr<mascot::state> state) {
         SDL_Event ev;
         if (line != "q") {
             try {
-                std::cout << ctx->eval_string(line) << std::endl;
+                std::cout << ctx.eval_string(line) << std::endl;
             }
             catch (std::exception& err) {
                 std::cerr << "error: " << err.what() << std::endl;
@@ -81,9 +102,7 @@ void run_console(std::shared_ptr<mascot::state> state) {
 }
 
 bool running;
-bool speed_up;
-
-std::vector<shimeji_data> mascots;
+bool spawn_more;
 
 Uint32 timer_callback(Uint32 interval, void *param) {
     SDL_Event event;
@@ -91,7 +110,7 @@ Uint32 timer_callback(Uint32 interval, void *param) {
     event.type = SDL_USEREVENT;
 
     SDL_PushEvent(&event);
-    return speed_up ? (1000 / 200) : (1000 / 25);
+    return 1000 / 25;
 }
 
 bool handle_event(SDL_Event event) {
@@ -102,13 +121,11 @@ bool handle_event(SDL_Event event) {
             switch (event.key.keysym.sym) {
                 case SDLK_c:
                     running = false;
-                    run_console(mascots[0].manager.state);
+                    run_console();
                     running = true;
                     break;
                 case SDLK_s:
-                    speed_up = !speed_up;
-                    SDL_SetWindowTitle(window,
-                        speed_up ? "Shimeji (Fast forward)" : "Shimeji");
+                    spawn_more = !spawn_more;
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
@@ -121,6 +138,8 @@ bool handle_event(SDL_Event event) {
             break;
         case SDL_USEREVENT: {
             // Update
+            uint32_t start_time = SDL_GetTicks();
+
             int w, h;
             SDL_GetWindowSize(window, &w, &h);
             int mx, my;
@@ -137,12 +156,15 @@ bool handle_event(SDL_Event event) {
                 manager.tick();
             }
 
+            uint32_t update_elapsed = SDL_GetTicks() - start_time;
+            start_time = SDL_GetTicks();
+
             // Render
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderClear(renderer);
             for (auto &mascot : mascots) {
                 auto &manager = mascot.manager;
-                SDL_Texture *texture = get_image(mascot.path + "/img" +
+                SDL_Texture *texture = get_image(mascot.meta->path + "/img" +
                     manager.state->active_frame.name);
                 SDL_Rect src = {}, dest;
                 SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
@@ -159,8 +181,27 @@ bool handle_event(SDL_Event event) {
                 SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
                     manager.state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
             }
-
             SDL_RenderPresent(renderer);
+
+            uint32_t render_elapsed = SDL_GetTicks() - start_time;
+
+            if (spawn_more) {
+                if (mascots[0].manager.state->time % 2 == 0) {
+                    std::vector<std::string> paths = {
+                        "tests/shimeji/test1"
+                    };
+                    auto path = paths[random() % paths.size()];
+                    mascots.push_back(load_shimeji(path));
+                }
+            }
+
+            if (mascots[0].manager.state->time % 12 == 0) {
+                std::string title = "Shimeji (" + std::to_string(mascots.size()) + " active, "
+                    + std::to_string(update_elapsed) + "ms update, "
+                    + std::to_string(render_elapsed) + "ms render)";
+                
+                SDL_SetWindowTitle(window, title.c_str());
+            }
 
             break;
         }
@@ -170,9 +211,11 @@ bool handle_event(SDL_Event event) {
 
 int main(int argc, char **argv) {
     if (argc >= 2 && strcmp(argv[1], "console") == 0) {
-        run_console(std::make_shared<mascot::state>());
+        run_console();
         return EXIT_SUCCESS;
     }
+
+    shared_ctx = std::make_shared<scripting::context>();
 
     mascots.push_back(load_shimeji("tests/shimeji/test1"));
 
@@ -193,15 +236,15 @@ int main(int argc, char **argv) {
     window = SDL_CreateWindow(
         "Shimeji",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        800, 600,
-        SDL_WINDOW_SHOWN
+        1280, 800,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
     );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     window_surface = SDL_GetWindowSurface(window);
 
     SDL_AddTimer(1000/25, timer_callback, NULL);
     running = true;
-    speed_up = false;
+    spawn_more = false;
 
     while (true) {
         SDL_Event event;

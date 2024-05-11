@@ -29,10 +29,10 @@ protected:
     }
 public:
     std::vector<std::shared_ptr<shijima::animation>> animations;
-    virtual void init(std::shared_ptr<mascot::state> mascot,
+    virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
-        base::init(mascot, extra);
+        base::init(script_ctx, extra);
         anim_idx = -1;
     }
     virtual bool tick() {

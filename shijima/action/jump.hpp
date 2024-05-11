@@ -7,11 +7,6 @@ namespace action {
 
 class jump : public animation {
 public:
-    virtual void init(std::shared_ptr<mascot::state> mascot,
-        std::map<std::string, std::string> const& extra)
-    {
-        animation::init(mascot, extra);
-    }
     virtual bool tick() {
         math::vec2 target { vars.get_num("TargetX", 0),
             vars.get_num("TargetY", 0) };

@@ -12,7 +12,7 @@ class variables {
 private:
     std::map<std::string, std::string> dynamic_attr;
     std::set<std::string> attr_keys;
-    std::shared_ptr<context> ctx;
+    scripting::context::global global;
     static char dynamic_prefix(std::string const& str) {
         if (str.size() >= 3 && str[1] == '{' &&
             str[str.size()-1] == '}' &&
@@ -28,7 +28,9 @@ private:
         return end != str.c_str() && *end == '\0' && val != HUGE_VAL;
     }
 public:
+    variables() {}
     void add_attr(std::map<std::string, double> const& attr) {
+        auto ctx = global.use();
         for (auto const& pair : attr) {
             auto &key = pair.first;
             auto val = pair.second;
@@ -39,6 +41,7 @@ public:
         }
     }
     void add_attr(std::map<std::string, std::string> const& attr) {
+        auto ctx = global.use();
         for (auto const& pair : attr) {
             auto &key = pair.first;
             auto val = pair.second;
@@ -71,14 +74,14 @@ public:
             }
         }
     }
-    void init(std::shared_ptr<mascot::state> mascot,
+    void init(scripting::context &ctx,
         std::map<std::string, std::string> const& attr)
     {
-        ctx = context::get();
-        ctx->state = mascot;
+        global = ctx.make_global();
         add_attr(attr);
     }
     std::string dump() {
+        auto ctx = global.use();
         auto duk = ctx->duk;
         duk_get_global_string(duk, "JSON");
         duk_get_prop_string(duk, -1, "stringify");
@@ -94,6 +97,7 @@ public:
         return dump;
     }
     void tick() {
+        auto ctx = global.use();
         for (auto const& pair : dynamic_attr) {
             auto &key = pair.first;
             auto &js = pair.second;
@@ -102,17 +106,20 @@ public:
         }
     }
     void finalize() {
-        duk_push_global_object(ctx->duk);
-        for (auto const& key : attr_keys) {
-            duk_del_prop_string(ctx->duk, -1, key.c_str());
+        {
+            auto ctx = global.use();
+            duk_push_global_object(ctx->duk);
+            for (auto const& key : attr_keys) {
+                duk_del_prop_string(ctx->duk, -1, key.c_str());
+            }
+            duk_pop(ctx->duk);
+            dynamic_attr.clear();
+            attr_keys.clear();
         }
-        duk_pop(ctx->duk);
-        dynamic_attr.clear();
-        attr_keys.clear();
-        this->ctx->state = nullptr;
-        this->ctx = nullptr;
+        global = {};
     }
     double get_num(std::string const& key, double fallback = 0.0) {
+        auto ctx = global.use();
         duk_get_global_string(ctx->duk, key.c_str());
         double ret;
         if (duk_get_type(ctx->duk, -1) == DUK_TYPE_NUMBER) {
@@ -125,6 +132,7 @@ public:
         return ret;
     }
     bool get_bool(std::string const& key, bool fallback = false) {
+        auto ctx = global.use();
         duk_get_global_string(ctx->duk, key.c_str());
         bool ret;
         if (duk_get_type(ctx->duk, -1) == DUK_TYPE_BOOLEAN) {
@@ -137,6 +145,7 @@ public:
         return ret;
     }
     std::string get_string(std::string const& key, std::string const& fallback = "") {
+        auto ctx = global.use();
         duk_get_global_string(ctx->duk, key.c_str());
         std::string ret;
         if (duk_get_type(ctx->duk, -1) == DUK_TYPE_STRING) {
@@ -149,7 +158,8 @@ public:
         return ret;
     }
     bool get_bool(scripting::condition &cond) {
-        return cond.eval(*ctx);
+        auto ctx = global.use();
+        return cond.eval(ctx);
     }
     bool has(std::string const& key) {
         return attr_keys.count(key) > 0;

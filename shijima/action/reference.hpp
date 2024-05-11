@@ -8,11 +8,14 @@ namespace action {
 class reference : public base {
 public:
     std::shared_ptr<base> target;
-    virtual void init(std::shared_ptr<mascot::state> mascot,
+    virtual bool requests_vars() {
+        return false;
+    }
+    virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
-        base::init(mascot, extra);
-        target->init(mascot, init_attr);
+        base::init(script_ctx, extra);
+        target->init(script_ctx, init_attr);
     }
     virtual bool tick() {
         if (!base::tick()) {

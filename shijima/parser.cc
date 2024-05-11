@@ -215,7 +215,6 @@ std::shared_ptr<action::base> parser::parse_action(xml_node<> *action, bool is_c
 
 void parser::parse_actions(std::string const& actions_xml) {
     std::string translated_xml = translator::translate(actions_xml);
-    std::cout << translated_xml << std::endl;
     xml_doc(doc, translated_xml);
     auto mascot = doc.first_node("Mascot");
     if (mascot == nullptr) {

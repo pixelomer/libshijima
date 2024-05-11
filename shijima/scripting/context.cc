@@ -3,15 +3,12 @@
 namespace shijima {
 namespace scripting {
 
-int context::contexts_in_use = 0;
-std::vector<context *> *context::available_contexts = nullptr;
-
 duk_ret_t context::duk_getter(duk_context *ctx) {
     // 0      1      2
     // [func] [this] [val]
     duk_push_current_function(ctx); // 0
     duk_push_this(ctx); // 1
-    duk_get_prop_string(ctx, -2, "\xFF" "prop"); // 2
+    duk_get_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("prop")); // 2
     duk_get_prop(ctx, -2); // 2
     duk_copy(ctx, -1, -3); 
     duk_pop_2(ctx);
@@ -24,7 +21,7 @@ duk_ret_t context::duk_setter(duk_context *ctx) {
     // [arg] [func] [this] [prop_name] [copy of arg]
     duk_push_current_function(ctx);
     duk_push_this(ctx);
-    duk_get_prop_string(ctx, -2, "\xFF" "prop");
+    duk_get_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("prop"));
     duk_push_undefined(ctx);
     duk_copy(ctx, 0, duk_get_top_index(ctx));
     duk_put_prop(ctx, -3);
@@ -44,14 +41,14 @@ void context::put_prop_functions(std::string const& prop_name) {
     auto getter = "get" + suffix;
     duk_push_c_function(duk, duk_getter, 0);
     duk_push_string(duk, prop_name.c_str());
-    duk_put_prop_string(duk, -2, "\xFF" "prop");
+    duk_put_prop_string(duk, -2, DUK_HIDDEN_SYMBOL("prop"));
     duk_put_prop_string(duk, -2, getter.c_str());
 
     // .setProp(value)
     auto setter = "set" + suffix;
     duk_push_c_function(duk, duk_setter, 1);
     duk_push_string(duk, prop_name.c_str());
-    duk_put_prop_string(duk, -2, "\xFF" "prop");
+    duk_put_prop_string(duk, -2, DUK_HIDDEN_SYMBOL("prop"));
     duk_put_prop_string(duk, -2, setter.c_str());
 }
 
@@ -84,7 +81,7 @@ duk_ret_t context::duk_console_error(duk_context *duk) {
 
 duk_ret_t context::duk_function_callback(duk_context *duk) {
     duk_push_current_function(duk);
-    duk_get_prop_string(duk, -1, "\xFF" "stdfunc");
+    duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("stdfunc"));
     void *target_pt = duk_get_pointer(duk, -1);
     auto target = static_cast<std::function<duk_ret_t(duk_context *)>
         *>(target_pt);
@@ -94,7 +91,7 @@ duk_ret_t context::duk_function_callback(duk_context *duk) {
 
 duk_ret_t context::duk_finalizer_callback(duk_context *duk) {
     duk_push_current_function(duk);
-    duk_get_prop_string(duk, -1, "\xFF" "stdfunc");
+    duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("stdfunc"));
     void *target_pt = duk_get_pointer(duk, -1);
     auto target = static_cast<std::function<duk_ret_t(duk_context *,
         void *)> *>(target_pt);
@@ -110,7 +107,7 @@ duk_idx_t context::push_function(std::function<duk_ret_t(duk_context *)> func,
     auto heap_func = new std::function<duk_ret_t(duk_context *)>(func);
     duk_idx_t idx = duk_push_c_function(duk, duk_function_callback, nargs);
     duk_push_pointer(duk, static_cast<void *>(heap_func));
-    duk_put_prop_string(duk, -2, "\xFF" "stdfunc");
+    duk_put_prop_string(duk, -2, DUK_HIDDEN_SYMBOL("stdfunc"));
     duk_push_c_function(duk, duk_finalizer_callback, 1);
     duk_set_finalizer(duk, -2);
     return idx;
@@ -245,6 +242,76 @@ duk_idx_t context::build_area(std::function<mascot::environment::area&()> getter
     #undef reg
     
     return area;
+}
+
+duk_idx_t context::build_proxy() {
+    duk_push_global_object(duk);
+
+    // proxy._activeGlobal
+    duk_push_literal(duk, "_activeGlobal");
+    push_function([this](duk_context *duk){
+        if (global_stack.size() == 0) {
+            duk_push_this(duk);
+            return 1;
+        }
+        auto active = global_stack[global_stack.size()-1];
+        duk_push_this(duk); // -3
+        duk_get_prop_literal(duk, -1, DUK_HIDDEN_SYMBOL("_globals")); // -2
+        duk_get_prop_index(duk, -1, active); // -1
+        duk_copy(duk, -1, duk_normalize_index(duk, -3));
+        duk_pop_2(duk);
+        return 1;
+    }, 0);
+    duk_def_prop(duk, -3, DUK_DEFPROP_HAVE_GETTER);
+
+    // proxy._globalCount
+    duk_push_literal(duk, "_globalCount");
+    push_function([this](duk_context *duk){
+        duk_push_number(duk, this->globals_available);
+        return 1;
+    }, 0);
+    duk_def_prop(duk, -3, DUK_DEFPROP_HAVE_GETTER);
+
+    // proxy[HiddenSymbol("_globals")]
+    duk_push_literal(duk, DUK_HIDDEN_SYMBOL("_globals"));
+    duk_push_bare_object(duk);
+    duk_def_prop(duk, -3, DUK_DEFPROP_HAVE_VALUE);
+    duk_pop(duk);
+    const char *builder =
+        "(function(target){"
+        "    return new Proxy(target, {"
+        "        defineProperty(target, property, descriptor) {"
+        "            if (property === \"_activeGlobal\") return;"
+        "            const real = target._activeGlobal;"
+        "            return Reflect.defineProperty(real, property, descriptor);"
+        "        },"
+        "        \"set\": function(target, property, value, receiver) {"
+        "            if (property === \"_activeGlobal\") return;"
+        "            const real = target._activeGlobal;"
+        "            return Reflect.set(real, property, value/*, receiver*/);"
+        "        },"
+        "        deleteProperty(target, property, descriptor) {"
+        "            if (property === \"_activeGlobal\") return;"
+        "            const real = target._activeGlobal;"
+        "            return Reflect.deleteProperty(real, property, descriptor);"
+        "        },"
+        "        \"get\": function(target, property, receiver) {"
+        "            const real = target._activeGlobal;"
+        "            if (property in real) {"
+        "                return Reflect.get(real, property/*, receiver*/);"
+        "            }"
+        "            else {"
+        "                return Reflect.get(target, property/*, receiver*/);"
+        "            }"
+        "        },"
+        "        has(target, property) {"
+        "            const real = target._activeGlobal;"
+        "            return (property in real) || (property in target);"
+        "        }"
+        "    })"
+        "})(globalThis)";
+    duk_eval_string(duk, builder);
+    return duk_get_top_index(duk);
 }
     
 duk_idx_t context::build_environment() {

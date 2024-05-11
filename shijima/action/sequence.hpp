@@ -7,6 +7,9 @@ namespace shijima {
 namespace action {
 
 class sequence : public base {
+private:
+    //FIXME: Ideally this shouldn't be necessary
+    scripting::context *script_ctx;
 protected:
     int action_idx = -1;
     std::shared_ptr<base> action;
@@ -33,15 +36,16 @@ protected:
             }
         }
         action = actions[action_idx];
-        action->init(mascot, {});
+        action->init(*script_ctx, {});
         return action;
     }
 public:
     std::vector<std::shared_ptr<base>> actions;
-    virtual void init(std::shared_ptr<mascot::state> mascot,
+    virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
-        base::init(mascot, extra);
+        base::init(script_ctx, extra);
+        this->script_ctx = &script_ctx;
         action_idx = -1;
         next_action();
     }

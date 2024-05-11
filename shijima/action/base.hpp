@@ -25,10 +25,15 @@ protected:
         return dy;
     }
 public:
+    virtual bool requests_vars() {
+        return true;
+    }
+
     std::map<std::string, std::string> init_attr;
-    virtual void init(std::shared_ptr<mascot::state> mascot,
+    virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
+        /*
         if (init_attr.count("Name") == 1) {
             std::cout << "(action) " << init_attr.at("Name") <<
                 "::init()" << std::endl;
@@ -37,22 +42,28 @@ public:
             std::cout << "(action) <type:" << init_attr.at("Type") <<
                 ">::init()" << std::endl;
         }
+        */
         if (active) {
             throw std::logic_error("init() called twice");
         }
         active = true;
+        mascot = script_ctx.state;
         start_time = mascot->time;
-        this->mascot = mascot;
         std::map<std::string, std::string> attr = init_attr;
         for (auto const& pair : extra) {
             attr[pair.first] = pair.second;
         }
-        vars.init(mascot, attr);
+        if (requests_vars()) {
+            vars.init(script_ctx, attr);
+        }
     }
     // Returns false if execution should immediately advance to the
     // next action. The action should return true for the last frame
     // and return false for the frame after the last.
     virtual bool tick() {
+        if (!requests_vars()) {
+            return true;
+        }
         vars.tick();
         if (!vars.get_bool("Condition", true)) {
             return false;
@@ -81,6 +92,7 @@ public:
         }
     }
     virtual void finalize() {
+        /*
         if (init_attr.count("Name") == 1) {
             std::cout << "(action) " << init_attr.at("Name") <<
                 "::finalize()" << std::endl;
@@ -89,10 +101,14 @@ public:
             std::cout << "(action) <type:" << init_attr.at("Type") <<
                 ">::finalize()" << std::endl;
         }
+        */
         if (!active) {
             throw std::logic_error("finalize() called twice");
         }
-        vars.finalize();
+        if (requests_vars()) {
+            vars.finalize();
+        }
+        mascot = nullptr;
         active = false;
     }
     virtual ~base() {}

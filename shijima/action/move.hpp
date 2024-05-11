@@ -8,11 +8,6 @@ namespace action {
 
 class move : public animation {
 public:
-    virtual void init(std::shared_ptr<mascot::state> mascot,
-        std::map<std::string, std::string> const& extra)
-    {
-        animation::init(mascot, extra);
-    }
     virtual bool tick() {
         if (vars.has("TargetX")) {
             double x = vars.get_num("TargetX");

@@ -20,13 +20,13 @@ protected:
         return ret;
     }
 public:
-    virtual void init(std::shared_ptr<mascot::state> mascot,
-        std::map<std::string, std::string> const& extra) override
+    virtual void init(scripting::context &script_ctx,
+        std::map<std::string, std::string> const& extra)
     {
         did_execute = false;
         std::map<std::string, std::string> extra_copy = extra;
         extra_copy["Loops"] = "false";
-        sequence::init(mascot, extra_copy);
+        sequence::init(script_ctx, extra_copy);
     }
 };
 

@@ -41,6 +41,12 @@ public:
         }
         return ctx.eval_bool(js);
     }
+    bool eval(context::global::active &ctx) {
+        if (is_constant) {
+            return value;
+        }
+        return ctx->eval_bool(js);
+    }
 };
 
 }

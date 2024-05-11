@@ -18,7 +18,9 @@ private:
             behaviors.set_next(name);
         }
         if (action != nullptr) {
+            /*
             std::cout << "(behavior) " << behavior->name << "::finalize()" << std::endl;
+            */
             action->finalize();
         }
 
@@ -38,28 +40,35 @@ private:
             behaviors.set_next("Fall");
             behavior = behaviors.next(state);
         }
-        std::cout << "(behavior) " << behavior->name << "::init()" << std::endl;
+        //std::cout << "(behavior) " << behavior->name << "::init()" << std::endl;
         action = behavior->action;
-        action->init(state, {});
+        action->init(*script_ctx, {});
     }
     bool action_tick() {
         bool ret = action->tick();
         return ret;
     }
 public:
+    std::shared_ptr<scripting::context> script_ctx;
     std::shared_ptr<mascot::state> state;
-    manager(std::string const& actions_xml, std::string const& behaviors_xml) {
-        state = std::make_shared<mascot::state>();
+    manager(std::string const& actions_xml, std::string const& behaviors_xml,
+        std::shared_ptr<scripting::context> script_ctx = nullptr)
+    {
         shijima::parser parser;
         parser.parse(actions_xml, behaviors_xml);
-        behaviors.init(parser.behavior_list, "Fall");
+        if (script_ctx == nullptr) {
+            script_ctx = std::make_shared<scripting::context>();
+        }
+        this->script_ctx = script_ctx;
+        state = std::make_shared<mascot::state>();
+        behaviors = { *script_ctx, parser.behavior_list, "Fall" };
     }
     std::string export_state() {
-        auto ctx = scripting::context::get();
-        ctx->state = state;
-        return ctx->eval_string("JSON.stringify(mascot)");
+        script_ctx->state = state;
+        return script_ctx->eval_string("JSON.stringify(mascot)");
     }
     void tick() {
+        script_ctx->state = state;
         state->time++;
         if (behavior == nullptr) {
             // First tick

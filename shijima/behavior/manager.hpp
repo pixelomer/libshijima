@@ -20,13 +20,14 @@ private:
 
     list initial_list;
     list next_list;
-    std::shared_ptr<scripting::context> ctx;
+    scripting::context::global global;
 public:
-    manager() {
-        ctx = scripting::context::get();
+    manager(): initial_list(), next_list() {
     }
-    void init(list initial_list, std::string const& first_behavior) {
-        this->initial_list = initial_list;
+    manager(scripting::context &ctx, list initial_list,
+        std::string const& first_behavior): initial_list(initial_list), next_list()
+    {
+        global = ctx.make_global();
         set_next(first_behavior);
     }
     void set_next(std::string const& next_name) {
@@ -34,8 +35,9 @@ public:
         next_list.children.push_back(initial_list.find(next_name));
     }
     std::shared_ptr<base> next(std::shared_ptr<mascot::state> state) {
+        auto ctx = global.use();
         ctx->state = state;
-        auto flat = next_list.flatten(*ctx);
+        auto flat = next_list.flatten(*ctx.get());
 
         std::shared_ptr<base> behavior;
         

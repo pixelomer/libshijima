@@ -12,10 +12,10 @@ protected:
     double foot_dx;
     int time_to_resist;
 public:
-    virtual void init(std::shared_ptr<mascot::state> mascot,
+    virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
-        animation::init(mascot, extra);
+        animation::init(script_ctx, extra);
         auto offset_x = vars.get_num("OffsetX", 0);
         foot_dx = 0;
         foot_x = mascot->env.cursor.x + offset_x;

@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 if(CMAKE_BUILD_TYPE EQUAL "Release")
-    set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra -Werror=sign-compare -Werror=return-type")
+    set(CMAKE_CXX_FLAGS "-O3 -lto -Wall -Wextra -Werror=sign-compare -Werror=return-type")
 else()
     set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -Werror=sign-compare -Werror=return-type")
 endif()
