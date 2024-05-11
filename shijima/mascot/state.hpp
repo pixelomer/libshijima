@@ -11,7 +11,7 @@ public:
     math::rec bounds;
     math::vec2 anchor;
     shijima::frame active_frame;
-    environment env;
+    std::shared_ptr<environment> env;
     bool looking_right;
     bool dragging;
     long time;
@@ -23,9 +23,9 @@ public:
             area.top_border().is_on(anchor);
     }
     bool on_land() {
-        return env.floor.is_on(anchor) ||
-            env.ceiling.is_on(anchor) ||
-            is_on(env.work_area) || is_on(env.active_ie);
+        return env->floor.is_on(anchor) ||
+            env->ceiling.is_on(anchor) ||
+            is_on(env->work_area) || is_on(env->active_ie);
     }
 };
 

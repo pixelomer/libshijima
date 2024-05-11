@@ -22,13 +22,13 @@ public:
         }
         if (vars.has("TargetY")) {
             vars.add_attr({{ "目的地Y", vars.get_num("TargetY") }});
-            if (mascot->env.work_area.left_border().is_on(mascot->anchor) ||
-                mascot->env.active_ie.right_border().is_on(mascot->anchor))
+            if (mascot->env->work_area.left_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.right_border().is_on(mascot->anchor))
             {
                 mascot->looking_right = false;
             }
-            if (mascot->env.work_area.right_border().is_on(mascot->anchor) ||
-                mascot->env.active_ie.left_border().is_on(mascot->anchor))
+            if (mascot->env->work_area.right_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.left_border().is_on(mascot->anchor))
             {
                 mascot->looking_right = true;
             }

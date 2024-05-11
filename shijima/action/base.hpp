@@ -71,18 +71,18 @@ public:
 
         auto border_type = vars.get_string("BorderType");
         if (border_type == "Floor") {
-            return mascot->env.floor.is_on(mascot->anchor) ||
-                mascot->env.active_ie.top_border().is_on(mascot->anchor);
+            return mascot->env->floor.is_on(mascot->anchor) ||
+                mascot->env->active_ie.top_border().is_on(mascot->anchor);
         }
         else if (border_type == "Wall") {
-            return mascot->env.work_area.left_border().is_on(mascot->anchor) ||
-                mascot->env.work_area.right_border().is_on(mascot->anchor) ||
-                mascot->env.active_ie.left_border().is_on(mascot->anchor) ||
-                mascot->env.active_ie.right_border().is_on(mascot->anchor);
+            return mascot->env->work_area.left_border().is_on(mascot->anchor) ||
+                mascot->env->work_area.right_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.left_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.right_border().is_on(mascot->anchor);
         }
         else if (border_type == "Ceiling") {
-            return mascot->env.work_area.top_border().is_on(mascot->anchor) ||
-                mascot->env.active_ie.bottom_border().is_on(mascot->anchor);
+            return mascot->env->work_area.top_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.bottom_border().is_on(mascot->anchor);
         }
         else if (border_type == "") {
             return true;

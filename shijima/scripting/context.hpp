@@ -62,8 +62,6 @@ private:
     static duk_ret_t duk_console_error(duk_context *ctx);
     static duk_ret_t duk_function_callback(duk_context *ctx);
     static duk_ret_t duk_finalizer_callback(duk_context *ctx);
-    static duk_ret_t global_get_trap(duk_context *ctx);
-    static duk_ret_t global_set_trap(duk_context *ctx);
     duk_idx_t build_proxy();
     duk_idx_t push_function(std::function<duk_ret_t(duk_context *)> func,
         duk_idx_t nargs);
@@ -317,6 +315,10 @@ public:
         *invalidated_flag = true;
         duk_destroy_heap(duk);
     }
+    context &operator=(context const&) = delete;
+    context &operator=(context&&) = delete;
+    context(context const&) = delete;
+    context(context&&) = delete;
 };
 
 }

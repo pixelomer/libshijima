@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include "base.hpp"
+#include "list.hpp"
 #include <shijima/scripting/context.hpp>
 #include <shijima/mascot/state.hpp>
 #include <random>
@@ -22,6 +23,10 @@ private:
     list next_list;
     scripting::context::global global;
 public:
+    manager &operator=(manager const&) = delete;
+    manager &operator=(manager&&) = default;
+    manager(manager const&) = delete;
+    manager(manager&&) = default;
     manager(): initial_list(), next_list() {
     }
     manager(scripting::context &ctx, list initial_list,

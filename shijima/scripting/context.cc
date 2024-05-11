@@ -318,27 +318,27 @@ duk_idx_t context::build_environment() {
     auto env = duk_push_bare_object(duk);
 
     // environment.floor
-    build_border<mascot::environment::hborder>([this]() { return this->state->env.floor; });
+    build_border<mascot::environment::hborder>([this]() { return this->state->env->floor; });
     put_prop(-2, "floor");
 
     // environment.ceiling
-    build_border<mascot::environment::hborder>([this]() { return this->state->env.ceiling; });
+    build_border<mascot::environment::hborder>([this]() { return this->state->env->ceiling; });
     put_prop(-2, "ceiling");
 
     // environment.workArea
-    build_area([this]() -> mascot::environment::area& { return this->state->env.work_area; });
+    build_area([this]() -> mascot::environment::area& { return this->state->env->work_area; });
     put_prop(-2, "workArea");
 
     // environment.screen
-    build_area([this]() -> mascot::environment::area& { return this->state->env.screen; });
+    build_area([this]() -> mascot::environment::area& { return this->state->env->screen; });
     put_prop(-2, "screen");
 
     // environment.activeIE
-    build_area([this]() -> mascot::environment::area& { return this->state->env.active_ie; });
+    build_area([this]() -> mascot::environment::area& { return this->state->env->active_ie; });
     put_prop(-2, "activeIE");
 
     // environment.cursor
-    build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->env.cursor; });
+    build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->env->cursor; });
     put_prop(-2, "cursor");
 
     return env;

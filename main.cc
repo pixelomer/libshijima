@@ -9,7 +9,7 @@
 
 using namespace shijima;
 
-std::shared_ptr<scripting::context> shared_ctx;
+mascot::factory factory;
 
 struct shimeji_meta {
     std::string actions_xml;
@@ -25,11 +25,7 @@ struct shimeji_data {
     std::shared_ptr<shimeji_meta> meta;
 };
 
-std::map<std::string, std::shared_ptr<shimeji_meta>> meta;
-std::shared_ptr<shimeji_meta> load_meta(std::string path) {
-    if (meta.count(path) == 1) {
-        return meta.at(path);
-    }
+shimeji_meta load_meta(std::string path) {
     std::string actions, behaviors;
     {
         std::stringstream buf;
@@ -43,16 +39,7 @@ std::shared_ptr<shimeji_meta> load_meta(std::string path) {
         buf << f.rdbuf();
         behaviors = buf.str();
     }
-    return meta[path] = std::make_shared<shimeji_meta>(actions,
-        behaviors, path);
-}
-
-shimeji_data load_shimeji(std::string path) {
-    auto meta = load_meta(path);
-    shimeji_data data = { { meta->actions_xml, meta->behaviors_xml, shared_ctx }, meta };
-    data.manager.state->anchor.x = 50 + random() % 1200;
-    data.manager.state->anchor.y = 50 + random() % 700;
-    return data;
+    return { actions, behaviors, path };
 }
 
 SDL_Window *window;
@@ -76,10 +63,10 @@ SDL_Texture *get_image(std::string const& path) {
     return texture;
 }
 
-std::vector<shimeji_data> mascots;
+std::vector<mascot::factory::product> mascots;
 
 void run_console() {
-    scripting::context &ctx = *mascots[0].manager.script_ctx;
+    scripting::context &ctx = *mascots[0].manager->script_ctx;
     ctx.state = std::make_shared<mascot::state>();
     while (true) {
         std::string line;
@@ -130,11 +117,11 @@ bool handle_event(SDL_Event event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            mascots[random() % mascots.size()].manager.state->dragging = true;
+            mascots[random() % mascots.size()].manager->state->dragging = true;
             break;
         case SDL_MOUSEBUTTONUP:
             for (auto &mascot : mascots) {
-                mascot.manager.state->dragging = false;
+                mascot.manager->state->dragging = false;
             }
             break;
         case SDL_USEREVENT: {
@@ -145,16 +132,18 @@ bool handle_event(SDL_Event event) {
             SDL_GetWindowSize(window, &w, &h);
             int mx, my;
             SDL_GetMouseState(&mx, &my);
+
+            factory.env->work_area = factory.env->screen = { 0, w, h, 0 };
+            factory.env->floor = { h-50, 0, w };
+            factory.env->ceiling = { 0, 0, w };
+            factory.env->active_ie = { 0, 0, 0, 0 };
+            auto old = factory.env->cursor;
+            factory.env->cursor = { (double)mx, (double)my,
+                (double)(mx - old.x), (double)(my - old.y) };
+
             for (auto &mascot : mascots) {
                 auto &manager = mascot.manager;
-                manager.state->env.work_area = manager.state->env.screen = { 0, w, h, 0 };
-                manager.state->env.floor = { h-50, 0, w };
-                manager.state->env.ceiling = { 0, 0, w };
-                manager.state->env.active_ie = { 0, 0, 0, 0 };
-                auto old = manager.state->env.cursor;
-                manager.state->env.cursor = { (double)mx, (double)my,
-                    (double)(mx - old.x), (double)(my - old.y) };
-                manager.tick();
+                manager->tick();
             }
 
             uint32_t update_elapsed = SDL_GetTicks() - start_time;
@@ -163,42 +152,44 @@ bool handle_event(SDL_Event event) {
             // Render
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderClear(renderer);
-            for (auto &mascot : mascots) {
-                auto &manager = mascot.manager;
-                SDL_Texture *texture = get_image(mascot.meta->path + "/img" +
-                    manager.state->active_frame.name);
+            for (auto &product : mascots) {
+                auto &manager = product.manager;
+                SDL_Texture *texture = get_image(product.tmpl->path + "/img" +
+                    manager->state->active_frame.name);
                 SDL_Rect src = {}, dest;
                 SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
-                if (manager.state->looking_right) {
+                if (manager->state->looking_right) {
                     dest = {
-                        .x = (int)(manager.state->anchor.x - src.w + manager.state->active_frame.anchor.x),
-                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y),
+                        .x = (int)(manager->state->anchor.x - src.w + manager->state->active_frame.anchor.x),
+                        .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
                         .w = src.w, .h = src.h };
                 }
                 else {
                     dest = {
-                        .x = (int)(manager.state->anchor.x - manager.state->active_frame.anchor.x),
-                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y),
+                        .x = (int)(manager->state->anchor.x - manager->state->active_frame.anchor.x),
+                        .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
                         .w = src.w, .h = src.h };
                 }
                 SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
-                    manager.state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+                    manager->state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
             }
             SDL_RenderPresent(renderer);
 
             uint32_t render_elapsed = SDL_GetTicks() - start_time;
 
             if (spawn_more) {
-                if (mascots[0].manager.state->time % 2 == 0) {
-                    std::vector<std::string> paths = {
-                        "tests/shimeji/test1"
+                if (mascots[0].manager->state->time % 2 == 0) {
+                    std::vector<std::string> names = {
+                        "test1"
                     };
-                    auto path = paths[random() % paths.size()];
-                    mascots.push_back(load_shimeji(path));
+                    auto name = names[random() % names.size()];
+                    mascots.push_back(factory.spawn(name, { {
+                        (double)(50 + random() % (w - 100)),
+                        (double)(50 + random() % (h - 100)) } }));
                 }
             }
 
-            if (mascots[0].manager.state->time % 12 == 0) {
+            if (mascots[0].manager->state->time % 12 == 0) {
                 std::string title = "Shimeji (" + std::to_string(mascots.size()) + " active, "
                     + std::to_string(update_elapsed) + "ms update, "
                     + std::to_string(render_elapsed) + "ms render)";
@@ -218,14 +209,21 @@ int main(int argc, char **argv) {
         return EXIT_SUCCESS;
     }
 
-    shared_ctx = std::make_shared<scripting::context>();
-
-    mascots.push_back(load_shimeji("tests/shimeji/test1"));
-
-    /*while (1) {
-        tick(mascot);
-        std::this_thread::sleep_for(std::chrono::nanoseconds(1000000000LL / 25)); // 1/25 secs
-    }*/
+    factory.script_ctx = std::make_shared<scripting::context>();
+    factory.env = std::make_shared<mascot::environment>();
+    static const std::vector<std::string> paths = {
+        "tests/shimeji/test1"
+    };
+    for (auto &path : paths) {
+        auto meta = load_meta(path);
+        mascot::factory::tmpl tmpl;
+        tmpl.name = path.substr(path.find_last_of('/')+1);
+        tmpl.actions_xml = meta.actions_xml;
+        tmpl.behaviors_xml = meta.behaviors_xml;
+        tmpl.path = path;
+        factory.register_template(tmpl);
+    }
+    mascots.push_back(factory.spawn("test1", { { 100, 100 } }));
 
     if (SDL_Init( SDL_INIT_VIDEO ) < 0) {
         std::cerr << "SDL_Init() failed: " << SDL_GetError() << std::endl;

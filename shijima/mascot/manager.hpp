@@ -30,7 +30,7 @@ private:
             // the mascot as defined by Shimeji-EE
             std::cerr << "warning: no next behavior" << std::endl;
 
-            auto &screen = state->env.screen;
+            auto &screen = state->env->screen;
             int right = screen.right + screen.width() / 10;
             int left = screen.left + screen.height() / 10;
             double spawnX = (random() % std::max(1, right - left)) + left;
@@ -49,10 +49,23 @@ private:
         return ret;
     }
 public:
+    struct initializer {
+        math::vec2 anchor;
+        std::string behavior;
+        initializer(math::vec2 anchor = {0,0}, std::string behavior = "Fall"):
+            anchor(anchor), behavior(behavior) {}
+    };
+
     std::shared_ptr<scripting::context> script_ctx;
     std::shared_ptr<mascot::state> state;
+
+    manager &operator=(manager const&) = delete;
+    manager &operator=(manager&&) = default;
+    manager(manager const&) = delete;
+    manager(manager&&) = default;
+    
     manager(std::string const& actions_xml, std::string const& behaviors_xml,
-        std::shared_ptr<scripting::context> script_ctx = nullptr)
+        initializer init = {}, std::shared_ptr<scripting::context> script_ctx = nullptr)
     {
         shijima::parser parser;
         parser.parse(actions_xml, behaviors_xml);
@@ -61,7 +74,8 @@ public:
         }
         this->script_ctx = script_ctx;
         state = std::make_shared<mascot::state>();
-        behaviors = { *script_ctx, parser.behavior_list, "Fall" };
+        state->anchor = init.anchor;
+        behaviors = { *script_ctx, parser.behavior_list, init.behavior };
     }
     std::string export_state() {
         script_ctx->state = state;

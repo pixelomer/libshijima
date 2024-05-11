@@ -1,3 +1,2 @@
 #pragma once
-#include "parser.hpp"
-#include "mascot/manager.hpp"
+#include "mascot/factory.hpp"

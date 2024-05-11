@@ -36,17 +36,17 @@ public:
         mascot->anchor.x += (int)velocity.x;
         mascot->anchor.y += (int)velocity.y;
 
-        if (mascot->anchor.x > mascot->env.work_area.right) {
-            mascot->anchor.x = mascot->env.work_area.right;
+        if (mascot->anchor.x > mascot->env->work_area.right) {
+            mascot->anchor.x = mascot->env->work_area.right;
         }
-        else if (mascot->anchor.x < mascot->env.work_area.left) {
-            mascot->anchor.x = mascot->env.work_area.left;
+        else if (mascot->anchor.x < mascot->env->work_area.left) {
+            mascot->anchor.x = mascot->env->work_area.left;
         }
-        if (mascot->anchor.y < mascot->env.ceiling.y) {
-            mascot->anchor.y = mascot->env.ceiling.y;
+        if (mascot->anchor.y < mascot->env->ceiling.y) {
+            mascot->anchor.y = mascot->env->ceiling.y;
         }
-        else if (mascot->anchor.y > mascot->env.floor.y) {
-            mascot->anchor.y = mascot->env.floor.y;
+        else if (mascot->anchor.y > mascot->env->floor.y) {
+            mascot->anchor.y = mascot->env->floor.y;
         }
         
         if (!animation::tick()) {

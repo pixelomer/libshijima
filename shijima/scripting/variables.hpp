@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <cstdlib>
+#include "condition.hpp"
 #include "context.hpp"
 
 namespace shijima {
