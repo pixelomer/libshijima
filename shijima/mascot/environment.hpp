@@ -72,6 +72,7 @@ public:
     area work_area;
     area active_ie;
     dvec2 cursor;
+    long mascot_count;
 };
 
 }

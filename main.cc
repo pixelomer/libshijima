@@ -9,6 +9,8 @@
 
 using namespace shijima;
 
+bool enable_ie = false;
+
 mascot::factory factory;
 
 struct shimeji_meta {
@@ -68,6 +70,7 @@ std::vector<mascot::factory::product> mascots;
 void run_console() {
     scripting::context &ctx = *mascots[0].manager->script_ctx;
     ctx.state = std::make_shared<mascot::state>();
+    ctx.state->env = factory.env;
     while (true) {
         std::string line;
         std::cout << "duktape> ";
@@ -90,6 +93,7 @@ void run_console() {
 
 bool running;
 bool spawn_more;
+bool paused = false;
 
 Uint32 timer_callback(Uint32 interval, void *param) {
     (void)param; // unused
@@ -99,6 +103,112 @@ Uint32 timer_callback(Uint32 interval, void *param) {
 
     SDL_PushEvent(&event);
     return interval;
+}
+
+void tick() {
+    // Update
+    uint32_t start_time = SDL_GetTicks();
+
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
+
+    auto &env = *factory.env;
+    env.work_area = env.screen = { 0, w, h, 0 };
+    env.floor = { h-50, 0, w };
+    env.ceiling = { 0, 0, w };
+    if (enable_ie) {
+        env.active_ie = { 400, 700, 700, 400 };
+    }
+    else {
+        env.active_ie = { 0, 0, 0, 0 };
+    }
+    auto old = env.cursor;
+    env.cursor = { (double)mx, (double)my,
+        (double)(mx - old.x), (double)(my - old.y) };
+
+    std::vector<mascot::factory::product> new_mascots;
+
+    for (auto &mascot : mascots) {
+        auto &manager = mascot.manager;
+        manager->tick();
+        auto &breed_request = manager->state->breed_request;
+        if (breed_request.available) {
+            breed_request.available = false;
+            if (breed_request.name == "") {
+                breed_request.name = mascot.name;
+            }
+            auto product = factory.spawn(breed_request.name,
+                { breed_request.anchor, breed_request.behavior });
+            product.manager->state->looking_right = breed_request.looking_right;
+            new_mascots.push_back(std::move(product));
+        }
+    }
+
+    uint32_t update_elapsed = SDL_GetTicks() - start_time;
+    start_time = SDL_GetTicks();
+
+    // Render
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+    if (enable_ie) {
+        SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
+        SDL_Rect rect = { .x = env.active_ie.left,
+            .y = env.active_ie.top,
+            .w = env.active_ie.width(),
+            .h = env.active_ie.height() };
+        SDL_RenderFillRect(renderer, &rect);
+    }
+    for (auto &product : mascots) {
+        auto &manager = product.manager;
+        SDL_Texture *texture = get_image(product.tmpl->path + "/img" +
+            manager->state->active_frame.name);
+        SDL_Rect src = {}, dest;
+        SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
+        if (manager->state->looking_right) {
+            dest = {
+                .x = (int)(manager->state->anchor.x - src.w + manager->state->active_frame.anchor.x),
+                .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
+                .w = src.w, .h = src.h };
+        }
+        else {
+            dest = {
+                .x = (int)(manager->state->anchor.x - manager->state->active_frame.anchor.x),
+                .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
+                .w = src.w, .h = src.h };
+        }
+        SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
+            manager->state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    }
+    SDL_RenderPresent(renderer);
+
+    uint32_t render_elapsed = SDL_GetTicks() - start_time;
+
+    if (spawn_more) {
+        if (mascots[0].manager->state->time % 1 == 0) {
+            std::vector<std::string> names = {
+                "test1"
+            };
+            auto name = names[random() % names.size()];
+            mascots.push_back(factory.spawn(name, { {
+                (double)(50 + random() % (w - 100)),
+                (double)(50 + random() % (h - 100)) } }));
+        }
+    }
+
+    if (mascots[0].manager->state->time % 12 == 0) {
+        std::string title = "Shimeji (" + std::to_string(mascots.size()) + " active, "
+            + std::to_string(update_elapsed) + "ms update, "
+            + std::to_string(render_elapsed) + "ms render)";
+        
+        SDL_SetWindowTitle(window, title.c_str());
+    }
+
+    for (int i=new_mascots.size()-1; i>=0; --i) {
+        mascots.push_back(std::move(new_mascots[i]));
+        new_mascots.erase(new_mascots.begin() + i);
+    }
 }
 
 bool handle_event(SDL_Event event) {
@@ -112,8 +222,17 @@ bool handle_event(SDL_Event event) {
                     run_console();
                     running = true;
                     break;
+                case SDLK_p:
+                    paused = !paused;
+                    break;
                 case SDLK_s:
                     spawn_more = !spawn_more;
+                    break;
+                case SDLK_f:
+                    if (paused) tick();
+                    break;
+                default:
+                    break;
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
@@ -125,78 +244,7 @@ bool handle_event(SDL_Event event) {
             }
             break;
         case SDL_USEREVENT: {
-            // Update
-            uint32_t start_time = SDL_GetTicks();
-
-            int w, h;
-            SDL_GetWindowSize(window, &w, &h);
-            int mx, my;
-            SDL_GetMouseState(&mx, &my);
-
-            factory.env->work_area = factory.env->screen = { 0, w, h, 0 };
-            factory.env->floor = { h-50, 0, w };
-            factory.env->ceiling = { 0, 0, w };
-            factory.env->active_ie = { 0, 0, 0, 0 };
-            auto old = factory.env->cursor;
-            factory.env->cursor = { (double)mx, (double)my,
-                (double)(mx - old.x), (double)(my - old.y) };
-
-            for (auto &mascot : mascots) {
-                auto &manager = mascot.manager;
-                manager->tick();
-            }
-
-            uint32_t update_elapsed = SDL_GetTicks() - start_time;
-            start_time = SDL_GetTicks();
-
-            // Render
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            SDL_RenderClear(renderer);
-            for (auto &product : mascots) {
-                auto &manager = product.manager;
-                SDL_Texture *texture = get_image(product.tmpl->path + "/img" +
-                    manager->state->active_frame.name);
-                SDL_Rect src = {}, dest;
-                SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
-                if (manager->state->looking_right) {
-                    dest = {
-                        .x = (int)(manager->state->anchor.x - src.w + manager->state->active_frame.anchor.x),
-                        .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
-                        .w = src.w, .h = src.h };
-                }
-                else {
-                    dest = {
-                        .x = (int)(manager->state->anchor.x - manager->state->active_frame.anchor.x),
-                        .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
-                        .w = src.w, .h = src.h };
-                }
-                SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
-                    manager->state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
-            }
-            SDL_RenderPresent(renderer);
-
-            uint32_t render_elapsed = SDL_GetTicks() - start_time;
-
-            if (spawn_more) {
-                if (mascots[0].manager->state->time % 2 == 0) {
-                    std::vector<std::string> names = {
-                        "test1"
-                    };
-                    auto name = names[random() % names.size()];
-                    mascots.push_back(factory.spawn(name, { {
-                        (double)(50 + random() % (w - 100)),
-                        (double)(50 + random() % (h - 100)) } }));
-                }
-            }
-
-            if (mascots[0].manager->state->time % 12 == 0) {
-                std::string title = "Shimeji (" + std::to_string(mascots.size()) + " active, "
-                    + std::to_string(update_elapsed) + "ms update, "
-                    + std::to_string(render_elapsed) + "ms render)";
-                
-                SDL_SetWindowTitle(window, title.c_str());
-            }
-
+            if (!paused) tick();
             break;
         }
     }
@@ -223,7 +271,7 @@ int main(int argc, char **argv) {
         tmpl.path = path;
         factory.register_template(tmpl);
     }
-    mascots.push_back(factory.spawn("test1", { { 100, 100 } }));
+    mascots.push_back(factory.spawn("peridot", { { 100, 100 } }));
 
     if (SDL_Init( SDL_INIT_VIDEO ) < 0) {
         std::cerr << "SDL_Init() failed: " << SDL_GetError() << std::endl;
@@ -237,7 +285,7 @@ int main(int argc, char **argv) {
     window = SDL_CreateWindow(
         "Shimeji",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        1280, 800,
+        800, 600,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
     );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);

@@ -116,15 +116,13 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
     if (type == "ThrowIE") {
         type = "Animate";
     }
-    if (type == "Breed") {
-        type = "Animate";
-    }
     static const std::map<std::string,
         std::function<std::shared_ptr<action::animation>()>> animation_init =
     {
         #define pair(name, type) { name, []{ return std::make_shared<type>(); } }
         pair("Jump", action::jump),
         pair("Animate", action::animate),
+        pair("Breed", action::breed),
         pair("Dragged", action::dragged),
         pair("Regist", action::resist), // not a typo
         pair("Stay", action::stay),

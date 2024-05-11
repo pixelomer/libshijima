@@ -195,6 +195,10 @@ duk_idx_t context::build_mascot() {
     register_boolean_property("lookRight",
         [this]() { return this->state->looking_right; },
         [this](bool value) { this->state->looking_right = value; });
+
+    // mascot.totalCount
+    register_number_property("totalCount",
+        [this]() { return this->state->env->mascot_count; }, nullptr);
     
     // mascot.environment
     build_environment();

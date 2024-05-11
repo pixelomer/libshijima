@@ -18,10 +18,12 @@ protected:
     int elapsed() {
         return mascot->time - start_time;
     }
-    int dx(int dx) {
+    template<typename T>
+    T dx(T dx) {
         return (mascot->looking_right ? -1 : 1) * dx;
     }
-    int dy(int dy) {
+    template<typename T>
+    T dy(T dy) {
         return dy;
     }
 public:
@@ -33,7 +35,6 @@ public:
     virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
-        /*
         if (init_attr.count("Name") == 1) {
             std::cout << "(action) " << init_attr.at("Name") <<
                 "::init()" << std::endl;
@@ -42,7 +43,6 @@ public:
             std::cout << "(action) <type:" << init_attr.at("Type") <<
                 ">::init()" << std::endl;
         }
-        */
         if (active) {
             throw std::logic_error("init() called twice");
         }
@@ -92,7 +92,6 @@ public:
         }
     }
     virtual void finalize() {
-        /*
         if (init_attr.count("Name") == 1) {
             std::cout << "(action) " << init_attr.at("Name") <<
                 "::finalize()" << std::endl;
@@ -101,7 +100,6 @@ public:
             std::cout << "(action) <type:" << init_attr.at("Type") <<
                 ">::finalize()" << std::endl;
         }
-        */
         if (!active) {
             throw std::logic_error("finalize() called twice");
         }

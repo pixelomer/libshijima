@@ -27,6 +27,10 @@ protected:
     pose const& get_pose() {
         return get_animation()->get_pose(elapsed());
     }
+    
+    bool animation_finished() {
+        return elapsed() >= get_animation()->get_duration();
+    }
 public:
     std::vector<std::shared_ptr<shijima::animation>> animations;
     virtual void init(scripting::context &script_ctx,

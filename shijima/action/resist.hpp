@@ -11,12 +11,13 @@ public:
             // Cursor moved, abort without escaping
             return false;
         }
-        if (!animate::tick()) {
+        bool ret = animate::tick();
+        if (animation_finished()) {
             // Animation concluded, escape
             mascot->dragging = false;
             return false;
         }
-        return true;
+        return ret;
     }
 };
 

@@ -8,6 +8,17 @@ namespace mascot {
 
 class state {
 public:
+    struct breed_request_data {
+        bool available = false;
+        bool transient;
+        bool looking_right;
+        math::vec2 anchor;
+        std::string name; // empty if self
+        std::string behavior;
+    };
+
+    breed_request_data breed_request;
+
     math::rec bounds;
     math::vec2 anchor;
     shijima::frame active_frame;
