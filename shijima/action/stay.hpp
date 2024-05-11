@@ -6,7 +6,7 @@ namespace action {
 
 class stay : public animation {
 public:
-    virtual bool tick() {
+    virtual bool tick() override {
         if (!animation::tick()) {
             return false;
         }

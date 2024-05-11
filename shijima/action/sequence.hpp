@@ -42,14 +42,14 @@ protected:
 public:
     std::vector<std::shared_ptr<base>> actions;
     virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra)
+        std::map<std::string, std::string> const& extra) override
     {
         base::init(script_ctx, extra);
         this->script_ctx = &script_ctx;
         action_idx = -1;
         next_action();
     }
-    virtual bool tick() {
+    virtual bool tick() override {
         if (!base::tick()) {
             return false;
         }
@@ -61,7 +61,7 @@ public:
         }
         return action != nullptr;
     }
-    virtual void finalize() {
+    virtual void finalize() override {
         if (action != nullptr) {
             action->finalize();
             action = nullptr;

@@ -30,12 +30,12 @@ protected:
 public:
     std::vector<std::shared_ptr<shijima::animation>> animations;
     virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra)
+        std::map<std::string, std::string> const& extra) override
     {
         base::init(script_ctx, extra);
         anim_idx = -1;
     }
-    virtual bool tick() {
+    virtual bool tick() override {
         if (!base::tick()) {
             return false;
         }

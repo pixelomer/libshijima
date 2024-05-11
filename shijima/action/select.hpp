@@ -21,7 +21,7 @@ protected:
     }
 public:
     virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra)
+        std::map<std::string, std::string> const& extra) override
     {
         did_execute = false;
         std::map<std::string, std::string> extra_copy = extra;

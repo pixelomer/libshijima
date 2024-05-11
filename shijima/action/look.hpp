@@ -6,7 +6,7 @@ namespace action {
 
 class look : public instant {
 public:
-    virtual bool tick() {
+    virtual bool tick() override {
         mascot->looking_right = vars.get_bool("LookRight", false);
         return false;
     }

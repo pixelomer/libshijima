@@ -9,14 +9,14 @@ protected:
     math::vec2 velocity;
 public:
     virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra)
+        std::map<std::string, std::string> const& extra) override
     {
         animation::init(script_ctx, extra);
         velocity.x = vars.get_num("InitialVX", 0);
         velocity.y = vars.get_num("InitialVY", 0);
     }
 
-    virtual bool tick() {
+    virtual bool tick() override {
         if (mascot->on_land()) {
             return false;
         }

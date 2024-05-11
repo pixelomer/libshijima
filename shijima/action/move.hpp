@@ -8,7 +8,7 @@ namespace action {
 
 class move : public animation {
 public:
-    virtual bool tick() {
+    virtual bool tick() override {
         if (vars.has("TargetX")) {
             double x = vars.get_num("TargetX");
             vars.add_attr({{ "目的地X", x }});

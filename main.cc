@@ -105,12 +105,13 @@ bool running;
 bool spawn_more;
 
 Uint32 timer_callback(Uint32 interval, void *param) {
+    (void)param; // unused
     SDL_Event event;
     bzero(&event, sizeof(event));
     event.type = SDL_USEREVENT;
 
     SDL_PushEvent(&event);
-    return 1000 / 25;
+    return interval;
 }
 
 bool handle_event(SDL_Event event) {
@@ -169,14 +170,16 @@ bool handle_event(SDL_Event event) {
                 SDL_Rect src = {}, dest;
                 SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
                 if (manager.state->looking_right) {
-                    dest = { .w = src.w, .h = src.h,
+                    dest = {
                         .x = (int)(manager.state->anchor.x - src.w + manager.state->active_frame.anchor.x),
-                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y) };
+                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y),
+                        .w = src.w, .h = src.h };
                 }
                 else {
-                    dest = { .w = src.w, .h = src.h,
+                    dest = {
                         .x = (int)(manager.state->anchor.x - manager.state->active_frame.anchor.x),
-                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y) };
+                        .y = (int)(manager.state->anchor.y - manager.state->active_frame.anchor.y),
+                        .w = src.w, .h = src.h };
                 }
                 SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
                     manager.state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);

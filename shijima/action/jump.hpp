@@ -7,7 +7,7 @@ namespace action {
 
 class jump : public animation {
 public:
-    virtual bool tick() {
+    virtual bool tick() override {
         math::vec2 target { vars.get_num("TargetX", 0),
             vars.get_num("TargetY", 0) };
         mascot->looking_right = mascot->anchor.x < target.x;
