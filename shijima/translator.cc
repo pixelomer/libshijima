@@ -93,7 +93,7 @@ void translator::translate(xml_node<> *root) {
 }
 
 std::string translator::translate(std::string const& xml) {
-    xml_doc(doc, xml);
+    xml_doc(doc, xml, 0);
     translate(&doc);
     std::string ret;
     rapidxml::print(std::back_inserter(ret), doc, 0);

@@ -271,7 +271,7 @@ int main(int argc, char **argv) {
         tmpl.path = path;
         factory.register_template(tmpl);
     }
-    mascots.push_back(factory.spawn("peridot", { { 100, 100 } }));
+    mascots.push_back(factory.spawn("test1", { { 100, 100 } }));
 
     if (SDL_Init( SDL_INIT_VIDEO ) < 0) {
         std::cerr << "SDL_Init() failed: " << SDL_GetError() << std::endl;

@@ -213,7 +213,7 @@ std::shared_ptr<action::base> parser::parse_action(xml_node<> *action, bool is_c
 
 void parser::parse_actions(std::string const& actions_xml) {
     std::string translated_xml = translator::translate(actions_xml);
-    xml_doc(doc, translated_xml);
+    xml_doc(doc, translated_xml, parse_no_data_nodes | parse_no_element_values);
     auto mascot = doc.first_node("Mascot");
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
@@ -222,10 +222,7 @@ void parser::parse_actions(std::string const& actions_xml) {
     while (action_list != nullptr) {
         auto action = action_list->first_node();
         while (action != nullptr) {
-            auto name = action->name();
-            if (name[0] != '\0') {
-                parse_action(action, false);
-            }
+            parse_action(action, false);
             action = action->next_sibling();
         }
         action_list = action_list->next_sibling("ActionList");
@@ -293,7 +290,7 @@ behavior::list parser::parse_behavior_list(rapidxml::xml_node<> *root,
             sublist.condition = cond;
             list.sublists.push_back(sublist);
         }
-        else if (name != "") {
+        else {
             throw std::invalid_argument("Invalid node: " + name);
         }
         node = node->next_sibling();
@@ -318,7 +315,7 @@ void parser::cleanup() {
 
 void parser::parse_behaviors(std::string const& behaviors_xml) {
     std::string translated_xml = translator::translate(behaviors_xml);
-    xml_doc(doc, translated_xml);
+    xml_doc(doc, translated_xml, parse_no_data_nodes | parse_no_element_values);
     auto mascot = doc.first_node("Mascot");
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
