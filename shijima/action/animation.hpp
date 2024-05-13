@@ -4,8 +4,6 @@
 namespace shijima {
 namespace action {
 
-//FIXME: action::animation should inherit action::bordered
-
 class animation : public base {
 protected:
     int anim_idx;

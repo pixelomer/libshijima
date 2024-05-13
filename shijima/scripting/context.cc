@@ -100,7 +100,6 @@ duk_ret_t context::duk_finalizer_callback(duk_context *duk) {
     return 0;
 }
 
-//FIXME: potential arbitrary code execution by malicious shimeji
 duk_idx_t context::push_function(std::function<duk_ret_t(duk_context *)> func,
     duk_idx_t nargs)
 {

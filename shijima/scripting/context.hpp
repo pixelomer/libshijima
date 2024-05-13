@@ -9,9 +9,6 @@
 #include <stack>
 #include <set>
 
-//FIXME: Allocating hundreds of JavaScript contexts just to store
-//       different global objects is not ideal
-
 namespace shijima {
 namespace scripting {
 
