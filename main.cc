@@ -55,9 +55,15 @@ SDL_Texture *get_image(std::string const& path) {
     }
     SDL_Surface *loaded = IMG_Load(path.c_str());
     assert(loaded != NULL);
+    
+    //FIXME: SDL_ConvertSurface() causes transparency to be lost on some systems (?)
+    SDL_Surface *optimized = loaded;
+    /*
     SDL_Surface *optimized = SDL_ConvertSurface(loaded, window_surface->format, 0);
     assert(optimized != NULL);
     SDL_FreeSurface(loaded);
+    */
+    
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, optimized);
     assert(texture != NULL);
     SDL_FreeSurface(optimized);
