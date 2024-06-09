@@ -31,5 +31,5 @@ add_library(
     shijima/log.cc
 )
 
-add_executable(shijima-cli main.cc)
-target_link_libraries(shijima-cli libshijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
+add_executable(shijima-sandbox main.cc)
+target_link_libraries(shijima-sandbox libshijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
