@@ -4,6 +4,8 @@
 #include <shijima/math.hpp>
 #include <shijima/mascot/state.hpp>
 #include <functional>
+#include <algorithm>
+#include <vector>
 #include <iostream>
 #include <memory>
 #include <stack>

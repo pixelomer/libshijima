@@ -14,7 +14,7 @@ private:
     std::map<std::string, std::string> dynamic_attr;
     std::set<std::string> attr_keys;
     scripting::context::global global;
-    static char dynamic_prefix(std::string const& str) {
+    static signed char dynamic_prefix(std::string const& str) {
         if (str.size() >= 3 && str[1] == '{' &&
             str[str.size()-1] == '}' &&
             (str[0] == '$' || str[0] == '#'))
@@ -51,7 +51,7 @@ public:
             }
             dynamic_attr.erase(key);
             attr_keys.insert(key);
-            char c = dynamic_prefix(val);
+            auto c = dynamic_prefix(val);
             switch (c) {
                 case -1:
                     // static

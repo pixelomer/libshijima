@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include <shijima/math.hpp>
 #include <shijima/pose.hpp>
 #include "environment.hpp"
