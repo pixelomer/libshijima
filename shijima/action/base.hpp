@@ -1,5 +1,6 @@
 #pragma once
 #include <shijima/scripting/variables.hpp>
+#include <shijima/log.hpp>
 
 namespace shijima {
 namespace action {
@@ -35,13 +36,13 @@ public:
     virtual void init(scripting::context &script_ctx,
         std::map<std::string, std::string> const& extra)
     {
-        if (init_attr.count("Name") == 1) {
-            std::cout << "(action) " << init_attr.at("Name") <<
-                "::init()" << std::endl;
-        }
-        else {
-            std::cout << "(action) <type:" << init_attr.at("Type") <<
-                ">::init()" << std::endl;
+        if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
+            if (init_attr.count("Name") == 1) {
+                log("(action) " + init_attr.at("Name") + "::init()");
+            }
+            else {
+                log("(action) <type:" + init_attr.at("Type") + ">::init()");
+            }
         }
         if (active) {
             throw std::logic_error("init() called twice");
@@ -92,13 +93,13 @@ public:
         }
     }
     virtual void finalize() {
-        if (init_attr.count("Name") == 1) {
-            std::cout << "(action) " << init_attr.at("Name") <<
-                "::finalize()" << std::endl;
-        }
-        else {
-            std::cout << "(action) <type:" << init_attr.at("Type") <<
-                ">::finalize()" << std::endl;
+        if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
+            if (init_attr.count("Name") == 1) {
+                log("(action) " + init_attr.at("Name") + "::finalize()");
+            }
+            else {
+                log("(action) <type:" + init_attr.at("Type") + ">::finalize()");
+            }
         }
         if (!active) {
             throw std::logic_error("finalize() called twice");

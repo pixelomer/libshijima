@@ -3,6 +3,7 @@
 #include <map>
 #include <shijima/math.hpp>
 #include <shijima/mascot/state.hpp>
+#include <shijima/log.hpp>
 #include <functional>
 #include <algorithm>
 #include <vector>
@@ -255,39 +256,42 @@ public:
         create_global(idx);
         return { this, idx, invalidated_flag };
     }
-    bool eval_bool(std::string js) {
+    bool eval_bool(std::string const& js) {
         duk_eval_string(duk, js.c_str());
         bool ret = duk_to_boolean(duk, -1);
-        /*
-        for (size_t i; (i = js.find_first_of("\r\t\n")) != std::string::npos;) {
-            js[i] = ' ';
+        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+            std::string m_js = js;
+            for (size_t i; (i = m_js.find_first_of("\r\t\n")) != std::string::npos;) {
+                m_js[i] = ' ';
+            }
+            log("\"" + m_js + "\" = " + (ret ? "true" : "false"));
         }
-        std::cout << "\"" << js << "\" = " << (ret ? "true" : "false") << std::endl;
-        */
         duk_pop(duk);
         return ret;
     }
     double eval_number(std::string js) {
         duk_eval_string(duk, js.c_str());
         double ret = duk_to_number(duk, -1);
-        /*
-        for (size_t i; (i = js.find_first_of("\r\t\n")) != std::string::npos;) {
-            js[i] = ' ';
+        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+            std::string m_js = js;
+            for (size_t i; (i = m_js.find_first_of("\r\t\n")) != std::string::npos;) {
+                m_js[i] = ' ';
+            }
+            log("\"" + m_js + "\" = " + std::to_string(ret));
         }
-        std::cout << "\"" << js << "\" = " << ret << std::endl;
-        */
         duk_pop(duk);
         return ret;
     }
     std::string eval_string(std::string js) {
         duk_eval_string(duk, js.c_str());
         std::string ret = duk_to_string(duk, -1);
-        /*
-        for (size_t i; (i = js.find_first_of("\r\t\n")) != std::string::npos;) {
-            js[i] = ' ';
+        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+            std::string m_js = js;
+            for (size_t i; (i = m_js.find_first_of("\r\t\n")) != std::string::npos;) {
+                m_js[i] = ' ';
+            }
+            log("\"" + m_js + "\" = \"" + ret + "\"");
         }
-        std::cout << "\"" << js << "\" = \"" << ret << "\"" << std::endl;
-        */
         duk_pop(duk);
         return ret;
     }

@@ -13,7 +13,7 @@ endif()
 if(CMAKE_BUILD_TYPE EQUAL "Release")
     set(CMAKE_CXX_FLAGS "-O3 -lto")
 else()
-    set(CMAKE_CXX_FLAGS "-g")
+    set(CMAKE_CXX_FLAGS "-g -DDEBUG")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror=sign-compare -Werror=return-type")
@@ -28,6 +28,7 @@ add_library(
     shijima/scripting/duktape/duktape.cc
     shijima/translator.cc
     shijima/parser.cc
+    shijima/log.cc
 )
 
 add_executable(shijima-cli main.cc)

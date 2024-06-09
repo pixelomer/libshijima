@@ -18,9 +18,9 @@ private:
             behaviors.set_next(name);
         }
         if (action != nullptr) {
-            /*
-            std::cout << "(behavior) " << behavior->name << "::finalize()" << std::endl;
-            */
+            if (get_log_level() & SHIJIMA_LOG_BEHAVIORS) {
+                log("(behavior) " + behavior->name + "::finalize()");
+            }
             action->finalize();
         }
 
@@ -40,7 +40,9 @@ private:
             behaviors.set_next("Fall");
             behavior = behaviors.next(state);
         }
-        //std::cout << "(behavior) " << behavior->name << "::init()" << std::endl;
+        if (get_log_level() & SHIJIMA_LOG_BEHAVIORS) {
+            log("(behavior) " + behavior->name + "::init()");
+        }
         action = behavior->action;
         action->init(*script_ctx, {});
     }

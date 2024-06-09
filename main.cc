@@ -258,6 +258,8 @@ bool handle_event(SDL_Event event) {
 }
 
 int main(int argc, char **argv) {
+    shijima::set_log_level(SHIJIMA_LOG_EVERYTHING);
+
     if (argc >= 2 && strcmp(argv[1], "console") == 0) {
         run_console();
         return EXIT_SUCCESS;
