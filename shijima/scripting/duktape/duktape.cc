@@ -1,8 +1,5 @@
 #pragma GCC diagnostic push
 
-// duk_js_compiler.c:5628:13: warning: variable 'num_stmts' set but not used
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-
 // duk_bi_date.c:1077:3: warning: 'sprintf' is deprecated
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -74796,6 +74793,7 @@ DUK_LOCAL void duk__parse_switch_stmt(duk_compiler_ctx *comp_ctx, duk_ivalue *re
 
 	for (;;) {
 		duk_int_t num_stmts;
+		(void)num_stmts;
 		duk_small_uint_t tok;
 
 		/* sufficient for keeping temp reg numbers in check */
