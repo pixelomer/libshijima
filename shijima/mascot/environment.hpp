@@ -1,4 +1,6 @@
 #pragma once
+#include <shijima/math.hpp>
+
 namespace shijima {
 namespace mascot {
 
@@ -6,8 +8,8 @@ class environment {
 public:
     class dvec2 : public math::vec2 {
     public:
-        int dx;
-        int dy;
+        double dx;
+        double dy;
         dvec2(): math::vec2(), dx(0), dy(0) {}
         dvec2(double x, double y): math::vec2(x, y), dx(0), dy(0) {}
         dvec2(double x, double y, double dx, double dy): math::vec2(x, y),
