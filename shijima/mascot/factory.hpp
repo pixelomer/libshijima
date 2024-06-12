@@ -16,7 +16,6 @@ public:
         std::string path;
     };
     struct product {
-        std::string name;
         std::shared_ptr<const factory::tmpl> tmpl;
         std::unique_ptr<mascot::manager> manager;
     };
@@ -33,7 +32,6 @@ public:
     
     product spawn(std::string const& name, manager::initializer init = {}) {
         product ret;
-        ret.name = name;
         auto& tmpl = ret.tmpl = templates.at(name);
         ret.manager = std::make_unique<mascot::manager>(
             tmpl->actions_xml, tmpl->behaviors_xml, init, script_ctx);

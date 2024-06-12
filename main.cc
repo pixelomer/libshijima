@@ -143,7 +143,7 @@ void tick() {
         if (breed_request.available) {
             breed_request.available = false;
             if (breed_request.name == "") {
-                breed_request.name = mascot.name;
+                breed_request.name = mascot.tmpl->name;
             }
             auto product = factory.spawn(breed_request.name,
                 { breed_request.anchor, breed_request.behavior });
