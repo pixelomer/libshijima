@@ -14,6 +14,18 @@ public:
     scripting::condition condition;
     std::vector<list> sublists;
 
+    std::vector<std::shared_ptr<base>> flatten_unconditional() {
+        std::vector<std::shared_ptr<base>> flat;
+        for (auto &behavior : children) {
+            flat.push_back(behavior);
+        }
+        for (auto &sub : sublists) {
+            auto sub_flat = sub.flatten_unconditional();
+            flat.insert(flat.end(), sub_flat.begin(), sub_flat.end());
+        }
+        return flat;
+    }
+
     std::vector<std::shared_ptr<base>> flatten(scripting::context &ctx) {
         std::vector<std::shared_ptr<base>> flat;
         if (condition.eval(ctx)) {
