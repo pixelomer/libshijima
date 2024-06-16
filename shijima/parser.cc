@@ -19,6 +19,7 @@ pose parser::parse_pose(xml_node<> *node) {
     if (node->first_node() != nullptr) {
         throw std::invalid_argument("Non-empty Pose contents");
     }
+    images.insert(attr.at("Image"));
     return shijima::pose(attr.at("Image"), attr.at("ImageAnchor"),
         attr.at("Velocity"), (int)std::strtol(attr.at("Duration").c_str(),
         nullptr, 10));

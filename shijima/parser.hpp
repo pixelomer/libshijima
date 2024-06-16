@@ -36,11 +36,11 @@ private:
     std::map<std::string, std::shared_ptr<action::base>> actions;
 public:
     behavior::list behavior_list;
-    std::set<std::string> resources;
+    std::set<std::string> images;
     parser() {}
     void parse(std::string const& actions_xml, std::string const& behaviors_xml) {
         // Clean results from any previous parse calls
-        resources.clear();
+        images.clear();
         behavior_list = {};
 
         parse_actions(actions_xml);
