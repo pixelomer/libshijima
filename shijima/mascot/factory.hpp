@@ -50,6 +50,12 @@ public:
         }
         templates.erase(name);
     }
+    std::shared_ptr<const tmpl> get_template(std::string const& name) {
+        if (templates.count(name) == 0) {
+            return nullptr;
+        }
+        return templates.at(name);
+    }
     factory(std::shared_ptr<scripting::context> ctx = nullptr): script_ctx(ctx) {
         if (script_ctx == nullptr) {
             script_ctx = std::make_shared<scripting::context>();
