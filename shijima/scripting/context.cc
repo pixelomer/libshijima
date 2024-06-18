@@ -341,7 +341,7 @@ duk_idx_t context::build_environment() {
     put_prop(-2, "activeIE");
 
     // environment.cursor
-    build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->env->cursor; });
+    build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->get_cursor(); });
     put_prop(-2, "cursor");
 
     return env;

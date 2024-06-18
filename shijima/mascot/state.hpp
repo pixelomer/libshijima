@@ -28,6 +28,17 @@ public:
     bool dragging;
     long time;
 
+    bool drag_with_local_cursor;
+    environment::dvec2 local_cursor;
+
+    environment::dvec2 &get_cursor() {
+        if (dragging && drag_with_local_cursor) {
+            return local_cursor;
+        }
+        else {
+            return env->cursor;
+        }
+    }
     bool is_on(environment::area &area) {
         return area.left_border().is_on(anchor) ||
             area.right_border().is_on(anchor) ||

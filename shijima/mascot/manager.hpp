@@ -94,7 +94,12 @@ public:
             next_behavior("Dragged");
         }
         else if (!state->dragging && behavior->name == "Dragged") {
+            if (state->drag_with_local_cursor) {
+                // Force script to use local cursor
+                state->dragging = true;
+            }
             next_behavior("Thrown");
+            state->dragging = false;
         }
         while (true) {
             if (action_tick()) {
