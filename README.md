@@ -4,7 +4,7 @@ C++ library for shimeji desktop mascots
 
 ## Usage
 
-libshijima itself does not implement a GUI. Rather, it provides an easy API for parsing configurations files and interacting with shimeji. For an example usage of libshijima, see [main.cc](blob/main/main.cc) which implements an SDL application for interacting with shimeji.
+libshijima itself does not implement a GUI. Rather, it provides an easy API for parsing configurations files and interacting with shimeji. For an example usage of libshijima, see [main.cc](main.cc) which implements an SDL application for interacting with shimeji.
 
 The main entry point for libshijima is `shijima::mascot::factory`. An app using libshijima may look something like the following:
 
