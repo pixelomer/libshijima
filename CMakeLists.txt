@@ -23,7 +23,7 @@ find_package(SDL2_image REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 add_library(
-    libshijima
+    shijima
     shijima/scripting/context.cc
     shijima/scripting/duktape/duktape.cc
     shijima/translator.cc
@@ -32,4 +32,4 @@ add_library(
 )
 
 add_executable(shijima-sandbox main.cc)
-target_link_libraries(shijima-sandbox libshijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
+target_link_libraries(shijima-sandbox shijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
