@@ -65,6 +65,10 @@ public:
     manager &operator=(manager&&) = default;
     manager(manager const&) = delete;
     manager(manager&&) = default;
+
+    std::shared_ptr<const behavior::base> active_behavior() {
+        return behavior;
+    }
     
     manager(std::string const& actions_xml, std::string const& behaviors_xml,
         initializer init = {}, std::shared_ptr<scripting::context> script_ctx = nullptr)
