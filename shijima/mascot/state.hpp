@@ -24,6 +24,7 @@ public:
     math::vec2 anchor;
     shijima::frame active_frame;
     std::shared_ptr<environment> env;
+    std::map<std::string, std::string> constants;
     bool looking_right;
     bool dragging;
     long time;

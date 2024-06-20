@@ -37,10 +37,12 @@ private:
 public:
     behavior::list behavior_list;
     std::set<shijima::pose> poses;
+    std::map<std::string, std::string> constants;
     parser() {}
     void parse(std::string const& actions_xml, std::string const& behaviors_xml) {
         // Clean results from any previous parse calls
         poses.clear();
+        constants.clear();
         behavior_list = {};
 
         parse_actions(actions_xml);

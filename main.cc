@@ -75,7 +75,7 @@ std::vector<mascot::factory::product> mascots;
 
 void run_console() {
     scripting::context &ctx = *mascots[0].manager->script_ctx;
-    ctx.state = std::make_shared<mascot::state>();
+    ctx.state = mascots[0].manager->state;
     ctx.state->env = factory.env;
     while (true) {
         std::string line;

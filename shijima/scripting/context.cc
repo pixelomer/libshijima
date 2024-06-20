@@ -275,6 +275,30 @@ duk_idx_t context::build_proxy() {
     }, 0);
     duk_def_prop(duk, -3, DUK_DEFPROP_HAVE_GETTER);
 
+    // proxy._hasConstant(name)
+    duk_push_literal(duk, "_hasConstant");
+    push_function([this](duk_context *duk){
+        std::string name = duk_get_string(duk, 0);
+        duk_push_boolean(duk, this->state->constants.count(name) == 1);
+        return 1;
+    }, 1);
+    duk_put_prop(duk, -3);
+
+    // proxy.getConstant(name)
+    duk_push_literal(duk, "_getConstant");
+    push_function([this](duk_context *duk){
+        std::string name = duk_get_string(duk, 0);
+        if (this->state->constants.count(name) == 0) {
+            duk_push_undefined(duk);
+            return 1;
+        }
+        //FIXME: This may not be right
+        auto value = this->state->constants[name];
+        duk_eval_string(duk, value.c_str());
+        return 1;
+    }, 1);
+    duk_put_prop(duk, -3);
+
     // proxy[HiddenSymbol("_globals")]
     duk_push_literal(duk, DUK_HIDDEN_SYMBOL("_globals"));
     duk_push_bare_object(duk);
@@ -284,32 +308,40 @@ duk_idx_t context::build_proxy() {
         "(function(target){"
         "    return new Proxy(target, {"
         "        defineProperty(target, property, descriptor) {"
-        "            if (property === \"_activeGlobal\") return;"
+        "            if (property === \"_activeGlobal\" || property ==="
+        "                \"_getConstant\" || property === \"_hasConstant\") return;"
         "            const real = target._activeGlobal;"
         "            return Reflect.defineProperty(real, property, descriptor);"
         "        },"
         "        \"set\": function(target, property, value, receiver) {"
-        "            if (property === \"_activeGlobal\") return;"
+        "            if (property === \"_activeGlobal\" || property ==="
+        "                \"_getConstant\" || property === \"_hasConstant\") return;"
         "            const real = target._activeGlobal;"
-        "            return Reflect.set(real, property, value/*, receiver*/);"
+        "            return Reflect.set(real, property, value);"
         "        },"
         "        deleteProperty(target, property, descriptor) {"
-        "            if (property === \"_activeGlobal\") return;"
+        "            if (property === \"_activeGlobal\" || property ==="
+        "                \"_getConstant\" || property === \"_hasConstant\") return;"
         "            const real = target._activeGlobal;"
         "            return Reflect.deleteProperty(real, property, descriptor);"
         "        },"
         "        \"get\": function(target, property, receiver) {"
+        "            const mascotConstant = target._getConstant(property);"
+        "            if (mascotConstant != null) {"
+        "                return mascotConstant;"
+        "            }"
         "            const real = target._activeGlobal;"
         "            if (property in real) {"
-        "                return Reflect.get(real, property/*, receiver*/);"
+        "                return Reflect.get(real, property);"
         "            }"
         "            else {"
-        "                return Reflect.get(target, property/*, receiver*/);"
+        "                return Reflect.get(target, property);"
         "            }"
         "        },"
         "        has(target, property) {"
         "            const real = target._activeGlobal;"
-        "            return (property in real) || (property in target);"
+        "            return target._hasConstant(property) || (property in real) ||"
+        "                (property in target);"
         "        }"
         "    })"
         "})(globalThis)";

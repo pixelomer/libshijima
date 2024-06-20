@@ -3,6 +3,7 @@
 #include <shijima/behavior/manager.hpp>
 #include <shijima/scripting/context.hpp>
 #include <shijima/parser.hpp>
+#include <shijima/log.hpp>
 #include <memory>
 
 namespace shijima {
@@ -13,6 +14,7 @@ private:
     behavior::manager behaviors;
     std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
+    std::map<std::string, std::string> constants;
     void next_behavior(std::string const& name = "") {
         if (name != "") {
             behaviors.set_next(name);
@@ -81,6 +83,7 @@ public:
         this->script_ctx = script_ctx;
         state = std::make_shared<mascot::state>();
         state->anchor = init.anchor;
+        state->constants = parser.constants;
         behaviors = { *script_ctx, parser.behavior_list, init.behavior };
     }
     std::string export_state() {

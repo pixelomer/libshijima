@@ -322,10 +322,31 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
     }
-    auto list_node = mascot->first_node("BehaviorList");
-    while (list_node != nullptr) {
-        behavior_list.sublists.push_back(parse_behavior_list(list_node, false));
-        list_node = list_node->next_sibling("BehaviorList");
+    auto node = mascot->first_node();
+    while (node != nullptr) {
+        std::string tag_name = node->name();
+        if (tag_name == "Constant") {
+            auto name_attr = node->first_attribute("Name");
+            auto value_attr = node->first_attribute("Value");
+            if (name_attr == nullptr || value_attr == nullptr) {
+                throw std::invalid_argument("Invalid constant");
+            }
+            std::string name = name_attr->value();
+            std::string value = value_attr->value();
+            if (constants.count(name) != 0) {
+                throw std::invalid_argument("Multiple constants with "
+                    "same name: " + name);
+            }
+            constants[name] = value;
+        }
+        else if (tag_name == "BehaviorList") {
+            behavior_list.sublists.push_back(parse_behavior_list(node, false));
+        }
+        else {
+            throw std::invalid_argument("Invalid tag in behaviours XML: "
+                + tag_name);
+        }
+        node = node->next_sibling();
     }
 
     // Build references
