@@ -15,6 +15,7 @@ private:
     std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
     std::map<std::string, std::string> constants;
+public:
     void next_behavior(std::string const& name = "") {
         if (name != "") {
             behaviors.set_next(name);
@@ -48,6 +49,7 @@ private:
         action = behavior->action;
         action->init(*script_ctx, {});
     }
+private:
     bool action_tick() {
         bool ret = action->tick();
         return ret;
