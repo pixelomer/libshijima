@@ -95,7 +95,7 @@ void translator::translate(xml_node<> *root) {
 std::string translator::translate(std::string const& xml) {
     xml_doc(doc, xml, 0);
     translate(&doc);
-    std::string ret;
+    std::string ret = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
     rapidxml::print(std::back_inserter(ret), doc, 0);
     return ret;
 }
