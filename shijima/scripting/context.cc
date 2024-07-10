@@ -284,7 +284,7 @@ duk_idx_t context::build_proxy() {
     }, 1);
     duk_put_prop(duk, -3);
 
-    // proxy.getConstant(name)
+    // proxy._getConstant(name)
     duk_push_literal(duk, "_getConstant");
     push_function([this](duk_context *duk){
         std::string name = duk_get_string(duk, 0);
