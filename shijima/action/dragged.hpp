@@ -42,9 +42,6 @@ public:
         }
         return true;
     }
-    virtual void finalize() override {
-        animation::finalize();
-    }
 };
 
 }
