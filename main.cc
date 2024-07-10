@@ -7,6 +7,8 @@
 #include <SDL_image.h>
 #include <iostream>
 
+#define WINDOW_TITLE "Shijima"
+
 using namespace shijima;
 
 bool enable_ie = false;
@@ -206,7 +208,7 @@ void tick() {
     }
 
     if (mascots[0].manager->state->time % 12 == 0) {
-        std::string title = "Shimeji (" + std::to_string(mascots.size()) + " active, "
+        std::string title = WINDOW_TITLE " (" + std::to_string(mascots.size()) + " active, "
             + std::to_string(update_elapsed) + "ms update, "
             + std::to_string(render_elapsed) + "ms render)";
         
@@ -316,7 +318,7 @@ int main(int argc, char **argv) {
     }
         
     window = SDL_CreateWindow(
-        "Shimeji",
+        WINDOW_TITLE,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         800, 600,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
