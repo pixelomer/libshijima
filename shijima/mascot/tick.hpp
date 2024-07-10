@@ -11,6 +11,11 @@ class tick {
 public:
     std::shared_ptr<scripting::context> script;
     std::map<std::string, std::string> extra_attr;
+
+    class init_limit_error : public std::logic_error {
+    public:
+        init_limit_error(): std::logic_error("init() called too many times") {}
+    };
 private:
     std::shared_ptr<int> init_count;
     tick(std::shared_ptr<scripting::context> script,
@@ -20,7 +25,7 @@ private:
 public:
     void will_init() {
         if (++*init_count >= 20) {
-            throw std::logic_error("init() called too many times, probably stuck");
+            throw init_limit_error();
         }
     }
     void reset() {

@@ -14,7 +14,13 @@ public:
     virtual void init(mascot::tick &ctx) override {
         base::init(ctx);
         mascot::tick target_ctx = ctx.overlay(init_attr);
-        target->init(target_ctx);
+        try {
+            target->init(target_ctx);
+        }
+        catch (...) {
+            base::finalize();
+            throw;
+        }
     }
     virtual bool tick() override {
         if (!base::tick()) {

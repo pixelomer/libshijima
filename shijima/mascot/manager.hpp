@@ -100,6 +100,21 @@ public:
         script_ctx->state = state;
         return script_ctx->eval_string("JSON.stringify(mascot)");
     }
+private:
+    void _tick() {
+        while (true) {
+            if (action_tick()) {
+                break;
+            }
+            if (!state->on_land()) {
+                _next_behavior("Fall");
+            }
+            else {
+                _next_behavior();
+            }
+        }
+    }
+public:
     void tick() {
         tick_ctx.reset();
         script_ctx->state = state;
@@ -119,17 +134,19 @@ public:
             _next_behavior("Thrown");
             state->dragging = false;
         }
-        while (true) {
-            if (action_tick()) {
-                break;
-            }
-            if (!state->on_land()) {
-                _next_behavior("Fall");
-            }
-            else {
-                _next_behavior();
-            }
+        try {
+            _tick();
         }
+        catch (tick::init_limit_error &) {
+            if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
+                log("warning: init() limit reached, trying \"Fall\" behavior");
+            }
+            action = nullptr;
+            tick_ctx.reset();
+            _next_behavior("Fall");
+            _tick();
+        }
+
     }
 };
 

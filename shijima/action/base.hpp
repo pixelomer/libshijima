@@ -34,6 +34,9 @@ public:
     }
 
     std::map<std::string, std::string> init_attr;
+
+    // Initializes the action, resetting any internal state as necessary.
+    // If init() throws an exception, the object should be inactive afterwards.
     virtual void init(mascot::tick &ctx) {
         ctx.will_init();
         if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
@@ -58,6 +61,7 @@ public:
             vars.init(*ctx.script, attr);
         }
     }
+
     // Returns false if execution should immediately advance to the
     // next action. The action should return true for the last frame
     // and return false for the frame after the last.
