@@ -18,7 +18,7 @@ private:
         std::shared_ptr<int> init_count): script(script),
         extra_attr(extra_attr), init_count(init_count) {}
 public:
-    void did_init() {
+    void will_init() {
         if (++*init_count >= 20) {
             throw std::logic_error("init() called too many times, probably stuck");
         }

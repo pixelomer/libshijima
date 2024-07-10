@@ -35,6 +35,7 @@ public:
 
     std::map<std::string, std::string> init_attr;
     virtual void init(mascot::tick &ctx) {
+        ctx.will_init();
         if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
             if (init_attr.count("Name") == 1) {
                 log("(action) " + init_attr.at("Name") + "::init()");
@@ -56,7 +57,6 @@ public:
         if (requests_vars()) {
             vars.init(*ctx.script, attr);
         }
-        ctx.did_init();
     }
     // Returns false if execution should immediately advance to the
     // next action. The action should return true for the last frame
