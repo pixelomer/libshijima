@@ -293,7 +293,7 @@ duk_idx_t context::build_proxy() {
             return 1;
         }
         //FIXME: This may not be right
-        auto value = this->state->constants[name];
+        auto value = this->state->constants.at(name);
         duk_eval_string(duk, value.c_str());
         return 1;
     }, 1);
