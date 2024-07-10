@@ -139,8 +139,8 @@ void tick() {
         env.active_ie = { 400, 700, 700, 400 };
     }
     else {
-        // {0, 0} may cause shimeji to get stuck on the top left corner
-        env.active_ie = { 50, -1000, 0, 0 };
+        // {0,0,0,0} may cause shimeji to get stuck on the top left corner
+        env.active_ie = { -50, 50, -50, 50 };
     }
     auto old = env.cursor;
     env.cursor = { (double)mx, (double)my,

@@ -111,10 +111,13 @@ public:
         return script_ctx->eval_string("JSON.stringify(mascot)");
     }
 private:
-    void _tick() {
+    bool _tick() {
         while (true) {
             if (action_tick()) {
-                break;
+                return true;
+            }
+            if (tick_ctx.reached_init_limit()) {
+                return false;
             }
             if (!state->on_land()) {
                 _next_behavior("Fall");
@@ -144,35 +147,31 @@ public:
             _next_behavior("Thrown");
             state->dragging = false;
         }
-        try {
-            // Attempt 1: Normal tick
-            _tick();
-        }
-        catch (tick::init_limit_error &) {
-            // Attempt 2: Set behavior to Fall, try again
-            if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
-                log("warning: init() limit reached, trying \"Fall\" behavior");
-            }
-            action = nullptr;
-            tick_ctx.reset();
-            _next_behavior("Fall");
-            try {
-                _tick();
-            }
-            catch (tick::init_limit_error &) {
-                // Attempt 3: Set behavior to Fall, reset position, try again
-                if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
-                    log("warning: \"Fall\" behavior failed, will reset position "
-                        "and try again");
-                }
-                action = nullptr;
-                tick_ctx.reset();
-                reset_position();
-                _next_behavior("Fall");
-                _tick();
-            }
-        }
 
+        // Attempt 1: Normal tick
+        if (_tick()) return;
+
+        // Attempt 2: Set behavior to Fall, try again
+        if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
+            log("warning: init() limit reached, trying \"Fall\" behavior");
+        }
+        tick_ctx.reset();
+        _next_behavior("Fall");
+        if (_tick()) return;
+
+        // Attempt 3: Set behavior to Fall, reset position, try again
+        if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
+            log("warning: init() limit reached again, will reset position "
+                "and try again");
+        }
+        tick_ctx.reset();
+        reset_position();
+        _next_behavior("Fall");
+        if (_tick()) return;
+
+        // If this point in the code is reached, then the mascot is
+        // most likely faulty.
+        throw std::logic_error("tick() failed after multiple attempts");
     }
 };
 
