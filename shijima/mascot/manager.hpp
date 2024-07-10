@@ -35,12 +35,7 @@ private:
             // the mascot as defined by Shimeji-EE
             std::cerr << "warning: no next behavior" << std::endl;
 
-            auto &screen = state->env->screen;
-            int right = screen.right + screen.width() / 10;
-            int left = screen.left + screen.height() / 10;
-            double spawnX = (random() % std::max(1, right - left)) + left;
-            double spawnY = state->bounds.height + 128;
-            state->anchor = { spawnX, spawnY };
+            reset_position();
             
             behaviors.set_next("Fall");
             behavior = behaviors.next(state);
@@ -56,6 +51,21 @@ private:
         return ret;
     }
 public:
+    void reset_position() {
+        auto &screen = state->env->screen;
+        if (screen.width() >= 100 && screen.height() >= 100) {
+            double new_x = static_cast<double>(screen.left + 50 +
+                random() % (screen.width() - 50));
+            double new_y = static_cast<double>(screen.top + 50 +
+                random() % (screen.height() - 50));
+            state->anchor = { new_x, new_y };
+        }
+        else {
+            double new_x = static_cast<double>(screen.width() / 2);
+            double new_y = static_cast<double>(screen.height() / 2);
+            state->anchor = { new_x, new_y };
+        }
+    }
     void next_behavior(std::string const& name = "") {
         // Only for public use
         tick_ctx.reset();
@@ -135,16 +145,32 @@ public:
             state->dragging = false;
         }
         try {
+            // Attempt 1: Normal tick
             _tick();
         }
         catch (tick::init_limit_error &) {
+            // Attempt 2: Set behavior to Fall, try again
             if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
                 log("warning: init() limit reached, trying \"Fall\" behavior");
             }
             action = nullptr;
             tick_ctx.reset();
             _next_behavior("Fall");
-            _tick();
+            try {
+                _tick();
+            }
+            catch (tick::init_limit_error &) {
+                // Attempt 3: Set behavior to Fall, reset position, try again
+                if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
+                    log("warning: \"Fall\" behavior failed, will reset position "
+                        "and try again");
+                }
+                action = nullptr;
+                tick_ctx.reset();
+                reset_position();
+                _next_behavior("Fall");
+                _tick();
+            }
         }
 
     }

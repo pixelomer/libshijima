@@ -101,18 +101,25 @@ void run_console(bool poll_events = true) {
     }
 }
 
-bool running;
-bool spawn_more;
+bool running = true;
+bool spawn_more = false;
 bool paused = false;
+bool fast = false;
 
 Uint32 timer_callback(Uint32 interval, void *param) {
     (void)param; // unused
+    (void)interval; // unused
     SDL_Event event;
     bzero(&event, sizeof(event));
     event.type = SDL_USEREVENT;
 
     SDL_PushEvent(&event);
-    return interval;
+    if (fast) {
+        return 1000 / 125;
+    }
+    else {
+        return 1000 / 25;
+    }
 }
 
 void tick() {
@@ -132,7 +139,8 @@ void tick() {
         env.active_ie = { 400, 700, 700, 400 };
     }
     else {
-        env.active_ie = { 0, 0, 0, 0 };
+        // {0, 0} may cause shimeji to get stuck on the top left corner
+        env.active_ie = { 50, -1000, 0, 0 };
     }
     auto old = env.cursor;
     env.cursor = { (double)mx, (double)my,
@@ -235,10 +243,13 @@ bool handle_event(SDL_Event event) {
                 case SDLK_p:
                     paused = !paused;
                     break;
-                case SDLK_s:
+                case SDLK_m:
                     spawn_more = !spawn_more;
                     break;
                 case SDLK_f:
+                    fast = !fast;
+                    break;
+                case SDLK_SPACE:
                     if (paused) tick();
                     break;
                 default:
