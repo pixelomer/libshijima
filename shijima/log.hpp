@@ -15,22 +15,10 @@
 
 namespace shijima {
 
-#if defined(SHIJIMA_LOGGING_ENABLED)
-
 void set_log_level(uint16_t level);
 uint16_t get_log_level();
 void log(uint16_t level, std::string const& log);
 void log(std::string const& log);
 void set_logger(std::function<void(std::string const&)> logger);
-
-#else
-
-void log(std::string const& log);
-void log(uint16_t level, std::string const& log);
-void set_logger(std::function<void(std::string const&)> logger);
-void set_log_level(uint16_t level);
-uint16_t get_log_level();
-
-#endif /* defined(SHIJIMA_LOGGING_ENABLED) */
 
 };

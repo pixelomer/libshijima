@@ -9,7 +9,7 @@ namespace action {
 class sequence : public base {
 private:
     //FIXME: Ideally this shouldn't be necessary
-    scripting::context *script_ctx;
+    std::shared_ptr<scripting::context> script_ctx;
 protected:
     int action_idx = -1;
     std::shared_ptr<base> action;
@@ -36,16 +36,15 @@ protected:
             }
         }
         action = actions[action_idx];
-        action->init(*script_ctx, {});
+        mascot::tick ctx = { script_ctx, {} };
+        action->init(ctx);
         return action;
     }
 public:
     std::vector<std::shared_ptr<base>> actions;
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra) override
-    {
-        base::init(script_ctx, extra);
-        this->script_ctx = &script_ctx;
+    virtual void init(mascot::tick &ctx) override {
+        base::init(ctx);
+        this->script_ctx = ctx.script;
         action_idx = -1;
         next_action();
     }
@@ -66,6 +65,7 @@ public:
             action->finalize();
             action = nullptr;
         }
+        script_ctx = nullptr;
         base::finalize();
     }
 };

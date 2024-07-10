@@ -261,7 +261,8 @@ public:
         bool ret = duk_to_boolean(duk, -1);
         if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
             std::string m_js = js;
-            for (size_t i; (i = m_js.find_first_of("\r\t\n")) != std::string::npos;) {
+            size_t i;
+            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
                 m_js[i] = ' ';
             }
             log("\"" + m_js + "\" = " + (ret ? "true" : "false"));
@@ -274,7 +275,8 @@ public:
         double ret = duk_to_number(duk, -1);
         if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
             std::string m_js = js;
-            for (size_t i; (i = m_js.find_first_of("\r\t\n")) != std::string::npos;) {
+            size_t i;
+            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
                 m_js[i] = ' ';
             }
             log("\"" + m_js + "\" = " + std::to_string(ret));
@@ -287,7 +289,8 @@ public:
         std::string ret = duk_to_string(duk, -1);
         if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
             std::string m_js = js;
-            for (size_t i; (i = m_js.find_first_of("\r\t\n")) != std::string::npos;) {
+            size_t i;
+            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
                 m_js[i] = ' ';
             }
             log("\"" + m_js + "\" = \"" + ret + "\"");

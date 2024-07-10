@@ -12,10 +12,8 @@ protected:
     double foot_dx;
     int time_to_resist;
 public:
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra) override
-    {
-        animation::init(script_ctx, extra);
+    virtual void init(mascot::tick &ctx) override {
+        animation::init(ctx);
         auto offset_x = vars.get_num("OffsetX", 0);
         foot_dx = 0;
         foot_x = mascot->get_cursor().x + offset_x;

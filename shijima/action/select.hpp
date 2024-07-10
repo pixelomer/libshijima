@@ -20,13 +20,10 @@ protected:
         return ret;
     }
 public:
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra) override
-    {
+    virtual void init(mascot::tick &ctx) override {
         did_execute = false;
-        std::map<std::string, std::string> extra_copy = extra;
-        extra_copy["Loops"] = "false";
-        sequence::init(script_ctx, extra_copy);
+        mascot::tick overlay_ctx = ctx.overlay({ { "Loops", "false "} });
+        sequence::init(overlay_ctx);
     }
 };
 

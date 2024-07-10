@@ -1,5 +1,6 @@
 #pragma once
 #include "state.hpp"
+#include "tick.hpp"
 #include <shijima/behavior/manager.hpp>
 #include <shijima/scripting/context.hpp>
 #include <shijima/parser.hpp>
@@ -12,11 +13,12 @@ namespace mascot {
 class manager {
 private:
     behavior::manager behaviors;
+    mascot::tick tick_ctx;
     std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
     std::map<std::string, std::string> constants;
-public:
-    void next_behavior(std::string const& name = "") {
+private:
+    void _next_behavior(std::string const& name = "") {
         if (name != "") {
             behaviors.set_next(name);
         }
@@ -47,14 +49,19 @@ public:
             log("(behavior) " + behavior->name + "::init()");
         }
         action = behavior->action;
-        action->init(*script_ctx, {});
+        action->init(tick_ctx);
     }
-private:
     bool action_tick() {
         bool ret = action->tick();
         return ret;
     }
 public:
+    void next_behavior(std::string const& name = "") {
+        // Only for public use
+        tick_ctx.reset();
+        _next_behavior(name);
+    }
+
     struct initializer {
         math::vec2 anchor;
         std::string behavior;
@@ -83,6 +90,7 @@ public:
             script_ctx = std::make_shared<scripting::context>();
         }
         this->script_ctx = script_ctx;
+        tick_ctx.script = script_ctx;
         state = std::make_shared<mascot::state>();
         state->anchor = init.anchor;
         state->constants = parser.constants;
@@ -93,21 +101,22 @@ public:
         return script_ctx->eval_string("JSON.stringify(mascot)");
     }
     void tick() {
+        tick_ctx.reset();
         script_ctx->state = state;
         state->time++;
         if (behavior == nullptr) {
             // First tick
-            next_behavior();
+            _next_behavior();
         }
         if (state->dragging && behavior->name != "Dragged") {
-            next_behavior("Dragged");
+            _next_behavior("Dragged");
         }
         else if (!state->dragging && behavior->name == "Dragged") {
             if (state->drag_with_local_cursor) {
                 // Force script to use local cursor
                 state->dragging = true;
             }
-            next_behavior("Thrown");
+            _next_behavior("Thrown");
             state->dragging = false;
         }
         while (true) {
@@ -115,10 +124,10 @@ public:
                 break;
             }
             if (!state->on_land()) {
-                next_behavior("Fall");
+                _next_behavior("Fall");
             }
             else {
-                next_behavior();
+                _next_behavior();
             }
         }
     }

@@ -1,5 +1,6 @@
 #pragma once
 #include <shijima/scripting/variables.hpp>
+#include <shijima/mascot/tick.hpp>
 #include <shijima/log.hpp>
 
 namespace shijima {
@@ -33,9 +34,7 @@ public:
     }
 
     std::map<std::string, std::string> init_attr;
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra)
-    {
+    virtual void init(mascot::tick &ctx) {
         if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
             if (init_attr.count("Name") == 1) {
                 log("(action) " + init_attr.at("Name") + "::init()");
@@ -48,15 +47,16 @@ public:
             throw std::logic_error("init() called twice");
         }
         active = true;
-        mascot = script_ctx.state;
+        mascot = ctx.script->state;
         start_time = mascot->time;
         std::map<std::string, std::string> attr = init_attr;
-        for (auto const& pair : extra) {
+        for (auto const& pair : ctx.extra_attr) {
             attr[pair.first] = pair.second;
         }
         if (requests_vars()) {
-            vars.init(script_ctx, attr);
+            vars.init(*ctx.script, attr);
         }
+        ctx.did_init();
     }
     // Returns false if execution should immediately advance to the
     // next action. The action should return true for the last frame

@@ -11,11 +11,10 @@ public:
     virtual bool requests_vars() override {
         return false;
     }
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra) override
-    {
-        base::init(script_ctx, extra);
-        target->init(script_ctx, init_attr);
+    virtual void init(mascot::tick &ctx) override {
+        base::init(ctx);
+        mascot::tick target_ctx = ctx.overlay(init_attr);
+        target->init(target_ctx);
     }
     virtual bool tick() override {
         if (!base::tick()) {

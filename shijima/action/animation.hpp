@@ -31,10 +31,8 @@ protected:
     }
 public:
     std::vector<std::shared_ptr<shijima::animation>> animations;
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra) override
-    {
-        base::init(script_ctx, extra);
+    virtual void init(mascot::tick &ctx) override {
+        base::init(ctx);
         anim_idx = -1;
     }
     virtual bool tick() override {

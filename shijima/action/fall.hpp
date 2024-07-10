@@ -8,10 +8,8 @@ class fall : public animation {
 protected:
     math::vec2 velocity;
 public:
-    virtual void init(scripting::context &script_ctx,
-        std::map<std::string, std::string> const& extra) override
-    {
-        animation::init(script_ctx, extra);
+    virtual void init(mascot::tick &ctx) override {
+        animation::init(ctx);
         velocity.x = vars.get_num("InitialVX", 0);
         velocity.y = vars.get_num("InitialVY", 0);
     }
