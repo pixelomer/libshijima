@@ -73,7 +73,7 @@ SDL_Texture *get_image(std::string const& path) {
 
 std::vector<mascot::factory::product> mascots;
 
-void run_console() {
+void run_console(bool poll_events = true) {
     scripting::context &ctx = *mascots[0].manager->script_ctx;
     ctx.state = mascots[0].manager->state;
     ctx.state->env = factory.env;
@@ -90,7 +90,9 @@ void run_console() {
                 std::cerr << "error: " << err.what() << std::endl;
             }
         }
-        while (SDL_PollEvent(&ev)); // ignore all events
+        if (poll_events) {
+            while (SDL_PollEvent(&ev)); // ignore all events
+        }
         if (line == "q") {
             break;
         }
@@ -259,10 +261,28 @@ bool handle_event(SDL_Event event) {
 
 int main(int argc, char **argv) {
     shijima::set_log_level(SHIJIMA_LOG_EVERYTHING);
+    bool do_run_console = false;
 
-    if (argc >= 2 && strcmp(argv[1], "console") == 0) {
-        run_console();
-        return EXIT_SUCCESS;
+    if (argc > 2) {
+        std::cerr << "Usage:" << std::endl;
+        std::cerr << "    " << argv[0] << std::endl;
+        std::cerr << "    " << argv[0] << " console" << std::endl;
+        std::cerr << "    " << argv[0] << " translate" << std::endl;
+        return EXIT_FAILURE;
+    }
+    if (argc == 2) {
+        if (strcmp(argv[1], "console") == 0) {
+            do_run_console = true;
+        }
+        else if (strcmp(argv[1], "translate") == 0) {
+            std::stringstream buf;
+            buf << std::cin.rdbuf();
+            std::string input = buf.str();
+            std::string output = shijima::translator::translate(input);
+            std::cout << output;
+            std::cout.flush();
+            return EXIT_SUCCESS;
+        }
     }
 
     factory.script_ctx = std::make_shared<scripting::context>();
@@ -280,6 +300,11 @@ int main(int argc, char **argv) {
         factory.register_template(tmpl);
     }
     mascots.push_back(factory.spawn("test1", { { 100, 100 } }));
+
+    if (do_run_console) {
+        run_console(false);
+        return EXIT_SUCCESS;
+    }
 
     if (SDL_Init( SDL_INIT_VIDEO ) < 0) {
         std::cerr << "SDL_Init() failed: " << SDL_GetError() << std::endl;
