@@ -256,48 +256,45 @@ public:
         create_global(idx);
         return { this, idx, invalidated_flag };
     }
-    bool eval_bool(std::string const& js) {
-        duk_eval_string(duk, js.c_str());
-        bool ret = duk_to_boolean(duk, -1);
+#ifdef SHIJIMA_LOGGING_ENABLED
+private:
+    void log_javascript(std::string const& js, std::string const& result) {
         if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
             std::string m_js = js;
             size_t i;
             for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
                 m_js[i] = ' ';
             }
-            log("\"" + m_js + "\" = " + (ret ? "true" : "false"));
+            log("\"" + m_js + "\" = " + result);
         }
+    }
+public:
+#define log_javascript log_javascript
+#else
+#define log_javascript(...)
+#endif
+    bool eval_bool(std::string const& js) {
+        duk_eval_string(duk, js.c_str());
+        bool ret = duk_to_boolean(duk, -1);
+        log_javascript(js, (ret ? "true" : "false"));
         duk_pop(duk);
         return ret;
     }
     double eval_number(std::string js) {
         duk_eval_string(duk, js.c_str());
         double ret = duk_to_number(duk, -1);
-        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
-            std::string m_js = js;
-            size_t i;
-            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
-                m_js[i] = ' ';
-            }
-            log("\"" + m_js + "\" = " + std::to_string(ret));
-        }
+        log_javascript(js, std::to_string(ret));
         duk_pop(duk);
         return ret;
     }
     std::string eval_string(std::string js) {
         duk_eval_string(duk, js.c_str());
         std::string ret = duk_to_string(duk, -1);
-        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
-            std::string m_js = js;
-            size_t i;
-            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
-                m_js[i] = ' ';
-            }
-            log("\"" + m_js + "\" = \"" + ret + "\"");
-        }
+        log_javascript(js, ret);
         duk_pop(duk);
         return ret;
     }
+#undef log_javascript
     std::string eval_json(std::string js) {
         duk_get_global_string(duk, "JSON");
         duk_get_prop_string(duk, -1, "stringify");

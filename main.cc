@@ -276,7 +276,9 @@ bool handle_event(SDL_Event event) {
 }
 
 int main(int argc, char **argv) {
-    shijima::set_log_level(SHIJIMA_LOG_EVERYTHING);
+    #ifdef SHIJIMA_LOGGING_ENABLED
+        shijima::set_log_level(SHIJIMA_LOG_EVERYTHING);
+    #endif
     bool do_run_console = false;
 
     if (argc > 2) {

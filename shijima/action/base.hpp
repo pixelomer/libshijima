@@ -39,14 +39,16 @@ public:
     // If init() throws an exception, the object should be inactive afterwards.
     virtual void init(mascot::tick &ctx) {
         ctx.will_init();
-        if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
-            if (init_attr.count("Name") == 1) {
-                log("(action) " + init_attr.at("Name") + "::init()");
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
+                if (init_attr.count("Name") == 1) {
+                    log("(action) " + init_attr.at("Name") + "::init()");
+                }
+                else {
+                    log("(action) <type:" + init_attr.at("Type") + ">::init()");
+                }
             }
-            else {
-                log("(action) <type:" + init_attr.at("Type") + ">::init()");
-            }
-        }
+        #endif
         if (active) {
             throw std::logic_error("init() called twice");
         }
@@ -97,14 +99,16 @@ public:
         }
     }
     virtual void finalize() {
-        if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
-            if (init_attr.count("Name") == 1) {
-                log("(action) " + init_attr.at("Name") + "::finalize()");
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
+                if (init_attr.count("Name") == 1) {
+                    log("(action) " + init_attr.at("Name") + "::finalize()");
+                }
+                else {
+                    log("(action) <type:" + init_attr.at("Type") + ">::finalize()");
+                }
             }
-            else {
-                log("(action) <type:" + init_attr.at("Type") + ">::finalize()");
-            }
-        }
+        #endif
         if (!active) {
             throw std::logic_error("finalize() called twice");
         }

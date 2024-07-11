@@ -23,9 +23,10 @@ private:
             behaviors.set_next(name);
         }
         if (action != nullptr) {
-            if (get_log_level() & SHIJIMA_LOG_BEHAVIORS) {
-                log("(behavior) " + behavior->name + "::finalize()");
-            }
+            #ifdef SHIJIMA_LOGGING_ENABLED
+                log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + behavior->name
+                    + "::finalize()");
+            #endif
             action->finalize();
         }
 
@@ -40,9 +41,10 @@ private:
             behaviors.set_next("Fall");
             behavior = behaviors.next(state);
         }
-        if (get_log_level() & SHIJIMA_LOG_BEHAVIORS) {
-            log("(behavior) " + behavior->name + "::init()");
-        }
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + behavior->name
+                + "::init()");
+        #endif
         action = behavior->action;
         action->init(tick_ctx);
     }
@@ -152,18 +154,19 @@ public:
         if (_tick()) return;
 
         // Attempt 2: Set behavior to Fall, try again
-        if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
-            log("warning: init() limit reached, trying \"Fall\" behavior");
-        }
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "warning: init() limit reached, "
+                "trying \"Fall\" behavior");
+        #endif
         tick_ctx.reset();
         _next_behavior("Fall");
         if (_tick()) return;
 
         // Attempt 3: Set behavior to Fall, reset position, try again
-        if (get_log_level() & SHIJIMA_LOG_WARNINGS) {
-            log("warning: init() limit reached again, will reset position "
-                "and try again");
-        }
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "warning: init() limit reached again, "
+                "will reset position and try again");
+        #endif
         tick_ctx.reset();
         reset_position();
         _next_behavior("Fall");

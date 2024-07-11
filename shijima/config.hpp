@@ -1,0 +1,8 @@
+#ifndef SHIJIMA_CONFIGURED
+#define SHIJIMA_CONFIGURED
+
+#ifndef NDEBUG
+#define SHIJIMA_LOGGING_ENABLED
+#endif
+
+#endif

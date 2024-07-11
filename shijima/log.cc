@@ -2,7 +2,7 @@
 
 namespace shijima {
 
-#if defined(SHIJIMA_LOGGING_ENABLED)
+#ifdef SHIJIMA_LOGGING_ENABLED
 
 void default_log(std::string const& log);
 
@@ -29,14 +29,6 @@ void default_log(std::string const& log) {
 void set_logger(std::function<void(std::string const&)> logger) {
     active_logger = logger;
 }
-
-#else /* defined(SHIJIMA_LOGGING_ENABLED) */
-
-void log(std::string const& log) {}
-void log(uint16_t level, std::string const& log) {}
-void set_logger(std::function<void(std::string const&)> logger) {}
-void set_log_level(uint16_t level) {}
-uint16_t get_log_level() { return 0; }
 
 #endif /* defined(SHIJIMA_LOGGING_ENABLED) */
 
