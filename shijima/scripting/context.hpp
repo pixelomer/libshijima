@@ -165,7 +165,7 @@ public:
             is_active = false;
             ctx->pop_global(idx);
         }
-        global(context *ctx, unsigned long idx,
+        global(context *ctx, duk_uarridx_t idx,
             std::shared_ptr<bool> invalidated): idx(idx), ctx(ctx),
             is_active(false), invalidated(invalidated) {}
     public:
@@ -247,7 +247,7 @@ public:
         bool valid() {
             return ctx != nullptr;
         }
-        global(): ctx(nullptr), is_active(false) {}
+        global(): idx(0), ctx(nullptr), is_active(false) {}
     };
     duk_context *duk;
     std::shared_ptr<mascot::state> state;
