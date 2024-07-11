@@ -68,6 +68,33 @@ public:
             state->anchor = { new_x, new_y };
         }
     }
+
+    void detach_from_borders() {
+        auto &active_ie = state->env->active_ie;
+        auto &work_area = state->env->work_area;
+        auto &anchor = state->anchor;
+        if (active_ie.right_border().is_on(anchor) ||
+            work_area.left_border().is_on(anchor))
+        {
+            anchor.x += 1;
+        }
+        else if (active_ie.left_border().is_on(anchor) ||
+            work_area.right_border().is_on(anchor))
+        {
+            anchor.x -= 1;
+        }
+        if (active_ie.bottom_border().is_on(anchor) ||
+            work_area.top_border().is_on(anchor))
+        {
+            anchor.y += 1;
+        }
+        else if (active_ie.top_border().is_on(anchor) ||
+            work_area.bottom_border().is_on(anchor))
+        {
+            anchor.y -= 1;
+        }
+    }
+
     void next_behavior(std::string const& name = "") {
         // Only for public use
         tick_ctx.reset();
@@ -154,21 +181,21 @@ public:
         if (_tick()) return;
 
         // Attempt 2: Set behavior to Fall, try again
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: init() limit reached, "
-                "trying \"Fall\" behavior");
-        #endif
         tick_ctx.reset();
         _next_behavior("Fall");
         if (_tick()) return;
 
-        // Attempt 3: Set behavior to Fall, reset position, try again
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: init() limit reached again, "
-                "will reset position and try again");
-        #endif
+        // Attempt 3: Set behavior to Fall, detach from borders, try again
+        tick_ctx.reset();
+        detach_from_borders();
+        _next_behavior("Fall");
+        if (_tick()) return;
+
+        // Attempt 4: Set behavior to Fall, reset position,
+        //            detach from borders, try again
         tick_ctx.reset();
         reset_position();
+        detach_from_borders();
         _next_behavior("Fall");
         if (_tick()) return;
 
