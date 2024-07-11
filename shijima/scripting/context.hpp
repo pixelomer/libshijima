@@ -298,6 +298,16 @@ public:
         duk_pop(duk);
         return ret;
     }
+    std::string eval_json(std::string js) {
+        duk_get_global_string(duk, "JSON");
+        duk_get_prop_string(duk, -1, "stringify");
+        duk_remove(duk, -2);
+        duk_eval_string(duk, js.c_str());
+        duk_call(duk, 1);
+        std::string ret = duk_to_string(duk, -1);
+        duk_pop(duk);
+        return ret;
+    }
     void eval(std::string js) {
         duk_eval_string_noresult(duk, js.c_str());
     }

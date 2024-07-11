@@ -86,7 +86,7 @@ void run_console(bool poll_events = true) {
         SDL_Event ev;
         if (line != "q") {
             try {
-                std::cout << ctx.eval_string(line) << std::endl;
+                std::cout << ctx.eval_json(line) << std::endl;
             }
             catch (std::exception& err) {
                 std::cerr << "error: " << err.what() << std::endl;
