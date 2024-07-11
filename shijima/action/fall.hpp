@@ -31,9 +31,11 @@ public:
         
         vars.add_attr({{ "VelocityX", velocity.x }, { "VelocityY", velocity.y }});
 
+        math::vec2 before = mascot->anchor;
+
         mascot->anchor.x += (int)velocity.x;
         mascot->anchor.y += (int)velocity.y;
-
+        
         if (mascot->anchor.x > mascot->env->work_area.right) {
             mascot->anchor.x = mascot->env->work_area.right;
         }
@@ -46,6 +48,27 @@ public:
         else if (mascot->anchor.y > mascot->env->floor.y) {
             mascot->anchor.y = mascot->env->floor.y;
         }
+
+        math::vec2 after = mascot->anchor;
+
+        #define AREA_STICK(area, axis, side, before_comp, after_comp) \
+                (mascot->env->area.visible() && \
+                mascot->env->area.side##_border().faces(after) && \
+                before.axis before_comp mascot->env->area.side && \
+                after.axis after_comp mascot->env->area.side) \
+            do { mascot->anchor.axis = mascot->env->area.side; } \
+            while (0)
+
+        #define IE_STICK(axis, side, before_comp, after_comp) \
+            AREA_STICK(active_ie, axis, side, before_comp, after_comp)
+        
+        if      IE_STICK(x, left, <=, >=);
+        else if IE_STICK(x, right, >=, <=);
+        else if IE_STICK(y, top, <=, >=);
+        else if IE_STICK(y, bottom, >=, <=);
+
+        #undef IE_STICK
+        #undef AREA_STICK
         
         if (!animation::tick()) {
             return false;

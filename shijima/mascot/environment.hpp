@@ -20,6 +20,7 @@ public:
     class border {
     public:
         virtual bool is_on(math::vec2) const = 0;
+        virtual bool faces(math::vec2) const = 0;
     };
 
     class hborder : public border {
@@ -30,8 +31,11 @@ public:
         hborder(int y, int xstart, int xend): y(y), xstart(xstart),
             xend(xend) {}
         hborder() {}
+        virtual bool faces(math::vec2 p) const {
+            return p.x >= xstart && p.x <= xend;
+        }
         virtual bool is_on(math::vec2 p) const {
-            return p.y == y && p.x >= xstart && p.x <= xend;
+            return p.y == y && faces(p);
         }
     };
 
@@ -43,8 +47,11 @@ public:
         vborder(int x, int ystart, int yend): x(x), ystart(ystart),
             yend(yend) {}
         vborder() {}
+        virtual bool faces(math::vec2 p) const {
+            return p.y >= ystart && p.y <= yend;
+        }
         virtual bool is_on(math::vec2 p) const {
-            return p.x == x && p.y >= ystart && p.y <= yend;
+            return p.x == x && faces(p);
         }
     };
 

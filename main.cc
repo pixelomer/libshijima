@@ -240,6 +240,9 @@ bool handle_event(SDL_Event event) {
                     run_console();
                     running = true;
                     break;
+                case SDLK_a:
+                    enable_ie = !enable_ie;
+                    break;
                 case SDLK_p:
                     paused = !paused;
                     break;
@@ -331,7 +334,7 @@ int main(int argc, char **argv) {
     window = SDL_CreateWindow(
         WINDOW_TITLE,
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        800, 600,
+        1024, 768,
         SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
     );
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
