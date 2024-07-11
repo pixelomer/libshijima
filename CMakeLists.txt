@@ -34,3 +34,7 @@ add_library(
 
 add_executable(shijima-sandbox main.cc)
 target_link_libraries(shijima-sandbox shijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
+
+add_custom_command(TARGET shijima-sandbox POST_BUILD
+    COMMAND "$<$<CONFIG:Release>:${CMAKE_STRIP};shijima-sandbox>"
+    COMMAND_EXPAND_LISTS)
