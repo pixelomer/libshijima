@@ -18,11 +18,10 @@ private:
         std::uniform_int_distribution<std::mt19937::result_type> dist(min, max);
         return (int)dist(rng);
     }
-
-    list initial_list;
     list next_list;
     scripting::context::global global;
 public:
+    list initial_list;
     manager &operator=(manager const&) = delete;
     manager &operator=(manager&&) = default;
     manager(manager const&) = delete;

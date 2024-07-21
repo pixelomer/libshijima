@@ -35,13 +35,13 @@ public:
     condition(bool value) {
         init(value);
     }
-    bool eval(context &ctx) {
+    bool eval(context &ctx) const {
         if (is_constant) {
             return value;
         }
         return ctx.eval_bool(js);
     }
-    bool eval(context::global::active &ctx) {
+    bool eval(context::global::active &ctx) const {
         if (is_constant) {
             return value;
         }

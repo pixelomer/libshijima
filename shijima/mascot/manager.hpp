@@ -17,6 +17,10 @@ private:
     std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
     std::map<std::string, std::string> constants;
+public:
+    behavior::list const& initial_behavior_list() {
+        return behaviors.initial_list;
+    }
 private:
     void _next_behavior(std::string const& name = "") {
         if (name != "") {
