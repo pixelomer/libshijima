@@ -6,8 +6,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(.)
 
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
+if(NOT DEFINED SHIJIMA_BUILD_EXAMPLES)
+    set(SHIJIMA_BUILD_EXAMPLES YES)
 endif()
 
 if(CMAKE_BUILD_TYPE EQUAL "Release")
@@ -32,9 +36,11 @@ add_library(
     shijima/log.cc
 )
 
-add_executable(shijima-sandbox main.cc)
-target_link_libraries(shijima-sandbox shijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
+if(SHIJIMA_BUILD_EXAMPLES)
+    add_executable(shijima-sandbox main.cc)
+    target_link_libraries(shijima-sandbox shijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
 
-add_custom_command(TARGET shijima-sandbox POST_BUILD
-    COMMAND "$<$<CONFIG:Release>:${CMAKE_STRIP};shijima-sandbox>"
-    COMMAND_EXPAND_LISTS)
+    add_custom_command(TARGET shijima-sandbox POST_BUILD
+        COMMAND "$<$<CONFIG:Release>:${CMAKE_STRIP};shijima-sandbox>"
+        COMMAND_EXPAND_LISTS)
+endif()
