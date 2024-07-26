@@ -115,8 +115,13 @@ public:
     struct initializer {
         math::vec2 anchor;
         std::string behavior;
-        initializer(math::vec2 anchor = {0,0}, std::string behavior = "Fall"):
-            anchor(anchor), behavior(behavior) {}
+        bool looking_right;
+        initializer(math::vec2 anchor = {0,0}, std::string behavior = "Fall",
+            bool looking_right = false):
+            anchor(anchor), behavior(behavior), looking_right(looking_right) {}
+        initializer(mascot::state::breed_request_data const& data):
+            anchor(data.anchor), behavior(data.behavior),
+            looking_right(looking_right) {}
     };
 
     std::shared_ptr<scripting::context> script_ctx;
@@ -144,6 +149,7 @@ public:
         state = std::make_shared<mascot::state>();
         state->anchor = init.anchor;
         state->constants = parser.constants;
+        state->looking_right = init.looking_right;
         behaviors = { *script_ctx, parser.behavior_list, init.behavior };
     }
     std::string export_state() {

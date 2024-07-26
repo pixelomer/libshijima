@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "manager.hpp"
+#include "state.hpp"
 
 namespace shijima {
 namespace mascot {
@@ -37,6 +38,9 @@ public:
             tmpl->actions_xml, tmpl->behaviors_xml, init, script_ctx);
         ret.manager->state->env = env;
         return ret;
+    }
+    product spawn(mascot::state::breed_request_data const& breed_request) {
+        return spawn(breed_request.name, breed_request);
     }
     void register_template(tmpl const& tmpl) {
         if (templates.count(tmpl.name) != 0) {
