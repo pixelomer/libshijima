@@ -6,12 +6,19 @@
 #include <shijima/parser.hpp>
 #include <shijima/log.hpp>
 #include <memory>
+#include <random>
 
 namespace shijima {
 namespace mascot {
 
 class manager {
 private:
+    static int random(int min, int max) {
+        std::random_device dev;
+        std::mt19937 rng(dev());
+        std::uniform_int_distribution<std::mt19937::result_type> dist(min, max);
+        return (int)dist(rng);
+    }
     behavior::manager behaviors;
     mascot::tick tick_ctx;
     std::shared_ptr<behavior::base> behavior;
@@ -61,9 +68,9 @@ public:
         auto &screen = state->env->screen;
         if (screen.width() >= 100 && screen.height() >= 100) {
             double new_x = static_cast<double>(screen.left + 50 +
-                random() % (screen.width() - 50));
+                random(0, screen.width() - 50));
             double new_y = static_cast<double>(screen.top + 50 +
-                random() % (screen.height() - 50));
+                random(0, screen.width() - 50));
             state->anchor = { new_x, new_y };
         }
         else {
