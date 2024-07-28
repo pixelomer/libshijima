@@ -26,7 +26,7 @@ private:
     std::map<std::string, std::string> constants;
 public:
     behavior::list const& initial_behavior_list() {
-        return behaviors.initial_list;
+        return behaviors.get_initial_list();
     }
 private:
     void _next_behavior(std::string const& name = "") {
@@ -121,7 +121,7 @@ public:
             anchor(anchor), behavior(behavior), looking_right(looking_right) {}
         initializer(mascot::state::breed_request_data const& data):
             anchor(data.anchor), behavior(data.behavior),
-            looking_right(looking_right) {}
+            looking_right(data.looking_right) {}
     };
 
     std::shared_ptr<scripting::context> script_ctx;
