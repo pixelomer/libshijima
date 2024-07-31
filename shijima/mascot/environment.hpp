@@ -1,5 +1,6 @@
 #pragma once
 #include <shijima/math.hpp>
+#include <cmath>
 
 namespace shijima {
 namespace mascot {
@@ -35,7 +36,7 @@ public:
             return p.x >= xstart && p.x <= xend;
         }
         virtual bool is_on(math::vec2 p) const {
-            return p.y == y && faces(p);
+            return std::fabs(p.y - y) < 1.0 && faces(p);
         }
     };
 
@@ -51,7 +52,7 @@ public:
             return p.y >= ystart && p.y <= yend;
         }
         virtual bool is_on(math::vec2 p) const {
-            return p.x == x && faces(p);
+            return std::fabs(p.x - x) < 1.0 && faces(p);
         }
     };
 
