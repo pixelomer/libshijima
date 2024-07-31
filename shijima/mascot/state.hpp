@@ -9,7 +9,8 @@ namespace mascot {
 
 class state {
 public:
-    struct breed_request_data {
+    class breed_request_data {
+    public:
         bool available = false;
         bool transient;
         bool looking_right;

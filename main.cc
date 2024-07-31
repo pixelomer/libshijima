@@ -105,6 +105,8 @@ bool running = true;
 bool spawn_more = false;
 bool paused = false;
 bool fast = false;
+double active_ie_x = 400;
+double active_ie_direction = 1;
 
 Uint32 timer_callback(Uint32 interval, void *param) {
     (void)param; // unused
@@ -132,11 +134,16 @@ void tick() {
     SDL_GetMouseState(&mx, &my);
 
     auto &env = *factory.env;
-    env.work_area = env.screen = { 0, w, h, 0 };
-    env.floor = { h-50, 0, w };
-    env.ceiling = { 0, 0, w };
+    env.work_area = env.screen = { 0, (double)w, (double)h, 0 };
+    env.floor = { (double)h - 50, 0, (double)w };
+    env.ceiling = { 0, 0, (double)w };
     if (enable_ie) {
-        env.active_ie = { 400, 700, 700, 400 };
+        double dx = active_ie_direction * (3 + random() % 5);
+        active_ie_x += dx;
+        env.active_ie = { 400, (double)active_ie_x + 300, 700,
+            (double)active_ie_x };
+        if (active_ie_x > 600) active_ie_direction = -1;
+        if (active_ie_x < 200) active_ie_direction = 1;
     }
     else {
         // {0,0,0,0} may cause shimeji to get stuck on the top left corner
@@ -172,10 +179,10 @@ void tick() {
     SDL_RenderClear(renderer);
     if (enable_ie) {
         SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
-        SDL_Rect rect = { .x = env.active_ie.left,
-            .y = env.active_ie.top,
-            .w = env.active_ie.width(),
-            .h = env.active_ie.height() };
+        SDL_Rect rect = { .x = (int)env.active_ie.left,
+            .y = (int)env.active_ie.top,
+            .w = (int)env.active_ie.width(),
+            .h = (int)env.active_ie.height() };
         SDL_RenderFillRect(renderer, &rect);
     }
     for (auto &product : mascots) {
@@ -209,9 +216,9 @@ void tick() {
                 "test1"
             };
             auto name = names[random() % names.size()];
-            mascots.push_back(factory.spawn(name, { {
-                (double)(50 + random() % (w - 100)),
-                (double)(50 + random() % (h - 100)) } }));
+            math::vec2 anchor { static_cast<double>(50 + random() % (w - 100)),
+                static_cast<double>(50 + random() % (h - 100)) };
+            mascots.push_back(factory.spawn(name, { anchor }));
         }
     }
 
@@ -317,7 +324,8 @@ int main(int argc, char **argv) {
         tmpl.path = path;
         factory.register_template(tmpl);
     }
-    mascots.push_back(factory.spawn("test1", { { 100, 100 } }));
+    math::vec2 anchor { 100, 100 };
+    mascots.push_back(factory.spawn("test1", { anchor }));
 
     if (do_run_console) {
         run_console(false);

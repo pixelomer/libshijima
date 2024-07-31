@@ -25,10 +25,10 @@ public:
 
     class hborder : public border {
     public:
-        int y;
-        int xstart;
-        int xend;
-        hborder(int y, int xstart, int xend): y(y), xstart(xstart),
+        double y;
+        double xstart;
+        double xend;
+        hborder(double y, double xstart, double xend): y(y), xstart(xstart),
             xend(xend) {}
         hborder() {}
         virtual bool faces(math::vec2 p) const {
@@ -41,10 +41,10 @@ public:
 
     class vborder : public border {
     public:
-        int x;
-        int ystart;
-        int yend;
-        vborder(int x, int ystart, int yend): x(x), ystart(ystart),
+        double x;
+        double ystart;
+        double yend;
+        vborder(double x, double ystart, double yend): x(x), ystart(ystart),
             yend(yend) {}
         vborder() {}
         virtual bool faces(math::vec2 p) const {
@@ -57,10 +57,10 @@ public:
 
     class area {
     public:
-        int top;
-        int right;
-        int bottom;
-        int left;
+        double top;
+        double right;
+        double bottom;
+        double left;
         bool visible() {
             return (left != right) && (top != bottom);
         }
@@ -68,9 +68,9 @@ public:
         hborder top_border()    const { return { top,    left, right  }; }
         vborder left_border()   const { return { left,   top,  bottom }; }
         vborder right_border()  const { return { right,  top,  bottom }; }
-        int width() { return right - left; }
-        int height() { return bottom - top; }
-        area(int top, int right, int bottom, int left): top(top),
+        double width() { return right - left; }
+        double height() { return bottom - top; }
+        area(double top, double right, double bottom, double left): top(top),
             right(right), bottom(bottom), left(left) {}
         area() {}
     };

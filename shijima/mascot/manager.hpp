@@ -67,15 +67,13 @@ public:
     void reset_position() {
         auto &screen = state->env->screen;
         if (screen.width() >= 100 && screen.height() >= 100) {
-            double new_x = static_cast<double>(screen.left + 50 +
-                random(0, screen.width() - 50));
-            double new_y = static_cast<double>(screen.top + 50 +
-                random(0, screen.width() - 50));
+            double new_x = screen.left + 50 + random(0, screen.width() - 50);
+            double new_y = screen.top + 50 + random(0, screen.width() - 50);
             state->anchor = { new_x, new_y };
         }
         else {
-            double new_x = static_cast<double>(screen.width() / 2);
-            double new_y = static_cast<double>(screen.height() / 2);
+            double new_x = screen.width() / 2;
+            double new_y = screen.height() / 2;
             state->anchor = { new_x, new_y };
         }
     }
