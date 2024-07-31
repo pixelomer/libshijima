@@ -69,20 +69,37 @@ public:
         hborder top_border()    const { return { top,    left, right  }; }
         vborder left_border()   const { return { left,   top,  bottom }; }
         vborder right_border()  const { return { right,  top,  bottom }; }
-        double width() { return right - left; }
-        double height() { return bottom - top; }
+        double width()  const { return right - left; }
+        double height() const { return bottom - top; }
+        bool is_on(math::vec2 anchor) const {
+            return this->left_border().is_on(anchor) ||
+                this->right_border().is_on(anchor) ||
+                this->bottom_border().is_on(anchor) ||
+                this->top_border().is_on(anchor);
+        }
         area(double top, double right, double bottom, double left): top(top),
             right(right), bottom(bottom), left(left) {}
         area() {}
+    };
+
+    class darea : public area {
+    public:
+        double dx;
+        double dy;
+        darea(double top, double right, double bottom, double left):
+            area(top, right, bottom, left), dx(0), dy(0) {}
+        darea(): area(), dx(0), dy(0) {}
+        darea(area const& rhs): area(rhs), dx(0), dy(0) {}
     };
 
     hborder ceiling;
     hborder floor;
     area screen;
     area work_area;
-    area active_ie;
+    darea active_ie;
     dvec2 cursor;
-    long mascot_count;
+    long mascot_count = 0;
+    bool sticky_ie = true;
 };
 
 }

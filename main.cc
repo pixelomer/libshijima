@@ -142,6 +142,8 @@ void tick() {
         active_ie_x += dx;
         env.active_ie = { 400, (double)active_ie_x + 300, 700,
             (double)active_ie_x };
+        env.active_ie.dx = dx;
+        env.active_ie.dy = 0;
         if (active_ie_x > 600) active_ie_direction = -1;
         if (active_ie_x < 200) active_ie_direction = 1;
     }

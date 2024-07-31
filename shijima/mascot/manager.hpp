@@ -155,10 +155,45 @@ public:
         return script_ctx->eval_string("JSON.stringify(mascot)");
     }
 private:
+    void pre_tick() {
+        tick_ctx.reset();
+        script_ctx->state = state;
+        state->time++;
+        if (behavior == nullptr) {
+            // First tick
+            _next_behavior();
+        }
+        if (state->dragging && behavior->name != "Dragged") {
+            state->was_on_ie = false;
+            _next_behavior("Dragged");
+        }
+        else if (!state->dragging && behavior->name == "Dragged") {
+            if (state->drag_with_local_cursor) {
+                // Force script to use local cursor
+                state->dragging = true;
+            }
+            _next_behavior("Thrown");
+            state->was_on_ie = false;
+            state->dragging = false;
+        }
+
+        if (state->env->sticky_ie && state->was_on_ie) {
+            // Try to stick to IE by following its dx/dy.
+            auto anchor = state->anchor;
+            anchor.x += state->env->active_ie.dx;
+            anchor.y += state->env->active_ie.dy;
+            if (state->env->active_ie.is_on(anchor)) {
+                state->anchor = anchor;
+            }
+        }
+    }
+    void post_tick() {
+        state->was_on_ie = state->env->active_ie.is_on(state->anchor);
+    }
     bool _tick() {
         while (true) {
             if (action_tick()) {
-                return true;
+                break;
             }
             if (tick_ctx.reached_init_limit()) {
                 return false;
@@ -170,27 +205,12 @@ private:
                 _next_behavior();
             }
         }
+        post_tick();
+        return true;
     }
 public:
     void tick() {
-        tick_ctx.reset();
-        script_ctx->state = state;
-        state->time++;
-        if (behavior == nullptr) {
-            // First tick
-            _next_behavior();
-        }
-        if (state->dragging && behavior->name != "Dragged") {
-            _next_behavior("Dragged");
-        }
-        else if (!state->dragging && behavior->name == "Dragged") {
-            if (state->drag_with_local_cursor) {
-                // Force script to use local cursor
-                state->dragging = true;
-            }
-            _next_behavior("Thrown");
-            state->dragging = false;
-        }
+        pre_tick();
 
         // Attempt 1: Normal tick
         if (_tick()) return;

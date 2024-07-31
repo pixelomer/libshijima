@@ -28,6 +28,7 @@ public:
     std::map<std::string, std::string> constants;
     bool looking_right;
     bool dragging;
+    bool was_on_ie;
     long time;
 
     bool drag_with_local_cursor;
@@ -41,16 +42,11 @@ public:
             return env->cursor;
         }
     }
-    bool is_on(environment::area &area) {
-        return area.left_border().is_on(anchor) ||
-            area.right_border().is_on(anchor) ||
-            area.bottom_border().is_on(anchor) ||
-            area.top_border().is_on(anchor);
-    }
     bool on_land() {
         return env->floor.is_on(anchor) ||
             env->ceiling.is_on(anchor) ||
-            is_on(env->work_area) || is_on(env->active_ie);
+            env->work_area.is_on(anchor) ||
+            env->active_ie.is_on(anchor);
     }
 };
 
