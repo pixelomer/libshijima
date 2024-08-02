@@ -177,7 +177,9 @@ private:
             state->dragging = false;
         }
 
-        if (state->env->sticky_ie && state->was_on_ie) {
+        if (state->env->sticky_ie && state->was_on_ie &&
+            state->env->floor.y > state->anchor.y)
+        {
             // Try to stick to IE by following its dx/dy.
             auto anchor = state->anchor;
             anchor.x += state->env->active_ie.dx;
@@ -188,7 +190,8 @@ private:
         }
     }
     void post_tick() {
-        state->was_on_ie = state->env->active_ie.is_on(state->anchor);
+        state->was_on_ie = state->env->active_ie.is_on(state->anchor) &&
+            !state->env->floor.is_on(state->anchor);
     }
     bool _tick() {
         while (true) {
