@@ -19,10 +19,14 @@ struct vec2 {
     vec2(std::string const& str) {
         auto sep = str.find(',');
         if (sep == std::string::npos) {
-            throw std::invalid_argument("missing separator");
+            //throw std::invalid_argument("missing separator");
+            x = 0;
+            y = 0;
         }
-        x = std::stod(str.substr(0, sep));
-        y = std::stod(str.substr(sep+1));
+        else {
+            x = std::stod(str.substr(0, sep));
+            y = std::stod(str.substr(sep+1));
+        }
     }
 };
 

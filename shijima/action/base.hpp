@@ -1,6 +1,8 @@
 #pragma once
 #include <shijima/scripting/variables.hpp>
 #include <shijima/mascot/tick.hpp>
+#include <shijima/broadcast/client.hpp>
+#include <shijima/broadcast/server.hpp>
 #include <shijima/log.hpp>
 
 namespace shijima {
@@ -12,6 +14,8 @@ private:
 protected:
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
+    broadcast::server server;
+    broadcast::client client;
     int start_time;
 
     void reset_elapsed() {
@@ -31,6 +35,9 @@ protected:
 public:
     virtual bool requests_vars() {
         return true;
+    }
+    virtual bool requests_broadcast() {
+        return false;
     }
 
     std::map<std::string, std::string> init_attr;
@@ -61,6 +68,14 @@ public:
         }
         if (requests_vars()) {
             vars.init(*ctx.script, attr);
+            if (requests_broadcast()) {
+                auto affordance = vars.get_string("Affordance");
+                if (affordance != "") {
+                    server = mascot->env->broadcasts.start_broadcast(
+                        vars.get_string("Affordance"), mascot->anchor);
+                    vars.add_attr({ { "Affordance", "" } });
+                }
+            }
         }
     }
 
@@ -69,6 +84,18 @@ public:
     // and return false for the frame after the last.
     virtual bool tick() {
         if (!requests_vars()) {
+            return true;
+        }
+        if (server.active()) {
+            server.update_anchor(mascot->anchor);
+        }
+        if (server.did_meet_up()) {
+            mascot->interaction = server.get_interaction();
+            mascot->queued_behavior = mascot->interaction.behavior();
+            #ifdef SHIJIMA_LOGGING_ENABLED
+                log(SHIJIMA_LOG_BROADCASTS, "Server did meet client, starting interaction");
+                log(SHIJIMA_LOG_BROADCASTS, "Queued behavior: " + mascot->queued_behavior);
+            #endif
             return true;
         }
         vars.tick();
@@ -113,6 +140,8 @@ public:
             throw std::logic_error("finalize() called twice");
         }
         if (requests_vars()) {
+            server.finalize();
+            client.finalize();
             vars.finalize();
         }
         mascot = nullptr;

@@ -1,4 +1,5 @@
 #pragma once
+#include <shijima/broadcast/manager.hpp>
 #include <shijima/math.hpp>
 #include <cmath>
 
@@ -100,6 +101,8 @@ public:
     dvec2 cursor;
     long mascot_count = 0;
     bool sticky_ie = true;
+
+    broadcast::manager broadcasts;
 };
 
 }

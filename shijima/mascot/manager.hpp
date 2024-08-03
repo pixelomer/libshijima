@@ -163,8 +163,20 @@ private:
             // First tick
             _next_behavior();
         }
+        if (state->queued_behavior != "") {
+            auto &behavior = state->queued_behavior;
+            if (state->interaction.available() && !state->interaction.started &&
+                state->interaction.behavior() == behavior)
+            {
+                // Start ScanMove/Broadcast interaction
+                state->interaction.started = true;
+            }
+            _next_behavior(behavior);
+            behavior = "";
+        }
         if (state->dragging && behavior->name != "Dragged") {
             state->was_on_ie = false;
+            state->interaction.finalize();
             _next_behavior("Dragged");
         }
         else if (!state->dragging && behavior->name == "Dragged") {
@@ -172,11 +184,11 @@ private:
                 // Force script to use local cursor
                 state->dragging = true;
             }
+            state->interaction.finalize();
             _next_behavior("Thrown");
             state->was_on_ie = false;
             state->dragging = false;
         }
-
         if (state->env->sticky_ie && state->was_on_ie &&
             state->env->floor.y > state->anchor.y)
         {
@@ -201,6 +213,7 @@ private:
             if (tick_ctx.reached_init_limit()) {
                 return false;
             }
+            state->interaction.finalize();
             if (!state->on_land()) {
                 _next_behavior("Fall");
             }

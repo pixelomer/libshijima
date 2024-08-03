@@ -19,7 +19,14 @@ pose parser::parse_pose(xml_node<> *node) {
     if (node->first_node() != nullptr) {
         throw std::invalid_argument("Non-empty Pose contents");
     }
-    shijima::pose pose { attr.at("Image"), attr.at("ImageAnchor"),
+    std::string image, anchor;
+    if (attr.count("Image") == 1) {
+        image = attr.at("Image");
+    }
+    if (attr.count("ImageAnchor") == 1) {
+        anchor = attr.at("ImageAnchor");
+    }
+    shijima::pose pose { image, anchor,
         attr.at("Velocity"), (int)std::strtol(attr.at("Duration").c_str(),
         nullptr, 10) };
     poses.insert(pose);
@@ -124,12 +131,17 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         #define pair(name, type) { name, []{ return std::make_shared<type>(); } }
         pair("Jump", action::jump),
         pair("Animate", action::animate),
+        pair("Broadcast", action::animate),
         pair("Breed", action::breed),
         pair("Dragged", action::dragged),
         pair("Regist", action::resist), // not a typo
         pair("Stay", action::stay),
+        pair("BroadcastStay", action::stay),
         pair("Move", action::move),
-        pair("Fall", action::fall)
+        pair("BroadcastMove", action::move),
+        pair("Fall", action::fall),
+        pair("ScanMove", action::scanmove),
+        pair("Interact", action::interact),
         #undef pair
     };
     if (animation_init.count(type) == 1) {

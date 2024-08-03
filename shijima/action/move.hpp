@@ -42,14 +42,14 @@ public:
         #define passed(x) (start.x >= x && end.x <= x) || \
             (start.x <= x && end.x >= x)
         if (vars.has("TargetX")) {
-            int x = vars.get_num("TargetX");
+            double x = vars.get_num("TargetX");
             if (passed(x)) {
                 mascot->anchor.x = x;
                 return false;
             }
         }
         else if (vars.has("TargetY")) {
-            int y = vars.get_num("TargetY");
+            double y = vars.get_num("TargetY");
             if (passed(y)) {
                 mascot->anchor.y = y;
                 return false;

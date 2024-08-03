@@ -30,6 +30,9 @@ protected:
         return elapsed() >= get_animation()->get_duration();
     }
 public:
+    virtual bool requests_broadcast() override {
+        return true;
+    }
     std::vector<std::shared_ptr<shijima::animation>> animations;
     virtual void init(mascot::tick &ctx) override {
         base::init(ctx);
@@ -40,9 +43,9 @@ public:
             return false;
         }
         auto &pose = get_pose();
-        mascot->active_frame = pose;
         mascot->anchor.x += dx(pose.velocity.x);
         mascot->anchor.y += dy(pose.velocity.y);
+        mascot->active_frame = pose;
         return true;
     }
 };

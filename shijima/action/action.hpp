@@ -13,3 +13,5 @@
 #include "stay.hpp"
 #include "jump.hpp"
 #include "breed.hpp"
+#include "scanmove.hpp"
+#include "interact.hpp"

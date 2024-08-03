@@ -10,6 +10,9 @@
 !shijima/mascot/
 !shijima/mascot/*.cc
 !shijima/mascot/*.hpp
+!shijima/broadcast/
+!shijima/broadcast/*.hpp
+!shijima/broadcast/*.cc
 !shijima/scripting/
 !shijima/scripting/*.cc
 !shijima/scripting/*.hpp

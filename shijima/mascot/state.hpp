@@ -2,6 +2,7 @@
 #include <memory>
 #include <shijima/math.hpp>
 #include <shijima/pose.hpp>
+#include <shijima/broadcast/interaction.hpp>
 #include "environment.hpp"
 
 namespace shijima {
@@ -26,6 +27,8 @@ public:
     shijima::frame active_frame;
     std::shared_ptr<environment> env;
     std::map<std::string, std::string> constants;
+    broadcast::interaction interaction;
+    std::string queued_behavior;
     bool looking_right;
     bool dragging;
     bool was_on_ie;
