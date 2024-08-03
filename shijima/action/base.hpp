@@ -11,6 +11,7 @@ namespace action {
 class base {
 private:
     bool active = false;
+    bool prevents_dragging;
 protected:
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
@@ -59,6 +60,7 @@ public:
         if (active) {
             throw std::logic_error("init() called twice");
         }
+        prevents_dragging = false;
         active = true;
         mascot = ctx.script->state;
         start_time = mascot->time;
@@ -68,6 +70,11 @@ public:
         }
         if (requests_vars()) {
             vars.init(*ctx.script, attr);
+            bool draggable = vars.get_bool("Draggable", true);
+            if (!draggable) {
+                mascot->drag_lock++;
+                prevents_dragging = true;
+            }
             if (requests_broadcast()) {
                 auto affordance = vars.get_string("Affordance");
                 if (affordance != "") {
@@ -144,8 +151,15 @@ public:
             client.finalize();
             vars.finalize();
         }
+        long drag_lock = mascot->drag_lock;
+        if (prevents_dragging) {
+            mascot->drag_lock = drag_lock -= 1;
+        }
         mascot = nullptr;
         active = false;
+        if (drag_lock < 0) {
+            throw std::runtime_error("drag_lock went below zero");
+        }
     }
     virtual ~base() {}
 };

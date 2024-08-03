@@ -174,12 +174,19 @@ private:
             _next_behavior(behavior);
             behavior = "";
         }
-        if (state->dragging && behavior->name != "Dragged") {
+        bool dragging;
+        if (state->drag_lock > 0) {
+            dragging = false;
+        }
+        else {
+            dragging = state->dragging;
+        }
+        if (dragging && behavior->name != "Dragged") {
             state->was_on_ie = false;
             state->interaction.finalize();
             _next_behavior("Dragged");
         }
-        else if (!state->dragging && behavior->name == "Dragged") {
+        else if (!dragging && behavior->name == "Dragged") {
             if (state->drag_with_local_cursor) {
                 // Force script to use local cursor
                 state->dragging = true;
@@ -226,6 +233,10 @@ private:
     }
 public:
     void tick() {
+        if (state->dead) {
+            return;
+        }
+        
         pre_tick();
 
         // Attempt 1: Normal tick

@@ -32,7 +32,9 @@ public:
     bool looking_right;
     bool dragging;
     bool was_on_ie;
+    bool dead;
     long time;
+    long drag_lock;
 
     bool drag_with_local_cursor;
     environment::dvec2 local_cursor;

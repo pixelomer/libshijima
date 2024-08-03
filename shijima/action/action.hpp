@@ -15,3 +15,4 @@
 #include "breed.hpp"
 #include "scanmove.hpp"
 #include "interact.hpp"
+#include "selfdestruct.hpp"
