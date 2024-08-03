@@ -25,8 +25,8 @@ factory.env = std::make_shared<mascot::environment>();
 // Register mascot templates
 mascot::factory::tmpl tmpl;
 tmpl.name = "my_mascot";
-tmpl.actions_xml = read_file("/path/to/shimeji/actions.xml");
-tmpl.behaviors_xml = read_file("/path/to/shimeji/behaviors.xml");
+tmpl.actions_xml = ReadFile("/path/to/shimeji/actions.xml");
+tmpl.behaviors_xml = ReadFile("/path/to/shimeji/behaviors.xml");
 tmpl.path = "/path/to/shimeji";
 factory.register_template(tmpl);
 
