@@ -6,6 +6,10 @@ namespace action {
 class breed : public animate {
 public:
     virtual bool tick() override {
+        bool transient = vars.get_bool("BornTransient", false);
+        if (!transient && (!mascot->env->allows_breeding || !mascot->can_breed)) {
+            return false;
+        }
         bool ret = animate::tick();
         if (animation_finished()) {
             // Animation concluded, create a breed request
@@ -17,7 +21,7 @@ public:
             request.available = true;
             request.behavior = vars.get_string("BornBehavior", "Fall");
             request.name = vars.get_string("BornMascot", "");
-            request.transient = vars.get_bool("BornTransient", false);
+            request.transient = transient;
             
             request.anchor = { mascot->anchor.x + dx(born_x),
                 mascot->anchor.y + dy(born_y) };

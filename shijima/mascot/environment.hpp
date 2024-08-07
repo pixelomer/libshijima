@@ -99,6 +99,7 @@ public:
     area work_area;
     darea active_ie;
     dvec2 cursor;
+    bool allows_breeding = true;
     long mascot_count = 0;
     bool sticky_ie = true;
 
