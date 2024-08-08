@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include "interaction.hpp"
 #include "server_state.hpp"
 
 namespace shijima {
