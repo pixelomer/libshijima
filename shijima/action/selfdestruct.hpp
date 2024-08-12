@@ -7,7 +7,7 @@ namespace action {
 class selfdestruct : public animate {
 public:
     virtual bool tick() override {
-        if (!animation::tick()) {
+        if (!animate::tick()) {
             if (animation_finished()) {
                 mascot->dead = true;
                 return true;
