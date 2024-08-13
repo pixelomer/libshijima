@@ -36,7 +36,11 @@ pose parser::parse_pose(xml_node<> *node) {
 // Parse Animations within Actions
 std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
     if (std::string(node->name()) != "Animation") {
-        throw std::invalid_argument("Expected Animation node");
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_PARSER, "warning: ignoring invalid node in animation action");
+        #endif
+        return nullptr;
+        //throw std::invalid_argument("Expected Animation node");
     }
     auto condition_attr = node->first_attribute("Condition");
     scripting::condition cond = true;
@@ -150,7 +154,9 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         auto anim_node = node->first_node();
         while (anim_node != nullptr) {
             auto anim = this->parse_animation(anim_node);
-            anim_action->animations.push_back(anim);
+            if (anim != nullptr) {
+                anim_action->animations.push_back(anim);
+            }
             anim_node = anim_node->next_sibling();
         }
         action = anim_action;
