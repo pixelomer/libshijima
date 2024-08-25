@@ -217,7 +217,7 @@ private:
     void post_tick() {
         state->was_on_ie = state->env->active_ie.is_on(state->anchor) &&
             !state->env->floor.is_on(state->anchor);
-        if (!state->active_frame.sound.empty()) {
+        if (!state->active_frame.sound.empty() && state->active_sound != state->active_frame.sound) {
             state->active_sound_changed = true;
             state->active_sound = state->active_frame.sound;
         }
