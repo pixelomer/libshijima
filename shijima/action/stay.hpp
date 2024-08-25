@@ -10,7 +10,7 @@ public:
         if (!animation::tick()) {
             return false;
         }
-        return elapsed() <= vars.get_num("Duration", 250);
+        return elapsed() < vars.get_num("Duration", 250);
     }
 };
 
