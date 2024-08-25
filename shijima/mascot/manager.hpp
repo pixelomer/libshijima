@@ -43,11 +43,11 @@ private:
 
         behavior = behaviors.next(state);
         if (behavior == nullptr) {
-            // If the next behavior cannot be determined, reset
-            // the mascot as defined by Shimeji-EE
-            std::cerr << "warning: no next behavior" << std::endl;
+            #ifdef SHIJIMA_LOGGING_ENABLED
+                log(SHIJIMA_LOG_WARNINGS, "warning: no next behavior");
+            #endif
 
-            reset_position();
+            //reset_position();
             
             behaviors.set_next("Fall");
             behavior = behaviors.next(state);
