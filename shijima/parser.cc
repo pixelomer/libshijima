@@ -37,7 +37,8 @@ pose parser::parse_pose(xml_node<> *node) {
 std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
     if (std::string(node->name()) != "Animation") {
         #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_PARSER, "warning: ignoring invalid node in animation action");
+            log(SHIJIMA_LOG_PARSER, "warning: ignoring invalid node in"
+                " animation action: " + std::string(node->name()));
         #endif
         return nullptr;
         //throw std::invalid_argument("Expected Animation node");
@@ -312,7 +313,9 @@ behavior::list parser::parse_behavior_list(rapidxml::xml_node<> *root,
             list.sublists.push_back(sublist);
         }
         else {
-            throw std::invalid_argument("Invalid node: " + name);
+            #ifdef SHIJIMA_LOGGING_ENABLED
+                log(SHIJIMA_LOG_PARSER, "warning: ignoring invalid behavior node: " + name);
+            #endif
         }
         node = node->next_sibling();
     }
@@ -370,7 +373,13 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
 
     // Build references
     for (auto &ref : behavior_refs) {
-        auto target = behavior_list.find(ref->name);
+        auto target = behavior_list.find(ref->name, false);
+        if (target == nullptr) {
+            #ifdef SHIJIMA_LOGGING_ENABLED
+                log(SHIJIMA_LOG_PARSER, "invalid behavior reference: " + ref->name);
+            #endif
+            target = behavior_list.find("Fall");
+        }
         ref->referenced = target;
     }
 

@@ -56,7 +56,7 @@ public:
             }
         }
         if (throws) {
-            throw std::logic_error("could not find behavior");
+            throw std::logic_error("could not find behavior: " + name);
         }
         return nullptr;
     }
