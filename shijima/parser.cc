@@ -19,14 +19,17 @@ pose parser::parse_pose(xml_node<> *node) {
     if (node->first_node() != nullptr) {
         throw std::invalid_argument("Non-empty Pose contents");
     }
-    std::string image, anchor;
+    std::string image, anchor, sound;
     if (attr.count("Image") == 1) {
         image = attr.at("Image");
     }
     if (attr.count("ImageAnchor") == 1) {
         anchor = attr.at("ImageAnchor");
     }
-    shijima::pose pose { image, anchor,
+    if (attr.count("Sound") == 1) {
+        sound = attr.at("Sound");
+    }
+    shijima::pose pose { image, sound, anchor,
         attr.at("Velocity"), (int)std::strtol(attr.at("Duration").c_str(),
         nullptr, 10) };
     poses.insert(pose);

@@ -29,6 +29,8 @@ public:
     std::map<std::string, std::string> constants;
     broadcast::interaction interaction;
     std::string queued_behavior;
+    std::string active_sound;
+    bool active_sound_changed;
     bool looking_right;
     bool dragging;
     bool was_on_ie;

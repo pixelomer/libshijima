@@ -52,6 +52,11 @@ private:
             behaviors.set_next("Fall");
             behavior = behaviors.next(state);
         }
+        
+        // stop active sound before moving onto next behavior
+        state->active_sound.clear();
+        state->active_sound_changed = true;
+
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + behavior->name
                 + "::init()");
@@ -159,6 +164,7 @@ private:
         tick_ctx.reset();
         script_ctx->state = state;
         state->time++;
+        state->active_sound_changed = false;
         if (behavior == nullptr) {
             // First tick
             _next_behavior();
@@ -211,6 +217,10 @@ private:
     void post_tick() {
         state->was_on_ie = state->env->active_ie.is_on(state->anchor) &&
             !state->env->floor.is_on(state->anchor);
+        if (!state->active_frame.sound.empty()) {
+            state->active_sound_changed = true;
+            state->active_sound = state->active_frame.sound;
+        }
     }
     bool _tick() {
         while (true) {
