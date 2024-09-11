@@ -173,7 +173,7 @@ std::map<std::string, std::string> parser::all_attributes(xml_node<> *node,
 {
     std::map<std::string, std::string> map;
     auto attribute = node->first_attribute();
-    while (attribute != NULL) {
+    while (attribute != nullptr) {
         std::string name(attribute->name());
         if (map.count(name) != 0) {
             throw std::invalid_argument("Duplicate attribute: " + name);
