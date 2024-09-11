@@ -81,6 +81,13 @@ public:
         area(double top, double right, double bottom, double left): top(top),
             right(right), bottom(bottom), left(left) {}
         area() {}
+        static area from_rec(math::rec rec) {
+            return area { rec.y, rec.x + rec.width, rec.y + rec.height,
+                rec.x };
+        }
+        static area from_vec2(math::vec2 vec2) {
+            return from_rec({ 0, 0, vec2.x, vec2.y });
+        }
     };
 
     class darea : public area {

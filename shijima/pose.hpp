@@ -20,6 +20,12 @@ public:
     bool operator>(const frame& rhs) const {
         return name > rhs.name;
     }
+    bool operator==(const frame& rhs) const {
+        return name == rhs.name;
+    }
+    bool operator!=(const frame& rhs) const {
+        return !(name == rhs.name);
+    }
 };
 
 class pose : public frame {

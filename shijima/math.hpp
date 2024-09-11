@@ -28,6 +28,12 @@ struct vec2 {
             y = std::stod(str.substr(sep+1));
         }
     }
+    bool operator==(vec2 const& rhs) {
+        return x == rhs.x && y == rhs.y;
+    }
+    bool operator!=(vec2 const& rhs) {
+        return !(*this == rhs);
+    }
 };
 
 }

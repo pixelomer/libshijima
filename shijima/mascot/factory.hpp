@@ -54,10 +54,10 @@ public:
         }
         templates.erase(name);
     }
-    const std::map<std::string, std::shared_ptr<const tmpl>> &get_all_templates() {
+    const std::map<std::string, std::shared_ptr<const tmpl>> &get_all_templates() const {
         return templates;
     }
-    std::shared_ptr<const tmpl> get_template(std::string const& name) {
+    std::shared_ptr<const tmpl> get_template(std::string const& name) const {
         if (templates.count(name) == 0) {
             return nullptr;
         }
