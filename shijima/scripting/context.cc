@@ -176,6 +176,7 @@ duk_idx_t context::build_console() {
     put_prop(-2, "log");
     duk_push_c_function(duk, duk_console_error, DUK_VARARGS);
     put_prop(-2, "error");
+    duk_seal(duk, -1);
     return console;
 }
 
@@ -202,7 +203,8 @@ duk_idx_t context::build_mascot() {
     // mascot.environment
     build_environment();
     put_prop(-2, "environment");
-    
+
+    duk_seal(duk, -1);    
     return mascot;
 }
     
@@ -243,7 +245,8 @@ duk_idx_t context::build_area(std::function<mascot::environment::area&()> getter
         [getter](double val) { getter().side = val; })
     reg(left); reg(right); reg(top); reg(bottom);
     #undef reg
-    
+
+    duk_seal(duk, -1);
     return area;
 }
 
@@ -346,6 +349,7 @@ duk_idx_t context::build_proxy() {
         "    })"
         "})(globalThis)";
     duk_eval_string(duk, builder);
+    duk_seal(duk, -1);
     return duk_get_top_index(duk);
 }
     
@@ -376,6 +380,7 @@ duk_idx_t context::build_environment() {
     build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->get_cursor(); });
     put_prop(-2, "cursor");
 
+    duk_seal(duk, -1);
     return env;
 }
 
@@ -386,6 +391,7 @@ duk_idx_t context::build_rectangle(std::function<math::rec&()> getter) {
         [getter](double val) { getter().x = val; })
     reg(x); reg(y); reg(width); reg(height);
     #undef reg
+    duk_seal(duk, -1);
     return rect;
 }
 
@@ -396,6 +402,7 @@ duk_idx_t context::build_vec2(std::function<math::vec2&()> getter) {
         [getter](double val) { getter().x = val; })
     reg(x); reg(y);
     #undef reg
+    duk_seal(duk, -1);
     return vec2;
 }
 
@@ -406,6 +413,7 @@ duk_idx_t context::build_dvec2(std::function<mascot::environment::dvec2&()> gett
         [getter](double val) { getter().x = val; })
     reg(x); reg(y); reg(dx); reg(dy);
     #undef reg
+    duk_seal(duk, -1);
     return vec2;
 }
 
