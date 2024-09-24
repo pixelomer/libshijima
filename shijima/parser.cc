@@ -150,7 +150,8 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         pair("Fall", action::fall),
         pair("ScanMove", action::scanmove),
         pair("Interact", action::interact),
-        pair("SelfDestruct", action::selfdestruct)
+        pair("SelfDestruct", action::selfdestruct),
+        pair("Transform", action::transform)
         #undef pair
     };
     if (animation_init.count(type) == 1) {

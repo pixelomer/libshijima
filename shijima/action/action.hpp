@@ -16,3 +16,4 @@
 #include "scanmove.hpp"
 #include "interact.hpp"
 #include "selfdestruct.hpp"
+#include "transform.hpp"
