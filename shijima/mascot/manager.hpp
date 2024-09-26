@@ -165,6 +165,9 @@ private:
         script_ctx->state = state;
         state->time++;
         state->active_sound_changed = false;
+        if (state->env->get_scale() != 1.0) {
+            state->anchor *= state->env->get_scale();
+        }
         if (behavior == nullptr) {
             // First tick
             _next_behavior();
@@ -220,6 +223,9 @@ private:
         if (!state->active_frame.sound.empty() && state->active_sound != state->active_frame.sound) {
             state->active_sound_changed = true;
             state->active_sound = state->active_frame.sound;
+        }
+        if (state->env->get_scale() != 1.0) {
+            state->anchor /= state->env->get_scale();
         }
     }
     bool _tick() {

@@ -17,6 +17,18 @@ public:
         dvec2(double x, double y, double dx, double dy): math::vec2(x, y),
             dx(dx), dy(dy) {}
         dvec2(std::string const& str): math::vec2(str), dx(0), dy(0) {}
+        dvec2 operator*(double rhs) {
+            return { x * rhs, y * rhs, dx * rhs, dy * rhs };
+        }
+        dvec2 &operator*=(double rhs) {
+            return *this = *this * rhs;
+        }
+        dvec2 operator/(double rhs) {
+            return { x / rhs, y / rhs, dx / rhs, dy / rhs };
+        }
+        dvec2 &operator/=(double rhs) {
+            return *this = *this / rhs;
+        }
     };
 
     class border {
@@ -39,6 +51,18 @@ public:
         virtual bool is_on(math::vec2 p) const {
             return std::fabs(p.y - y) < 1.0 && faces(p);
         }
+        hborder operator*(double rhs) {
+            return { y * rhs, xstart * rhs, xend * rhs };
+        }
+        hborder &operator*=(double rhs) {
+            return *this = *this * rhs;
+        }
+        hborder operator/(double rhs) {
+            return { y / rhs, xstart / rhs, xend / rhs };
+        }
+        hborder &operator/=(double rhs) {
+            return *this = *this / rhs;
+        }
     };
 
     class vborder : public border {
@@ -54,6 +78,18 @@ public:
         }
         virtual bool is_on(math::vec2 p) const {
             return std::fabs(p.x - x) < 1.0 && faces(p);
+        }
+        vborder operator*(double rhs) {
+            return { x * rhs, ystart * rhs, yend * rhs };
+        }
+        vborder &operator*=(double rhs) {
+            return *this = *this * rhs;
+        }
+        vborder operator/(double rhs) {
+            return { x / rhs, ystart / rhs, yend / rhs };
+        }
+        vborder &operator/=(double rhs) {
+            return *this = *this / rhs;
         }
     };
 
@@ -88,6 +124,18 @@ public:
         static area from_vec2(math::vec2 vec2) {
             return from_rec({ 0, 0, vec2.x, vec2.y });
         }
+        area operator*(double rhs) {
+            return { top * rhs, right * rhs, bottom * rhs, left * rhs };
+        }
+        area &operator*=(double rhs) {
+            return *this = *this * rhs;
+        }
+        area operator/(double rhs) {
+            return { top / rhs, right / rhs, bottom / rhs, left / rhs };
+        }
+        area &operator/=(double rhs) {
+            return *this = *this / rhs;
+        }
     };
 
     class darea : public area {
@@ -95,9 +143,26 @@ public:
         double dx;
         double dy;
         darea(double top, double right, double bottom, double left):
-            area(top, right, bottom, left), dx(0), dy(0) {}
+            darea(top, right, bottom, left, 0, 0) {}
+        darea(double top, double right, double bottom, double left,
+            double dx, double dy):
+            area(top, right, bottom, left), dx(dx), dy(dy) {}
         darea(): area(), dx(0), dy(0) {}
         darea(area const& rhs): area(rhs), dx(0), dy(0) {}
+        darea operator*(double rhs) {
+            return { top * rhs, right * rhs, bottom * rhs, left * rhs,
+                dx * rhs, dy * rhs };
+        }
+        darea &operator*=(double rhs) {
+            return *this = *this * rhs;
+        }
+        darea operator/(double rhs) {
+            return { top / rhs, right / rhs, bottom / rhs, left / rhs,
+                dx / rhs, dy / rhs };
+        }
+        darea &operator/=(double rhs) {
+            return *this = *this / rhs;
+        }
     };
 
     hborder ceiling;
@@ -109,6 +174,37 @@ public:
     bool allows_breeding = true;
     long mascot_count = 0;
     bool sticky_ie = true;
+
+private:
+    double active_scale = 1.0;
+public:
+    double get_scale() {
+        return active_scale;
+    }
+    void reset_scale() {
+        if (active_scale == 1.0) {
+            return;
+        }
+        ceiling /= active_scale;
+        floor /= active_scale;
+        screen /= active_scale;
+        work_area /= active_scale;
+        active_ie /= active_scale;
+        cursor /= active_scale;
+        active_scale = 1.0;
+    }
+    void set_scale(double scale) {
+        if (active_scale != 1.0) {
+            reset_scale();
+        }
+        ceiling *= scale;
+        floor *= scale;
+        screen *= scale;
+        work_area *= scale;
+        active_ie *= scale;
+        cursor *= scale;
+        active_scale = scale;
+    }
 
     broadcast::manager broadcasts;
 };

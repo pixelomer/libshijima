@@ -10,6 +10,18 @@ struct rec {
     rec() {}
     rec(double x, double y, double width, double height):
         x(x), y(y), width(width), height(height) {}
+    rec operator*(double rhs) {
+        return { x * rhs, y * rhs, width * rhs, height * rhs };
+    }
+    rec &operator*=(double rhs) {
+        return *this = *this * rhs;
+    }
+    rec operator/(double rhs) {
+        return { x / rhs, y / rhs, width / rhs, height / rhs };
+    }
+    rec &operator/=(double rhs) {
+        return *this = *this / rhs;
+    }
 };
 
 struct vec2 {
@@ -33,6 +45,18 @@ struct vec2 {
     }
     bool operator!=(vec2 const& rhs) {
         return !(*this == rhs);
+    }
+    vec2 operator*(double rhs) {
+        return { x * rhs, y * rhs };
+    }
+    vec2 &operator*=(double rhs) {
+        return *this = *this * rhs;
+    }
+    vec2 operator/(double rhs) {
+        return { x / rhs, y / rhs };
+    }
+    vec2 &operator/=(double rhs) {
+        return *this = *this / rhs;
     }
 };
 

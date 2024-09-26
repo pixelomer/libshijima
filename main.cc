@@ -155,6 +155,9 @@ void tick() {
     env.cursor = { (double)mx, (double)my,
         (double)(mx - old.x), (double)(my - old.y) };
 
+    // Set scale once env has been initialized
+    env.set_scale(1.01);
+
     std::vector<mascot::factory::product> new_mascots;
 
     for (auto &mascot : mascots) {
@@ -172,6 +175,10 @@ void tick() {
             new_mascots.push_back(std::move(product));
         }
     }
+
+    // Reset scale after env has been used, then use anchors normally
+    // (manager->state->anchor will always have scale 1.0 after tick)
+    env.reset_scale();
 
     uint32_t update_elapsed = SDL_GetTicks() - start_time;
     start_time = SDL_GetTicks();
