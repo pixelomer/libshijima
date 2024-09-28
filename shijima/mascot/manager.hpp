@@ -166,6 +166,7 @@ private:
         state->time++;
         state->active_sound_changed = false;
         if (state->env->get_scale() != 1.0) {
+            state->local_cursor *= state->env->get_scale();
             state->anchor *= state->env->get_scale();
         }
         if (behavior == nullptr) {
@@ -225,6 +226,7 @@ private:
             state->active_sound = state->active_frame.sound;
         }
         if (state->env->get_scale() != 1.0) {
+            state->local_cursor /= state->env->get_scale();
             state->anchor /= state->env->get_scale();
         }
     }
