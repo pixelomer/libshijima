@@ -27,9 +27,19 @@ public:
     std::shared_ptr<mascot::environment> env = nullptr;
 
     factory &operator=(factory const&) = delete;
-    factory &operator=(factory&&) = default;
+    factory &operator=(factory &&rhs) {
+        templates = rhs.templates;
+        script_ctx = rhs.script_ctx;
+        env = rhs.env;
+        rhs.templates.clear();
+        rhs.script_ctx = nullptr;
+        rhs.env = nullptr;
+        return *this;
+    }
     factory(factory const&) = delete;
-    factory(factory&&) = default;
+    factory(factory &&rhs) {
+        *this = std::move(rhs);
+    }
     
     product spawn(std::string const& name, manager::initializer init = {}) {
         product ret;
