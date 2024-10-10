@@ -52,6 +52,9 @@ public:
     product spawn(mascot::state::breed_request_data const& breed_request) {
         return spawn(breed_request.name, breed_request);
     }
+    void clear() {
+        templates.clear();
+    }
     void register_template(tmpl const& tmpl) {
         if (templates.count(tmpl.name) != 0) {
             throw std::logic_error("cannot register same template twice");
