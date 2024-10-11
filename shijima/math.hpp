@@ -36,8 +36,30 @@ struct vec2 {
             y = 0;
         }
         else {
-            x = std::stod(str.substr(0, sep));
-            y = std::stod(str.substr(sep+1));
+            try {
+                x = std::stod(str.substr(0, sep));
+                y = std::stod(str.substr(sep+1));
+            }
+            catch (...) {
+                x = 0;
+                y = 0;
+            }
+        }
+    }
+    static bool validate_str(std::string const& str) {
+        auto sep = str.find(',');
+        if (sep == std::string::npos) {
+            return false;
+        }
+        else {
+            try {
+                std::stod(str.substr(0, sep));
+                std::stod(str.substr(sep+1));
+                return true;
+            }
+            catch (...) {
+                return false;
+            }
         }
     }
     bool operator==(vec2 const& rhs) {
