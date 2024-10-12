@@ -14,12 +14,6 @@ class manager {
 public:
     list const& get_initial_list() { return initial_list; }
 private:
-    static int random(int min, int max) {
-        std::random_device dev;
-        std::mt19937 rng(dev());
-        std::uniform_int_distribution<std::mt19937::result_type> dist(min, max);
-        return (int)dist(rng);
-    }
     list initial_list;
     list next_list;
     scripting::context::global global;
@@ -63,7 +57,7 @@ public:
 
             // Pick a random behavior
             int counter = 0;
-            int dice = random(0, freq_sum-1);
+            int dice = ctx->random(freq_sum);
             for (auto &option : flat) {
                 counter += option->frequency;
                 if (counter > dice) {

@@ -2,6 +2,7 @@
 #include <shijima/broadcast/manager.hpp>
 #include <shijima/math.hpp>
 #include <cmath>
+#include <random>
 
 namespace shijima {
 namespace mascot {
@@ -165,6 +166,10 @@ public:
         }
     };
 
+private:
+    std::mt19937 rng { (std::random_device{})() };
+
+public:
     hborder ceiling;
     hborder floor;
     area screen;
@@ -175,6 +180,24 @@ public:
     long mascot_count = 0;
     bool sticky_ie = true;
 
+    // [0.0, 1.0)
+    double random() {
+        std::uniform_real_distribution<double> dist(0, 1);
+        double result = dist(rng);
+        return result;
+    }
+
+    // [0, upper_range)
+    int random(int upper_range) {
+        std::uniform_int_distribution<int> dist(0, upper_range-1);
+        int result = dist(rng);
+        return result;
+    }
+
+    template<class T>
+    void seed(T seq) {
+        rng.seed(seq);
+    }
 private:
     double active_scale = 1.0;
 public:

@@ -13,12 +13,6 @@ namespace mascot {
 
 class manager {
 private:
-    static int random(int min, int max) {
-        std::random_device dev;
-        std::mt19937 rng(dev());
-        std::uniform_int_distribution<std::mt19937::result_type> dist(min, max);
-        return (int)dist(rng);
-    }
     behavior::manager behaviors;
     mascot::tick tick_ctx;
     std::shared_ptr<behavior::base> behavior;
@@ -72,8 +66,8 @@ public:
     void reset_position() {
         auto &screen = state->env->screen;
         if (screen.width() >= 100 && screen.height() >= 100) {
-            double new_x = screen.left + 50 + random(0, screen.width() - 50);
-            double new_y = screen.top + 50 + random(0, screen.width() - 50);
+            double new_x = screen.left + 50 + state->env->random((int)screen.width() - 50);
+            double new_y = screen.top + 50 + state->env->random((int)screen.width() - 50);
             state->anchor = { new_x, new_y };
         }
         else {

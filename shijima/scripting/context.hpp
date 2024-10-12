@@ -273,6 +273,12 @@ public:
 #else
 #define log_javascript(...)
 #endif
+    double random() {
+        return state->env->random();
+    }
+    int random(int upper_range) {
+        return state->env->random(upper_range);
+    }
     bool eval_bool(std::string const& js) {
         duk_eval_string(duk, js.c_str());
         bool ret = duk_to_boolean(duk, -1);
@@ -315,6 +321,17 @@ public:
         duk_put_global_string(duk, "mascot");
         build_console();
         duk_put_global_string(duk, "console");
+
+        // Math.random()
+        duk_get_global_string(duk, "Math");
+        push_function([this](duk_context *duk) {
+            duk_push_number(duk, this->state->env->random());
+            return 1;
+        }, 0);
+        duk_put_prop_string(duk, -2, "random");
+        duk_pop(duk);
+
+        // Proxy global
         build_proxy();
         duk_set_global_object(duk);
 
