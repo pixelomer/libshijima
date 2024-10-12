@@ -30,6 +30,12 @@ public:
         dvec2 &operator/=(double rhs) {
             return *this = *this / rhs;
         }
+        void move(math::vec2 new_vec2) {
+            dx += new_vec2.x - x;
+            dy += new_vec2.y - y;
+            x = new_vec2.x;
+            y = new_vec2.y;
+        }
     };
 
     class border {
