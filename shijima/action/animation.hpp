@@ -1,5 +1,6 @@
 #pragma once
 #include "base.hpp"
+#include <shijima/animation.hpp>
 
 namespace shijima {
 namespace action {
@@ -8,7 +9,7 @@ class animation : public base {
 protected:
     int anim_idx;
 
-    std::shared_ptr<shijima::animation> &get_animation() {
+    virtual std::shared_ptr<shijima::animation> &get_animation() {
         for (int i=0; i<(int)animations.size(); i++) {
             auto &anim = animations[i];
             if (vars.get_bool(anim->condition)) {

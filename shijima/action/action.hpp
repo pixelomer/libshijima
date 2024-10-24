@@ -17,3 +17,5 @@
 #include "interact.hpp"
 #include "selfdestruct.hpp"
 #include "transform.hpp"
+#include "movewithturn.hpp"
+#include "turn.hpp"
