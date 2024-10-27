@@ -52,21 +52,19 @@ public:
     }
     
     math::vec2 get_dcursor() {
-        int count = 0;
         math::vec2 vec;
-        for (int i=dcursor_idx+1, j=1; i != dcursor_idx;
+        if (dcursor_buffer.size() == 0) {
+            return { 0, 0 };
+        }
+        for (int i=dcursor_idx+1, j=1; (i != dcursor_idx) && (i < dcursor_buffer.size());
             i = (i+1) % dcursor_buffer.size(), ++j)
         {
             auto const& dcursor = dcursor_buffer[i];
-            double mult = dcursor_buffer.size() - j;
-            mult = 1 / (mult * mult);
             if (!dcursor.isnan()) {
-                ++count;
+                double mult = dcursor_buffer.size() - j;
+                mult = 1 / (mult * mult);
                 vec += dcursor * mult;
             }
-        }
-        if (count == 0) {
-            return { 0, 0 };
         }
         return vec * env->throw_power;
     }
