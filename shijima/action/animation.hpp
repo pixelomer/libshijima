@@ -6,6 +6,8 @@ namespace shijima {
 namespace action {
 
 class animation : public base {
+private:
+    pose current_pose;
 protected:
     int anim_idx;
 
@@ -43,10 +45,15 @@ public:
         if (!base::tick()) {
             return false;
         }
-        auto &pose = get_pose();
-        mascot->anchor.x += dx(pose.velocity.x);
-        mascot->anchor.y += dy(pose.velocity.y);
-        mascot->active_frame = pose;
+        if (mascot->new_tick()) {
+            current_pose = get_pose();
+        }
+        if (at_border()) {
+            auto &pose = current_pose;
+            mascot->anchor.x += dx(pose.velocity.x) * dt();
+            mascot->anchor.y += dy(pose.velocity.y) * dt();
+            mascot->active_frame = pose;
+        }
         return true;
     }
 };

@@ -7,33 +7,49 @@ namespace shijima {
 namespace action {
 
 class move : public animation {
+private:
+    double target_x;
+    double target_y;
 public:
+    virtual void init(mascot::tick &ctx) override {
+        animation::init(ctx);
+        target_x = target_y = NAN;
+    }
     virtual bool tick() override {
-        if (vars.has("TargetX")) {
-            double x = vars.get_num("TargetX");
-            vars.add_attr({{ "目的地X", x }});
-            auto &pose = get_pose();
-            if (pose.velocity.x > 0) {
-                mascot->looking_right = (x < mascot->anchor.x);
+        if (mascot->new_tick()) {
+            if (vars.has("TargetX")) {
+                double x = vars.get_num("TargetX");
+                vars.add_attr({{ "目的地X", x }});
+                auto &pose = get_pose();
+                if (pose.velocity.x > 0) {
+                    mascot->looking_right = (x < mascot->anchor.x);
+                }
+                else if (pose.velocity.x < 0) {
+                    mascot->looking_right = (x > mascot->anchor.x);
+                }
+                target_x = vars.get_num("TargetX");
             }
-            else if (pose.velocity.x < 0) {
-                mascot->looking_right = (x > mascot->anchor.x);
+            else {
+                target_x = NAN;
+            }
+            if (vars.has("TargetY")) {
+                vars.add_attr({{ "目的地Y", vars.get_num("TargetY") }});
+                if (mascot->env->work_area.left_border().is_on(mascot->anchor) ||
+                    mascot->env->active_ie.right_border().is_on(mascot->anchor))
+                {
+                    mascot->looking_right = false;
+                }
+                if (mascot->env->work_area.right_border().is_on(mascot->anchor) ||
+                    mascot->env->active_ie.left_border().is_on(mascot->anchor))
+                {
+                    mascot->looking_right = true;
+                }
+                target_y = vars.get_num("TargetY");
+            }
+            else {
+                target_y = NAN;
             }
         }
-        if (vars.has("TargetY")) {
-            vars.add_attr({{ "目的地Y", vars.get_num("TargetY") }});
-            if (mascot->env->work_area.left_border().is_on(mascot->anchor) ||
-                mascot->env->active_ie.right_border().is_on(mascot->anchor))
-            {
-                mascot->looking_right = false;
-            }
-            if (mascot->env->work_area.right_border().is_on(mascot->anchor) ||
-                mascot->env->active_ie.left_border().is_on(mascot->anchor))
-            {
-                mascot->looking_right = true;
-            }
-        }
-
         auto start = mascot->anchor;
         if (!animation::tick()) {
             return false;
@@ -41,18 +57,18 @@ public:
         auto end = mascot->anchor;
         #define passed(x) (start.x >= x && end.x <= x) || \
             (start.x <= x && end.x >= x)
-        if (vars.has("TargetX")) {
-            double x = vars.get_num("TargetX");
+        if (!std::isnan(target_x)) {
+            double x = target_x;
             if (passed(x)) {
                 mascot->anchor.x = x;
-                return false;
+                return !mascot->new_tick();
             }
         }
-        else if (vars.has("TargetY")) {
-            double y = vars.get_num("TargetY");
+        else if (!std::isnan(target_y)) {
+            double y = target_y;
             if (passed(y)) {
                 mascot->anchor.y = y;
-                return false;
+                return !mascot->new_tick();
             }
         }
         else {

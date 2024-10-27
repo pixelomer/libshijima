@@ -4,14 +4,18 @@ namespace shijima {
 namespace action {
 
 class breed : public animate {
+private:
+    bool transient;
 public:
     virtual bool tick() override {
-        bool transient = vars.get_bool("BornTransient", false);
-        if (!transient && (!mascot->env->allows_breeding || !mascot->can_breed)) {
-            return false;
+        if (mascot->new_tick()) {
+            transient = vars.get_bool("BornTransient", false);
+            if (!transient && (!mascot->env->allows_breeding || !mascot->can_breed)) {
+                return false;
+            }
         }
         bool ret = animate::tick();
-        if (animation_finished()) {
+        if (mascot->new_tick() && animation_finished()) {
             // Animation concluded, create a breed request
             // It is up to the library consumer to comply with the request
 

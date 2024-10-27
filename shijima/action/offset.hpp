@@ -5,11 +5,18 @@ namespace shijima {
 namespace action {
 
 class offset : public instant {
+private:
+    double target_x, target_y;
 public:
     virtual bool tick() override {
-        mascot->anchor.x += (int)vars.get_num("X", 0);
-        mascot->anchor.y += (int)vars.get_num("Y", 0);
-        return false;
+        if (first_subtick()) {
+            target_x = vars.get_num("X", 0);
+            target_y = vars.get_num("Y", 0);
+        }
+        double dt = 1.0 / mascot->env->subticks_per_tick;
+        mascot->anchor.x += target_x * dt;
+        mascot->anchor.y += target_y * dt;
+        return instant::tick();
     }
 };
 

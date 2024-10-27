@@ -106,7 +106,7 @@ public:
     void next_behavior(std::string const& name = "") {
         // Only for public use
         tick_ctx.reset();
-        _next_behavior(name);
+        state->queued_behavior = name;
     }
 
     struct initializer {
@@ -157,48 +157,72 @@ private:
     void pre_tick() {
         tick_ctx.reset();
         script_ctx->state = state;
-        state->time++;
+        auto subticks_per_tick = state->env->subticks_per_tick;
+        if (behavior == nullptr) {
+            // First tick
+            state->time = 0;
+            state->subtick = 0;
+        }
+        else {
+            state->subtick = (state->subtick + 1) % subticks_per_tick;
+            if (state->subtick == 0) {
+                ++state->time;
+            }
+        }
         state->active_sound_changed = false;
         if (state->env->get_scale() != 1.0) {
             state->local_cursor *= state->env->get_scale();
             state->anchor *= state->env->get_scale();
         }
-        if (behavior == nullptr) {
-            // First tick
-            _next_behavior();
+        if (subticks_per_tick != 1) {
+            state->local_cursor.dx /= subticks_per_tick;
+            state->local_cursor.dy /= subticks_per_tick;
+            state->env->cursor.dx /= subticks_per_tick;
+            state->env->cursor.dy /= subticks_per_tick;
         }
-        if (state->queued_behavior != "") {
-            auto &behavior = state->queued_behavior;
-            if (state->interaction.available() && !state->interaction.started &&
-                state->interaction.behavior() == behavior)
-            {
-                // Start ScanMove/Broadcast interaction
-                state->interaction.started = true;
+        if (state->new_tick()) {
+            // Certain things should only be updated after a full tick
+            if (behavior == nullptr) {
+                // First tick
+                _next_behavior();
             }
-            _next_behavior(behavior);
-            behavior = "";
-        }
-        bool dragging;
-        if (state->drag_lock > 0) {
-            dragging = false;
-        }
-        else {
-            dragging = state->dragging;
-        }
-        if (dragging && behavior->name != "Dragged") {
-            state->was_on_ie = false;
-            state->interaction.finalize();
-            _next_behavior("Dragged");
-        }
-        else if (!dragging && behavior->name == "Dragged") {
-            if (state->drag_with_local_cursor) {
-                // Force script to use local cursor
-                state->dragging = true;
+            if (state->queued_behavior != "") {
+                auto &behavior = state->queued_behavior;
+                if (state->interaction.available() && !state->interaction.started &&
+                    state->interaction.behavior() == behavior)
+                {
+                    // Start ScanMove/Broadcast interaction
+                    state->interaction.started = true;
+                }
+                _next_behavior(behavior);
+                behavior = "";
             }
-            state->interaction.finalize();
-            _next_behavior("Thrown");
-            state->was_on_ie = false;
-            state->dragging = false;
+            bool dragging;
+            if (state->drag_lock > 0) {
+                dragging = false;
+            }
+            else {
+                dragging = state->dragging;
+            }
+            if (dragging && behavior->name != "Dragged") {
+                state->was_on_ie = false;
+                state->interaction.finalize();
+                _next_behavior("Dragged");
+            }
+            else if (!dragging && behavior->name == "Dragged") {
+                if (state->drag_with_local_cursor) {
+                    // Force script to use local cursor
+                    state->dragging = true;
+                }
+                state->interaction.finalize();
+                auto dcursor = state->get_dcursor();
+                state->get_cursor().dx = dcursor.x;
+                state->get_cursor().dy = dcursor.y;
+                state->reset_dcursor_buffer();
+                _next_behavior("Thrown");
+                state->was_on_ie = false;
+                state->dragging = false;
+            }
         }
         if (state->env->sticky_ie && state->was_on_ie &&
             state->env->floor.y > state->anchor.y)
@@ -223,11 +247,21 @@ private:
             state->local_cursor /= state->env->get_scale();
             state->anchor /= state->env->get_scale();
         }
+        auto subticks_per_tick = state->env->subticks_per_tick;
+        if (subticks_per_tick != 1) {
+            state->local_cursor.dx *= subticks_per_tick;
+            state->local_cursor.dy *= subticks_per_tick;
+            state->env->cursor.dx *= subticks_per_tick;
+            state->env->cursor.dy *= subticks_per_tick;
+        }
     }
     bool _tick() {
         while (true) {
             if (action_tick()) {
                 break;
+            }
+            if (!state->new_tick()) {
+                throw std::runtime_error("tick() failed for subtick != 0");
             }
             if (tick_ctx.reached_init_limit()) {
                 return false;
@@ -275,7 +309,7 @@ public:
 
         // If this point in the code is reached, then the mascot is
         // most likely faulty.
-        throw std::logic_error("tick() failed after multiple attempts");
+        throw std::runtime_error("tick() failed after multiple attempts");
     }
 };
 

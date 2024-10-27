@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <string>
+#include <cmath>
 
 namespace shijima {
 namespace math {
@@ -26,6 +27,12 @@ struct rec {
 
 struct vec2 {
     double x, y;
+    static const vec2 nan() {
+        return { NAN, NAN };
+    }
+    bool isnan() const {
+        return std::isnan(x) || std::isnan(y);
+    }
     vec2() {}
     vec2(double x, double y): x(x), y(y) {}
     vec2(std::string const& str) {
@@ -62,23 +69,35 @@ struct vec2 {
             }
         }
     }
-    bool operator==(vec2 const& rhs) {
+    bool operator==(vec2 const& rhs) const {
         return x == rhs.x && y == rhs.y;
     }
-    bool operator!=(vec2 const& rhs) {
+    bool operator!=(vec2 const& rhs) const {
         return !(*this == rhs);
     }
-    vec2 operator*(double rhs) {
+    vec2 operator*(double rhs) const {
         return { x * rhs, y * rhs };
     }
     vec2 &operator*=(double rhs) {
         return *this = *this * rhs;
     }
-    vec2 operator/(double rhs) {
+    vec2 operator/(double rhs) const {
         return { x / rhs, y / rhs };
     }
     vec2 &operator/=(double rhs) {
         return *this = *this / rhs;
+    }
+    vec2 operator+(vec2 const& rhs) const {
+        return { x + rhs.x, y + rhs.y };
+    }
+    vec2 &operator+=(vec2 const& rhs) {
+        return *this = *this + rhs;
+    }
+    vec2 operator-(vec2 const& rhs) const {
+        return { x - rhs.x, y - rhs.y };
+    }
+    vec2 &operator-=(vec2 const& rhs) {
+        return *this = *this - rhs;
     }
 };
 

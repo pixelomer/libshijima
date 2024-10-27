@@ -7,6 +7,9 @@ namespace action {
 class turn : public animate {
 public:
     virtual bool tick() override {
+        if (!mascot->new_tick()) {
+            return animate::tick();
+        }
         bool will_look_right = vars.get_bool("LookRight", false);
         if (elapsed() == 0) {
             // First tick

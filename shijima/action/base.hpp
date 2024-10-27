@@ -25,6 +25,12 @@ protected:
     int elapsed() {
         return mascot->time - start_time;
     }
+    double dt() {
+        return 1.0 / mascot->env->subticks_per_tick;
+    }
+    bool first_subtick() {
+        return elapsed() == 0 && mascot->subtick == 0;
+    }
     template<typename T>
     T dx(T dx) {
         return (mascot->looking_right ? -1 : 1) * dx;
@@ -32,6 +38,29 @@ protected:
     template<typename T>
     T dy(T dy) {
         return dy;
+    }
+    bool at_border() {
+        auto border_type = vars.get_string("BorderType");
+        if (border_type == "Floor") {
+            return mascot->env->floor.is_on(mascot->anchor) ||
+                mascot->env->active_ie.top_border().is_on(mascot->anchor);
+        }
+        else if (border_type == "Wall") {
+            return mascot->env->work_area.left_border().is_on(mascot->anchor) ||
+                mascot->env->work_area.right_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.left_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.right_border().is_on(mascot->anchor);
+        }
+        else if (border_type == "Ceiling") {
+            return mascot->env->work_area.top_border().is_on(mascot->anchor) ||
+                mascot->env->active_ie.bottom_border().is_on(mascot->anchor);
+        }
+        else if (border_type == "") {
+            return true;
+        }
+        else {
+            throw std::runtime_error("Unknown border: " + border_type);
+        }
     }
 public:
     virtual bool requests_vars() {
@@ -46,6 +75,9 @@ public:
     // Initializes the action, resetting any internal state as necessary.
     // If init() throws an exception, the object should be inactive afterwards.
     virtual void init(mascot::tick &ctx) {
+        if (ctx.script->state->subtick != 0) {
+            throw std::runtime_error("init() called for subtick != 0");
+        }
         ctx.will_init();
         #ifdef SHIJIMA_LOGGING_ENABLED
             if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
@@ -110,27 +142,10 @@ public:
             return false;
         }
 
-        auto border_type = vars.get_string("BorderType");
-        if (border_type == "Floor") {
-            return mascot->env->floor.is_on(mascot->anchor) ||
-                mascot->env->active_ie.top_border().is_on(mascot->anchor);
+        if (mascot->new_tick() && !at_border()) {
+            return false;
         }
-        else if (border_type == "Wall") {
-            return mascot->env->work_area.left_border().is_on(mascot->anchor) ||
-                mascot->env->work_area.right_border().is_on(mascot->anchor) ||
-                mascot->env->active_ie.left_border().is_on(mascot->anchor) ||
-                mascot->env->active_ie.right_border().is_on(mascot->anchor);
-        }
-        else if (border_type == "Ceiling") {
-            return mascot->env->work_area.top_border().is_on(mascot->anchor) ||
-                mascot->env->active_ie.bottom_border().is_on(mascot->anchor);
-        }
-        else if (border_type == "") {
-            return true;
-        }
-        else {
-            throw std::logic_error("Unknown border: " + border_type);
-        }
+        return true;
     }
     virtual void finalize() {
         #ifdef SHIJIMA_LOGGING_ENABLED

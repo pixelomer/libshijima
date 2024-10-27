@@ -185,6 +185,8 @@ public:
     bool allows_breeding = true;
     long mascot_count = 0;
     bool sticky_ie = true;
+    double throw_power = 1;
+    long subticks_per_tick = 1;
 
     // [0.0, 1.0)
     double random() {

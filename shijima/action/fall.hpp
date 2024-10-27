@@ -15,6 +15,13 @@ public:
     }
 
     virtual bool tick() override {
+        if (!mascot->new_tick()) {
+            if (!mascot->on_land()) {
+                mascot->anchor.x += velocity.x * dt();
+                mascot->anchor.y += velocity.y * dt();
+            }
+            return animation::tick();
+        }
         if (mascot->on_land()) {
             return false;
         }
@@ -33,8 +40,8 @@ public:
 
         math::vec2 before = mascot->anchor;
 
-        mascot->anchor.x += (int)velocity.x;
-        mascot->anchor.y += (int)velocity.y;
+        mascot->anchor.x += velocity.x * dt();
+        mascot->anchor.y += velocity.y * dt();
         
         if (mascot->anchor.x > mascot->env->work_area.right) {
             mascot->anchor.x = mascot->env->work_area.right;

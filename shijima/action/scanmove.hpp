@@ -18,6 +18,9 @@ public:
             vars.get_string("TargetBehavior"));
     }
     virtual bool tick() override {
+        if (!mascot->new_tick()) {
+            return move::tick();
+        }
         if (!client.connected()) {
             return false;
         }
