@@ -328,7 +328,15 @@ behavior::list parser::parse_behavior_list(rapidxml::xml_node<> *root,
 
 void parser::connect_actions(behavior::list &behaviors) {
     for (auto &child : behaviors.children) {
+        if (child->referenced != nullptr) {
+            continue;
+        }
         child->action = actions.at(child->name);
+        if (child->next_list != nullptr) {
+            // Having Behaviors within NextList is normally an invalid configuration
+            // However, there are some shimeji that do it
+            connect_actions(*child->next_list);
+        }
     }
     for (auto &sublist : behaviors.sublists) {
         connect_actions(sublist);
