@@ -26,7 +26,7 @@ struct rec {
 
 struct vec2 {
     double x, y;
-    vec2() {}
+    vec2(): x(0), y(0) {}
     vec2(double x, double y): x(x), y(y) {}
     vec2(std::string const& str) {
         auto sep = str.find(',');
