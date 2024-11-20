@@ -124,18 +124,8 @@ void parser::try_parse_instant(std::shared_ptr<action::base> &action,
 
 // Parse Actions with Animation content.
 void parser::try_parse_animation(std::shared_ptr<action::base> &action,
-    rapidxml::xml_node<> *node, std::string type)
+    rapidxml::xml_node<> *node, std::string const& type)
 {
-    //FIXME: Unimplemented types
-    if (type == "FallWithIE") {
-        type = "Fall";
-    }
-    if (type == "WalkWithIE") {
-        type = "Move";
-    }
-    if (type == "ThrowIE") {
-        type = "Animate";
-    }
     static const std::map<std::string,
         std::function<std::shared_ptr<action::animation>()>> animation_init =
     {
@@ -156,7 +146,12 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         pair("ScanMove", action::scanmove),
         pair("Interact", action::interact),
         pair("SelfDestruct", action::selfdestruct),
-        pair("Transform", action::transform)
+        pair("Transform", action::transform),
+
+        //FIXME: Unimplemented types
+        pair("FallWithIE", action::fall),
+        pair("WalkWithIE", action::move),
+        pair("ThrowIE", action::animate)
         #undef pair
     };
     if (animation_init.count(type) == 1) {

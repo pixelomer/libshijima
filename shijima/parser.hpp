@@ -19,7 +19,7 @@ private:
     void try_parse_instant(std::shared_ptr<action::base> &action,
         rapidxml::xml_node<> *node, std::string const& type);
     void try_parse_animation(std::shared_ptr<action::base> &action,
-        rapidxml::xml_node<> *node, std::string type);
+        rapidxml::xml_node<> *node, std::string const& type);
     std::shared_ptr<animation> parse_animation(rapidxml::xml_node<> *node);
     pose parse_pose(rapidxml::xml_node<> *node);
     static std::map<std::string, std::string> all_attributes(rapidxml::xml_node<> *node,
