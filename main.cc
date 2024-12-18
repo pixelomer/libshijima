@@ -188,10 +188,10 @@ void tick() {
     SDL_RenderClear(renderer);
     if (enable_ie) {
         SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
-        SDL_Rect rect = { .x = (int)env.active_ie.left,
-            .y = (int)env.active_ie.top,
-            .w = (int)env.active_ie.width(),
-            .h = (int)env.active_ie.height() };
+        SDL_Rect rect = { (int)env.active_ie.left,
+            (int)env.active_ie.top,
+            (int)env.active_ie.width(),
+            (int)env.active_ie.height() };
         SDL_RenderFillRect(renderer, &rect);
     }
     for (auto &product : mascots) {
@@ -202,15 +202,15 @@ void tick() {
         SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
         if (manager->state->looking_right) {
             dest = {
-                .x = (int)(manager->state->anchor.x - src.w + manager->state->active_frame.anchor.x),
-                .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
-                .w = src.w, .h = src.h };
+                (int)(manager->state->anchor.x - src.w + manager->state->active_frame.anchor.x),
+                (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
+                src.w, src.h };
         }
         else {
             dest = {
-                .x = (int)(manager->state->anchor.x - manager->state->active_frame.anchor.x),
-                .y = (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
-                .w = src.w, .h = src.h };
+                (int)(manager->state->anchor.x - manager->state->active_frame.anchor.x),
+                (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
+                src.w, src.h };
         }
         SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
             manager->state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
