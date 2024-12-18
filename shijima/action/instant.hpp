@@ -5,7 +5,6 @@ namespace shijima {
 namespace action {
 
 class instant : public base {
-    
 };
 
 }

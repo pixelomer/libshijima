@@ -1,33 +1,26 @@
 #pragma once
-#include "duktape/duktape.h"
-#include <map>
+#include "duktape/duk_config.h"
 #include <shijima/math.hpp>
 #include <shijima/mascot/state.hpp>
 #include <shijima/log.hpp>
 #include <functional>
-#include <algorithm>
 #include <vector>
 #include <iostream>
 #include <memory>
-#include <stack>
-#include <set>
+
+// forward declarations from duktape.h
+extern "C" {
+    DUK_EXTERNAL_DECL duk_idx_t duk_push_bare_object(duk_context *ctx);
+    DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
+    DUK_EXTERNAL_DECL void duk_push_boolean(duk_context *ctx, duk_bool_t val);
+}
 
 namespace shijima {
 namespace scripting {
 
 class context {
 private:
-    static math::vec2 duk_to_point(duk_context *ctx, duk_idx_t idx) {
-        math::vec2 point;
-        duk_get_prop_string(ctx, idx, "x");
-        point.x = duk_to_number(ctx, -1);
-        duk_pop(ctx);
-        duk_get_prop_string(ctx, idx, "y");
-        point.y = duk_to_number(ctx, -1);
-        duk_pop(ctx);
-        return point;
-    }
-
+    static math::vec2 duk_to_point(duk_context *ctx, duk_idx_t idx);
     static duk_ret_t duk_getter(duk_context *ctx);
     static duk_ret_t duk_setter(duk_context *ctx);
 
@@ -36,6 +29,7 @@ private:
     duk_idx_t build_area(std::function<mascot::environment::area&()> getter);
     void put_prop(duk_idx_t obj, std::string const& name);
     void put_prop_functions(std::string const& prop_name);
+    void log_javascript(std::string const& js, std::string const& result);
 
     template<typename T>
     duk_idx_t build_border(std::function<T()> getter) {
@@ -73,59 +67,13 @@ private:
     duk_uarridx_t global_counter = 0;
     duk_uarridx_t globals_available = 0;
     std::vector<duk_uarridx_t> global_stack;
-    bool has_global(duk_uarridx_t idx) {
-        duk_push_global_object(duk);
-        duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
-        duk_get_prop_index(duk, -1, idx);
-        auto type = duk_get_type(duk, -1);
-        duk_pop_3(duk);
-        return type != DUK_TYPE_UNDEFINED;
-    }
-    bool is_global_active(duk_uarridx_t idx) {
-        return std::find(global_stack.begin(), global_stack.end(),
-            idx) != global_stack.end();
-    }
-    void create_global(duk_uarridx_t idx) {
-        if (has_global(idx)) {
-            throw std::logic_error("global index already in use");
-        }
-        duk_push_global_object(duk);
-        duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
-        duk_push_bare_object(duk);
-        duk_put_prop_index(duk, -2, idx);
-        duk_pop_2(duk);
-        globals_available++;
-    }
-    void delete_global(duk_uarridx_t idx) {
-        if (!has_global(idx)) {
-            throw std::logic_error("cannot delete non-existing global");
-        }
-        if (is_global_active(idx)) {
-            throw std::logic_error("cannot delete active global");
-        }
-        duk_push_global_object(duk);
-        duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
-        duk_del_prop_index(duk, -1, idx);
-        duk_pop_2(duk);
-        globals_available--;
-    }
-    void push_global(duk_uarridx_t idx) {
-        if (!has_global(idx)) {
-            throw std::logic_error("no such global");
-        }
-        global_stack.push_back(idx);
-    }
-    void pop_global(duk_uarridx_t idx) {
-        if (global_stack.empty() || global_stack[global_stack.size()-1] != idx) {
-            throw std::logic_error("idx != global_stack.top()");
-        }
-        global_stack.erase(global_stack.begin() + global_stack.size() - 1);
-    }
-    duk_uarridx_t next_global_idx() {
-        while (has_global(++global_counter));
-        auto idx = global_counter;
-        return idx;
-    }
+    bool has_global(duk_uarridx_t idx);
+    bool is_global_active(duk_uarridx_t idx);
+    void create_global(duk_uarridx_t idx);
+    void delete_global(duk_uarridx_t idx);
+    void push_global(duk_uarridx_t idx);
+    void pop_global(duk_uarridx_t idx);
+    duk_uarridx_t next_global_idx();
 
     std::shared_ptr<bool> invalidated_flag;
 public:
@@ -139,35 +87,11 @@ public:
         context *ctx;
         bool is_active;
         std::shared_ptr<bool> invalidated;
-        void check_valid() {
-            if (invalidated != nullptr && *invalidated) {
-                ctx = nullptr;
-                if (is_active) {
-                    throw std::logic_error("global was invalidated while active");
-                }
-                is_active = false;
-                invalidated = nullptr;
-            }
-        }
-        void init() {
-            check_valid();
-            if (is_active) {
-                throw std::logic_error("init() called on active global");
-            }
-            is_active = true;
-            ctx->push_global(idx);
-        }
-        void finalize() {
-            check_valid();
-            if (!is_active) {
-                throw std::logic_error("finalize() called on inactive global");
-            }
-            is_active = false;
-            ctx->pop_global(idx);
-        }
+        void check_valid();
+        void init();
+        void finalize();
         global(context *ctx, duk_uarridx_t idx,
-            std::shared_ptr<bool> invalidated): idx(idx), ctx(ctx),
-            is_active(false), invalidated(invalidated) {}
+            std::shared_ptr<bool> invalidated);
     public:
         // Holds a bare pointer to the global. Intended to be used on the stack.
         // Must outlive the global. Will cause a crash if the global is freed
@@ -176,175 +100,44 @@ public:
         private:
             friend class global;
             global *owner;
-            active(global *owner): owner(owner) {}
+            active(global *owner);
         public:
-            context *get() {
-                return owner->ctx;
-            }
-            context *operator->() {
-                return owner->ctx;
-            }
+            context *get();
+            context *operator->();
             active(active const&) = delete;
             active& operator=(active const&) = delete;
-            active(active &&rhs) {
-                if (owner != nullptr) {
-                    owner->finalize();
-                }
-                owner = rhs.owner;
-                rhs.owner = nullptr;
-            }
-            active &operator=(active &&rhs) {
-                if (owner != nullptr) {
-                    owner->finalize();
-                }
-                owner = rhs.owner;
-                rhs.owner = nullptr;
-                return *this;
-            }
-            ~active() {
-                if (owner != nullptr) {
-                    owner->finalize();
-                }
-            }
+            active(active &&rhs);
+            active &operator=(active &&rhs);
+            ~active();
         };
         global(global const&) = delete;
         global& operator=(global const&) = delete;
-        #define move() do { \
-            check_valid(); \
-            if (is_active || rhs.is_active) { \
-                throw std::logic_error("cannot destroy active global"); \
-            } \
-            if (ctx != nullptr) { \
-                ctx->delete_global(idx); \
-            } \
-            invalidated = rhs.invalidated; \
-            ctx = rhs.ctx; \
-            idx = rhs.idx; \
-            rhs.ctx = nullptr; \
-            rhs.invalidated = nullptr; \
-        } while(0)
-        global(global &&rhs): ctx(nullptr), is_active(false) {
-            move();
-        }
-        global &operator=(global &&rhs) {
-            move();
-            return *this;
-        }
-        #undef move
-        ~global() {
-            check_valid();
-            if (ctx != nullptr) {
-                if (is_active) {
-                    finalize();
-                }
-                ctx->delete_global(idx);
-            }
-        }
-        active use() {
-            init();
-            return { this };
-        }
-        bool valid() {
-            return ctx != nullptr;
-        }
-        global(): idx(0), ctx(nullptr), is_active(false) {}
+        global(global &&rhs);
+        global &operator=(global &&rhs);
+        ~global();
+        active use();
+        bool valid();
+        global();
     };
     duk_context *duk;
     std::shared_ptr<mascot::state> state;
-    global make_global() {
-        auto idx = next_global_idx();
-        create_global(idx);
-        return { this, idx, invalidated_flag };
-    }
+    global make_global();
+    double random();
+    int random(int upper_range);
 #ifdef SHIJIMA_LOGGING_ENABLED
-private:
-    void log_javascript(std::string const& js, std::string const& result) {
-        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
-            std::string m_js = js;
-            size_t i;
-            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
-                m_js[i] = ' ';
-            }
-            log("\"" + m_js + "\" = " + result);
-        }
-    }
-public:
-#define log_javascript log_javascript
+#define log_javascript_default true
 #else
-#define log_javascript(...)
+#define log_javascript_default false
 #endif
-    double random() {
-        return state->env->random();
-    }
-    int random(int upper_range) {
-        return state->env->random(upper_range);
-    }
-    bool eval_bool(std::string const& js) {
-        duk_eval_string(duk, js.c_str());
-        bool ret = duk_to_boolean(duk, -1);
-        log_javascript(js, (ret ? "true" : "false"));
-        duk_pop(duk);
-        return ret;
-    }
-    double eval_number(std::string js) {
-        duk_eval_string(duk, js.c_str());
-        double ret = duk_to_number(duk, -1);
-        log_javascript(js, std::to_string(ret));
-        duk_pop(duk);
-        return ret;
-    }
-    std::string eval_string(std::string js) {
-        duk_eval_string(duk, js.c_str());
-        std::string ret = duk_to_string(duk, -1);
-        log_javascript(js, ret);
-        duk_pop(duk);
-        return ret;
-    }
+    bool eval_bool(std::string const& js, bool log = log_javascript_default);
+    double eval_number(std::string js, bool log = log_javascript_default);
+    std::string eval_string(std::string js, bool log = log_javascript_default);
 #undef log_javascript
-    std::string eval_json(std::string js) {
-        duk_get_global_string(duk, "JSON");
-        duk_get_prop_string(duk, -1, "stringify");
-        duk_remove(duk, -2);
-        duk_eval_string(duk, js.c_str());
-        duk_call(duk, 1);
-        std::string ret = duk_to_string(duk, -1);
-        duk_pop(duk);
-        return ret;
-    }
-    void eval(std::string js) {
-        duk_eval_string_noresult(duk, js.c_str());
-    }
-    context() {
-        invalidated_flag = std::make_shared<bool>(false);
-        duk = duk_create_heap_default();
-        build_mascot();
-        duk_put_global_string(duk, "mascot");
-        build_console();
-        duk_put_global_string(duk, "console");
+    std::string eval_json(std::string js);
+    void eval(std::string js);
+    context();
+    ~context();
 
-        // Math.random()
-        duk_get_global_string(duk, "Math");
-        push_function([this](duk_context *duk) {
-            duk_push_number(duk, this->state->env->random());
-            return 1;
-        }, 0);
-        duk_put_prop_string(duk, -2, "random");
-        duk_pop(duk);
-
-        // Proxy global
-        build_proxy();
-        duk_set_global_object(duk);
-
-        // initial global to prevent the real global
-        // from being modified
-        auto idx = next_global_idx();
-        create_global(idx);
-        push_global(idx);
-    }
-    ~context() {
-        *invalidated_flag = true;
-        duk_destroy_heap(duk);
-    }
     context &operator=(context const&) = delete;
     context &operator=(context&&) = delete;
     context(context const&) = delete;

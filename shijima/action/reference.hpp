@@ -8,30 +8,10 @@ namespace action {
 class reference : public base {
 public:
     std::shared_ptr<base> target;
-    virtual bool requests_vars() override {
-        return false;
-    }
-    virtual void init(mascot::tick &ctx) override {
-        base::init(ctx);
-        mascot::tick target_ctx = ctx.overlay(init_attr);
-        try {
-            target->init(target_ctx);
-        }
-        catch (...) {
-            base::finalize();
-            throw;
-        }
-    }
-    virtual bool tick() override {
-        if (!base::tick()) {
-            return false;
-        }
-        return target->tick();
-    }
-    virtual void finalize() override {
-        base::finalize();
-        target->finalize();
-    }
+    virtual bool requests_vars() override;
+    virtual void init(mascot::tick &ctx) override;
+    virtual bool tick() override;
+    virtual void finalize() override;
 };
 
 }

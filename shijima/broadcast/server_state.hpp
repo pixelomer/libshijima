@@ -1,9 +1,7 @@
 #pragma once
 #include <string>
 #include <memory>
-#include <stdexcept>
 #include <shijima/math.hpp>
-#include "client.hpp"
 
 namespace shijima {
 namespace broadcast {

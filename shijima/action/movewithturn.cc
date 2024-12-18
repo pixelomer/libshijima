@@ -1,0 +1,44 @@
+#include "movewithturn.hpp"
+
+namespace shijima {
+namespace action {
+
+bool movewithturn::headed_right() {
+    double target_x = vars.get_num("TargetX");
+    return mascot->anchor.x <= target_x;
+}
+
+bool movewithturn::needs_turn() {
+    return (mascot->looking_right && !headed_right()) ||
+        (!mascot->looking_right && headed_right());
+}
+
+std::shared_ptr<shijima::animation> &movewithturn::get_animation() {
+    if (animations.size() < 2) {
+        return move::get_animation();
+    }
+    if (!is_turning && needs_turn()) {
+        is_turning = true;
+        mascot->looking_right = headed_right();
+        start_time = mascot->time;
+    }
+    else if (is_turning && elapsed() >= animations[1]->get_duration()) {
+        is_turning = false;
+        start_time = mascot->time;
+    }
+    return animations[is_turning ? 1 : 0];
+}
+
+void movewithturn::init(mascot::tick &ctx) {
+    move::init(ctx);
+    #ifdef SHIJIMA_LOGGING_ENABLED
+        if (animations.size() != 2) {
+            log(SHIJIMA_LOG_WARNINGS,
+                "warning: expected 2 animations for MoveWithTurn, got "
+                + std::to_string(animations.size()) + " animations");
+        }
+    #endif
+}
+
+}
+}

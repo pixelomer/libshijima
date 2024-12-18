@@ -25,11 +25,43 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror=sign-compare -Werr
 
 add_library(
     shijima
-    shijima/scripting/context.cc
+    shijima/action/animate.cc
+    shijima/action/animation.cc
+    shijima/action/base.cc
+    shijima/action/breed.cc
+    shijima/action/dragged.cc
+    shijima/action/fall.cc
+    shijima/action/instant.cc
+    shijima/action/interact.cc
+    shijima/action/jump.cc
+    shijima/action/look.cc
+    shijima/action/move.cc
+    shijima/action/movewithturn.cc
+    shijima/action/offset.cc
+    shijima/action/reference.cc
+    shijima/action/resist.cc
+    shijima/action/scanmove.cc
+    shijima/action/select.cc
+    shijima/action/selfdestruct.cc
+    shijima/action/sequence.cc
+    shijima/action/stay.cc
+    shijima/action/transform.cc
+    shijima/action/turn.cc
+    shijima/behavior/base.cc
+    shijima/behavior/list.cc
+    shijima/behavior/manager.cc
+    shijima/broadcast/client.cc
+    shijima/broadcast/interaction.cc
+    shijima/broadcast/manager.cc
+    shijima/broadcast/server.cc
+    shijima/mascot/factory.cc
+    shijima/mascot/manager.cc
     shijima/scripting/duktape/duktape.cc
-    shijima/translator.cc
-    shijima/parser.cc
+    shijima/scripting/context.cc
+    shijima/scripting/variables.cc
     shijima/log.cc
+    shijima/parser.cc
+    shijima/translator.cc
 )
 
 if(SHIJIMA_BUILD_EXAMPLES)

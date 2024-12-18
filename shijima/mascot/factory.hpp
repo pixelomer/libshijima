@@ -27,60 +27,17 @@ public:
     std::shared_ptr<mascot::environment> env = nullptr;
 
     factory &operator=(factory const&) = delete;
-    factory &operator=(factory &&rhs) {
-        templates = rhs.templates;
-        script_ctx = rhs.script_ctx;
-        env = rhs.env;
-        rhs.templates.clear();
-        rhs.script_ctx = nullptr;
-        rhs.env = nullptr;
-        return *this;
-    }
+    factory &operator=(factory &&rhs);
     factory(factory const&) = delete;
-    factory(factory &&rhs) {
-        *this = std::move(rhs);
-    }
-    
-    product spawn(std::string const& name, manager::initializer init = {}) {
-        product ret;
-        auto& tmpl = ret.tmpl = templates.at(name);
-        ret.manager = std::make_unique<mascot::manager>(
-            tmpl->actions_xml, tmpl->behaviors_xml, init, script_ctx);
-        ret.manager->state->env = env;
-        return ret;
-    }
-    product spawn(mascot::state::breed_request_data const& breed_request) {
-        return spawn(breed_request.name, breed_request);
-    }
-    void clear() {
-        templates.clear();
-    }
-    void register_template(tmpl const& tmpl) {
-        if (templates.count(tmpl.name) != 0) {
-            throw std::logic_error("cannot register same template twice");
-        }
-        templates[tmpl.name] = std::make_shared<factory::tmpl>(tmpl);
-    }
-    void deregister_template(std::string const& name) {
-        if (templates.count(name) == 0) {
-            throw std::logic_error("no such template");
-        }
-        templates.erase(name);
-    }
-    const std::map<std::string, std::shared_ptr<const tmpl>> &get_all_templates() const {
-        return templates;
-    }
-    std::shared_ptr<const tmpl> get_template(std::string const& name) const {
-        if (templates.count(name) == 0) {
-            return nullptr;
-        }
-        return templates.at(name);
-    }
-    factory(std::shared_ptr<scripting::context> ctx = nullptr): script_ctx(ctx) {
-        if (script_ctx == nullptr) {
-            script_ctx = std::make_shared<scripting::context>();
-        }
-    }
+    factory(factory &&rhs);
+    product spawn(std::string const& name, manager::initializer init = {});
+    product spawn(mascot::state::breed_request_data const& breed_request);
+    void clear();
+    void register_template(tmpl const& tmpl);
+    void deregister_template(std::string const& name);
+    const std::map<std::string, std::shared_ptr<const tmpl>> &get_all_templates() const;
+    std::shared_ptr<const tmpl> get_template(std::string const& name) const;
+    factory(std::shared_ptr<scripting::context> ctx = nullptr);
 };
 
 }

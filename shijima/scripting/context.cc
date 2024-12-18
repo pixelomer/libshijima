@@ -1,7 +1,20 @@
 #include "context.hpp"
+#include "duktape/duktape.h"
+#include <algorithm>
 
 namespace shijima {
 namespace scripting {
+
+math::vec2 context::duk_to_point(duk_context *ctx, duk_idx_t idx) {
+    math::vec2 point;
+    duk_get_prop_string(ctx, idx, "x");
+    point.x = duk_to_number(ctx, -1);
+    duk_pop(ctx);
+    duk_get_prop_string(ctx, idx, "y");
+    point.y = duk_to_number(ctx, -1);
+    duk_pop(ctx);
+    return point;
+}
 
 duk_ret_t context::duk_getter(duk_context *ctx) {
     // 0      1      2
@@ -415,6 +428,274 @@ duk_idx_t context::build_dvec2(std::function<mascot::environment::dvec2&()> gett
     #undef reg
     duk_seal(duk, -1);
     return vec2;
+}
+
+bool context::has_global(duk_uarridx_t idx) {
+    duk_push_global_object(duk);
+    duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
+    duk_get_prop_index(duk, -1, idx);
+    auto type = duk_get_type(duk, -1);
+    duk_pop_3(duk);
+    return type != DUK_TYPE_UNDEFINED;
+}
+
+bool context::is_global_active(duk_uarridx_t idx) {
+    return std::find(global_stack.begin(), global_stack.end(),
+        idx) != global_stack.end();
+}
+
+void context::create_global(duk_uarridx_t idx) {
+    if (has_global(idx)) {
+        throw std::logic_error("global index already in use");
+    }
+    duk_push_global_object(duk);
+    duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
+    duk_push_bare_object(duk);
+    duk_put_prop_index(duk, -2, idx);
+    duk_pop_2(duk);
+    globals_available++;
+}
+
+void context::delete_global(duk_uarridx_t idx) {
+    if (!has_global(idx)) {
+        throw std::logic_error("cannot delete non-existing global");
+    }
+    if (is_global_active(idx)) {
+        throw std::logic_error("cannot delete active global");
+    }
+    duk_push_global_object(duk);
+    duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
+    duk_del_prop_index(duk, -1, idx);
+    duk_pop_2(duk);
+    globals_available--;
+}
+
+void context::push_global(duk_uarridx_t idx) {
+    if (!has_global(idx)) {
+        throw std::logic_error("no such global");
+    }
+    global_stack.push_back(idx);
+}
+
+void context::pop_global(duk_uarridx_t idx) {
+    if (global_stack.empty() || global_stack[global_stack.size()-1] != idx) {
+        throw std::logic_error("idx != global_stack.top()");
+    }
+    global_stack.erase(global_stack.begin() + global_stack.size() - 1);
+}
+
+duk_uarridx_t context::next_global_idx() {
+    while (has_global(++global_counter));
+    auto idx = global_counter;
+    return idx;
+}
+
+void context::global::check_valid() {
+    if (invalidated != nullptr && *invalidated) {
+        ctx = nullptr;
+        if (is_active) {
+            throw std::logic_error("global was invalidated while active");
+        }
+        is_active = false;
+        invalidated = nullptr;
+    }
+}
+void context::global::init() {
+    check_valid();
+    if (is_active) {
+        throw std::logic_error("init() called on active global");
+    }
+    is_active = true;
+    ctx->push_global(idx);
+}
+void context::global::finalize() {
+    check_valid();
+    if (!is_active) {
+        throw std::logic_error("finalize() called on inactive global");
+    }
+    is_active = false;
+    ctx->pop_global(idx);
+}
+context::global::global(context *ctx, duk_uarridx_t idx,
+    std::shared_ptr<bool> invalidated): idx(idx), ctx(ctx),
+    is_active(false), invalidated(invalidated) {}
+
+context::global::active::active(global *owner): owner(owner) {}
+
+context *context::global::active::get() {
+    return owner->ctx;
+}
+
+context *context::global::active::operator->() {
+    return owner->ctx;
+}
+
+context::global::active::active(context::global::active &&rhs) {
+    owner = rhs.owner;
+    rhs.owner = nullptr;
+}
+
+context::global::active &context::global::active::operator=(context::global::active &&rhs) {
+    if (owner != nullptr) {
+        owner->finalize();
+    }
+    owner = rhs.owner;
+    rhs.owner = nullptr;
+    return *this;
+}
+
+context::global::active::~active() {
+    if (owner != nullptr) {
+        owner->finalize();
+    }
+}
+
+#define move() do { \
+    check_valid(); \
+    if (is_active || rhs.is_active) { \
+        throw std::logic_error("cannot destroy active global"); \
+    } \
+    if (ctx != nullptr) { \
+        ctx->delete_global(idx); \
+    } \
+    invalidated = rhs.invalidated; \
+    ctx = rhs.ctx; \
+    idx = rhs.idx; \
+    rhs.ctx = nullptr; \
+    rhs.invalidated = nullptr; \
+} while(0)
+
+context::global::global(context::global &&rhs): ctx(nullptr), is_active(false) {
+    move();
+}
+context::global &context::global::operator=(context::global &&rhs) {
+    move();
+    return *this;
+}
+#undef move
+
+context::global::~global() {
+    check_valid();
+    if (ctx != nullptr) {
+        if (is_active) {
+            finalize();
+        }
+        ctx->delete_global(idx);
+    }
+}
+
+context::global::active context::global::use() {
+    init();
+    return { this };
+}
+
+bool context::global::valid() {
+    return ctx != nullptr;
+}
+
+context::global::global(): idx(0), ctx(nullptr), is_active(false) {}
+
+context::global context::make_global() {
+    auto idx = next_global_idx();
+    create_global(idx);
+    return { this, idx, invalidated_flag };
+}
+
+double context::random() {
+    return state->env->random();
+}
+
+int context::random(int upper_range) {
+    return state->env->random(upper_range);
+}
+
+bool context::eval_bool(std::string const& js, bool log) {
+    duk_eval_string(duk, js.c_str());
+    bool ret = duk_to_boolean(duk, -1);
+    if (log) {
+        log_javascript(js, (ret ? "true" : "false"));
+    }
+    duk_pop(duk);
+    return ret;
+}
+
+double context::eval_number(std::string js, bool log) {
+    duk_eval_string(duk, js.c_str());
+    double ret = duk_to_number(duk, -1);
+    if (log) {
+        log_javascript(js, std::to_string(ret));
+    }
+    duk_pop(duk);
+    return ret;
+}
+
+std::string context::eval_string(std::string js, bool log) {
+    duk_eval_string(duk, js.c_str());
+    std::string ret = duk_to_string(duk, -1);
+    if (log) {
+        log_javascript(js, ret);
+    }
+    duk_pop(duk);
+    return ret;
+}
+
+void context::log_javascript(std::string const& js, std::string const& result) {
+    if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+        std::string m_js = js;
+        size_t i;
+        for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
+            m_js[i] = ' ';
+        }
+        log("\"" + m_js + "\" = " + result);
+    }
+}
+
+std::string context::eval_json(std::string js) {
+    duk_get_global_string(duk, "JSON");
+    duk_get_prop_string(duk, -1, "stringify");
+    duk_remove(duk, -2);
+    duk_eval_string(duk, js.c_str());
+    duk_call(duk, 1);
+    std::string ret = duk_to_string(duk, -1);
+    duk_pop(duk);
+    return ret;
+}
+
+void context::eval(std::string js) {
+    duk_eval_string_noresult(duk, js.c_str());
+}
+
+context::context() {
+    invalidated_flag = std::make_shared<bool>(false);
+    duk = duk_create_heap_default();
+    build_mascot();
+    duk_put_global_string(duk, "mascot");
+    build_console();
+    duk_put_global_string(duk, "console");
+
+    // Math.random()
+    duk_get_global_string(duk, "Math");
+    push_function([this](duk_context *duk) {
+        duk_push_number(duk, this->state->env->random());
+        return 1;
+    }, 0);
+    duk_put_prop_string(duk, -2, "random");
+    duk_pop(duk);
+
+    // Proxy global
+    build_proxy();
+    duk_set_global_object(duk);
+
+    // initial global to prevent the real global
+    // from being modified
+    auto idx = next_global_idx();
+    create_global(idx);
+    push_global(idx);
+}
+
+context::~context() {
+    *invalidated_flag = true;
+    duk_destroy_heap(duk);
 }
 
 }

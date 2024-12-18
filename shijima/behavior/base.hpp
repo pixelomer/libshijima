@@ -1,8 +1,6 @@
 #pragma once
-#include <vector>
 #include <memory>
 #include <shijima/action/base.hpp>
-#include <shijima/scripting/context.hpp>
 #include <shijima/scripting/condition.hpp>
 
 namespace shijima {
@@ -29,8 +27,7 @@ public:
     std::shared_ptr<action::base> action;
 
     base(std::string const& name, int freq, bool hidden,
-        scripting::condition const& cond): name(name), frequency(freq),
-        hidden(hidden), condition(cond) {}
+        scripting::condition const& cond);
 };
 
 }

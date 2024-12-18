@@ -6,12 +6,7 @@ namespace action {
 
 class stay : public animation {
 public:
-    virtual bool tick() override {
-        if (!animation::tick()) {
-            return false;
-        }
-        return elapsed() < vars.get_num("Duration", 250);
-    }
+    virtual bool tick() override;
 };
 
 }
