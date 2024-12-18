@@ -1,8 +1,6 @@
 #include <shijima/shijima.hpp>
 #include <sstream>
 #include <fstream>
-#include <chrono>
-#include <thread>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <iostream>
@@ -79,12 +77,16 @@ void run_console(bool poll_events = true) {
     scripting::context &ctx = *mascots[0].manager->script_ctx;
     ctx.state = mascots[0].manager->state;
     ctx.state->env = factory.env;
-    while (true) {
-        std::string line;
+    std::string line;
+    do {
         std::cout << "duktape> ";
         std::getline(std::cin, line);
         SDL_Event ev;
-        if (line != "q") {
+        if (line == "q") {}
+        else if (line == "tick") {
+            mascots[0].manager->tick();
+        }
+        else {
             try {
                 std::cout << ctx.eval_json(line) << std::endl;
             }
@@ -95,10 +97,8 @@ void run_console(bool poll_events = true) {
         if (poll_events) {
             while (SDL_PollEvent(&ev)); // ignore all events
         }
-        if (line == "q") {
-            break;
-        }
     }
+    while (line != "q");
 }
 
 bool running = true;
