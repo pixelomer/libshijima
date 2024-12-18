@@ -56,6 +56,7 @@ add_library(
     shijima/broadcast/server.cc
     shijima/mascot/factory.cc
     shijima/mascot/manager.cc
+    shijima/mascot/state.cc
     shijima/scripting/duktape/duktape.cc
     shijima/scripting/context.cc
     shijima/scripting/variables.cc
