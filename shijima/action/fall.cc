@@ -9,27 +9,37 @@ void fall::init(mascot::tick &ctx) {
     velocity.y = vars.get_num("InitialVY", 0);
 }
 
-bool fall::tick() {
+bool fall::requests_interpolation() {
+    return false;
+}
+
+bool fall::subtick(int idx) {
+    if (!animation::subtick(idx)) {
+        return false;
+    }
     if (mascot->on_land()) {
         return false;
     }
+
     if (velocity.x != 0) {
         mascot->looking_right = (velocity.x > 0);
     }
+
+    auto subtick_count = mascot->env->subtick_count;
 
     math::vec2 resistance;
     resistance.x = vars.get_num("RegistanceX", 0.05);
     resistance.y = vars.get_num("RegistanceY", 0.1);
     double gravity = vars.get_num("Gravity", 2);
-    velocity.x -= velocity.x * resistance.x;
-    velocity.y += gravity - velocity.y * resistance.y;
+    velocity.x -= (velocity.x * resistance.x) / subtick_count;
+    velocity.y += (gravity - velocity.y * resistance.y) / subtick_count;
     
     vars.add_attr({{ "VelocityX", velocity.x }, { "VelocityY", velocity.y }});
 
     math::vec2 before = mascot->anchor;
 
-    mascot->anchor.x += (int)velocity.x;
-    mascot->anchor.y += (int)velocity.y;
+    mascot->anchor.x += velocity.x / subtick_count;
+    mascot->anchor.y += velocity.y / subtick_count;
     
     if (mascot->anchor.x > mascot->env->work_area.right) {
         mascot->anchor.x = mascot->env->work_area.right;
@@ -65,9 +75,6 @@ bool fall::tick() {
     #undef IE_STICK
     #undef AREA_STICK
     
-    if (!animation::tick()) {
-        return false;
-    }
     return true;
 }
 

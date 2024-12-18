@@ -11,6 +11,10 @@ bool base::requests_broadcast() {
     return false;
 }
 
+bool base::requests_interpolation() {
+    return true;
+}
+
 void base::init(mascot::tick &ctx) {
     ctx.will_init();
     #ifdef SHIJIMA_LOGGING_ENABLED
@@ -93,6 +97,24 @@ bool base::tick() {
     }
     else {
         throw std::logic_error("Unknown border: " + border_type);
+    }
+}
+
+bool base::subtick(int idx) {
+    if (requests_interpolation()) {
+        if (idx == 0) {
+            start_anchor = mascot->anchor;
+            if (!tick()) {
+                return false;
+            }
+            target_offset = mascot->anchor - start_anchor;
+        }
+        mascot->anchor = start_anchor + target_offset *
+            ((idx + 1) / (double)mascot->env->subtick_count);
+        return true;
+    }
+    else {
+        return (idx != 0) || tick();
     }
 }
 

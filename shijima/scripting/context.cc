@@ -390,7 +390,7 @@ duk_idx_t context::build_environment() {
     put_prop(-2, "activeIE");
 
     // environment.cursor
-    build_dvec2([this]() -> mascot::environment::dvec2& { return this->state->get_cursor(); });
+    build_dvec2([this]() -> mascot::environment::dvec2 { return this->state->get_cursor(); });
     put_prop(-2, "cursor");
 
     duk_seal(duk, -1);
@@ -419,11 +419,11 @@ duk_idx_t context::build_vec2(std::function<math::vec2&()> getter) {
     return vec2;
 }
 
-duk_idx_t context::build_dvec2(std::function<mascot::environment::dvec2&()> getter) {
+duk_idx_t context::build_dvec2(std::function<mascot::environment::dvec2()> getter) {
     auto vec2 = duk_push_bare_object(duk);
     #define reg(x) \
         register_number_property(#x, [getter]() { return getter().x; }, \
-        [getter](double val) { getter().x = val; })
+        nullptr)
     reg(x); reg(y); reg(dx); reg(dy);
     #undef reg
     duk_seal(duk, -1);

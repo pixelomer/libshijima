@@ -80,6 +80,18 @@ struct vec2 {
     vec2 &operator/=(double rhs) {
         return *this = *this / rhs;
     }
+    vec2 operator-(vec2 const& rhs) {
+        return { x - rhs.x, y - rhs.y };
+    }
+    vec2 &operator-=(vec2 const& rhs) {
+        return *this = *this - rhs;
+    }
+    vec2 operator+(vec2 const& rhs) {
+        return { x + rhs.x, y + rhs.y };
+    }
+    vec2 &operator+=(vec2 const& rhs) {
+        return *this = *this + rhs;
+    }
 };
 
 }

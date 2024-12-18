@@ -117,11 +117,9 @@ Uint32 timer_callback(Uint32 interval, void *param) {
 
     SDL_PushEvent(&event);
     if (fast) {
-        return 1000 / 125;
+        return 1000 / 300; // 3x
     }
-    else {
-        return 1000 / 25;
-    }
+    return 1000 / 100;
 }
 
 void tick() {
@@ -134,6 +132,7 @@ void tick() {
     SDL_GetMouseState(&mx, &my);
 
     auto &env = *factory.env;
+    env.subtick_count = 4;
     env.work_area = env.screen = { 0, (double)w, (double)h, 0 };
     env.floor = { (double)h - 50, 0, (double)w };
     env.ceiling = { 0, 0, (double)w };
@@ -220,24 +219,23 @@ void tick() {
     uint32_t render_elapsed = SDL_GetTicks() - start_time;
 
     if (spawn_more) {
-        if (mascots[0].manager->state->time % 1 == 0) {
-            std::vector<std::string> names = {
-                "test1"
-            };
-            auto name = names[random() % names.size()];
-            math::vec2 anchor { static_cast<double>(50 + random() % (w - 100)),
-                static_cast<double>(50 + random() % (h - 100)) };
-            mascots.push_back(factory.spawn(name, { anchor }));
-        }
+        std::vector<std::string> names = {
+            "test1"
+        };
+        auto name = names[random() % names.size()];
+        math::vec2 anchor { static_cast<double>(50 + random() % (w - 100)),
+            static_cast<double>(50 + random() % (h - 100)) };
+        mascots.push_back(factory.spawn(name, { anchor }));
+        spawn_more = false;
     }
 
-    if (mascots[0].manager->state->time % 12 == 0) {
+    //if (mascots[0].manager->state->time % 12 == 0) {
         std::string title = WINDOW_TITLE " (" + std::to_string(mascots.size()) + " active, "
             + std::to_string(update_elapsed) + "ms update, "
             + std::to_string(render_elapsed) + "ms render)";
         
         SDL_SetWindowTitle(window, title.c_str());
-    }
+    //}
 
     for (int i=new_mascots.size()-1; i>=0; --i) {
         mascots.push_back(std::move(new_mascots[i]));
@@ -359,7 +357,7 @@ int main(int argc, char **argv) {
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_SOFTWARE);
     window_surface = SDL_GetWindowSurface(window);
 
-    SDL_AddTimer(1000/25, timer_callback, NULL);
+    SDL_AddTimer(1000 / 100, timer_callback, NULL);
     running = true;
     spawn_more = false;
 

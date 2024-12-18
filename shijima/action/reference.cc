@@ -7,6 +7,10 @@ bool reference::requests_vars() {
     return false;
 }
 
+bool reference::requests_interpolation() {
+    return false;
+}
+
 void reference::init(mascot::tick &ctx) {
     base::init(ctx);
     mascot::tick target_ctx = ctx.overlay(init_attr);
@@ -19,11 +23,11 @@ void reference::init(mascot::tick &ctx) {
     }
 }
 
-bool reference::tick() {
-    if (!base::tick()) {
+bool reference::subtick(int idx) {
+    if (!base::subtick(idx)) {
         return false;
     }
-    return target->tick();
+    return target->subtick(idx);
 }
 
 void reference::finalize() {

@@ -12,8 +12,9 @@ protected:
     double foot_dx;
     int time_to_resist;
 public:
+    virtual bool requests_interpolation() override;
     virtual void init(mascot::tick &ctx) override;
-    virtual bool tick() override;
+    virtual bool subtick(int idx) override;
 };
 
 }

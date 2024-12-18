@@ -1,4 +1,6 @@
 #include "manager.hpp"
+#include "shijima/mascot/environment.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace mascot {
@@ -40,7 +42,13 @@ void manager::_next_behavior(std::string const& name) {
 }
 
 bool manager::action_tick() {
-    bool ret = action->tick();
+    // the return value of tick() is ignored for all subticks other than 0
+    bool ignore_did_tick = (next_subtick != 0);
+    bool did_tick = action->subtick(next_subtick);
+    bool ret = ignore_did_tick || did_tick;
+    if (ret) {
+        next_subtick = (next_subtick + 1) % state->env->subtick_count;
+    }
     return ret;
 }
 
@@ -117,50 +125,56 @@ std::string manager::export_state() {
 }
 
 void manager::pre_tick() {
+    state->active_sound_changed = false;
     tick_ctx.reset();
     script_ctx->state = state;
-    state->time++;
-    state->active_sound_changed = false;
     if (state->env->get_scale() != 1.0) {
         state->local_cursor *= state->env->get_scale();
         state->anchor *= state->env->get_scale();
     }
-    if (behavior == nullptr) {
-        // First tick
-        _next_behavior();
-    }
-    if (state->queued_behavior != "") {
-        auto &behavior = state->queued_behavior;
-        if (state->interaction.available() && !state->interaction.started &&
-            state->interaction.behavior() == behavior)
-        {
-            // Start ScanMove/Broadcast interaction
-            state->interaction.started = true;
+    state->roll_dcursor();
+    if (next_subtick == 0) {
+        state->time++;
+        if (behavior == nullptr) {
+            // First tick
+            _next_behavior();
         }
-        _next_behavior(behavior);
-        behavior = "";
-    }
-    bool dragging;
-    if (state->drag_lock > 0) {
-        dragging = false;
-    }
-    else {
-        dragging = state->dragging;
-    }
-    if (dragging && behavior->name != "Dragged") {
-        state->was_on_ie = false;
-        state->interaction.finalize();
-        _next_behavior("Dragged");
-    }
-    else if (!dragging && behavior->name == "Dragged") {
-        if (state->drag_with_local_cursor) {
-            // Force script to use local cursor
-            state->dragging = true;
+        if (state->queued_behavior != "") {
+            auto &behavior = state->queued_behavior;
+            if (state->interaction.available() && !state->interaction.started &&
+                state->interaction.behavior() == behavior)
+            {
+                // Start ScanMove/Broadcast interaction
+                state->interaction.started = true;
+            }
+            _next_behavior(behavior);
+            behavior = "";
         }
-        state->interaction.finalize();
-        _next_behavior("Thrown");
-        state->was_on_ie = false;
-        state->dragging = false;
+        bool dragging;
+        if (state->drag_lock > 0) {
+            dragging = false;
+        }
+        else {
+            dragging = state->dragging;
+        }
+        if (dragging && behavior->name != "Dragged") {
+            state->was_on_ie = false;
+            state->interaction.finalize();
+            _next_behavior("Dragged");
+        }
+        else if (!dragging && behavior->name == "Dragged") {
+            if (state->drag_with_local_cursor) {
+                // Force script to use local cursor
+                state->dragging = true;
+            }
+            state->interaction.finalize();
+            _next_behavior("Thrown");
+            state->was_on_ie = false;
+            state->dragging = false;
+        }
+    }
+    else if (behavior == nullptr) {
+        throw std::runtime_error("cannot determine first behavior on non-zero subtick");
     }
     if (state->env->sticky_ie && state->was_on_ie &&
         state->env->floor.y > state->anchor.y)

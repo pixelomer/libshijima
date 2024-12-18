@@ -3,6 +3,10 @@
 namespace shijima {
 namespace action {
 
+bool sequence::requests_interpolation() {
+    return false;
+}
+
 std::shared_ptr<base> sequence::next_action() {
     if (action_idx >= (int)actions.size()) {
         if (vars.get_bool("Loops", false)) {
@@ -37,18 +41,20 @@ void sequence::init(mascot::tick &ctx) {
     action_idx = -1;
     next_action();
 }
-bool sequence::tick() {
-    if (!base::tick()) {
+
+bool sequence::subtick(int idx) {
+    if ((idx == 0) && !base::tick()) {
         return false;
     }
     if (action == nullptr) {
         return false;
     }
-    while (action != nullptr && !action->tick()) {
+    while (action != nullptr && !action->subtick(idx) && (idx == 0)) {
         next_action();
     }
     return action != nullptr;
 }
+
 void sequence::finalize() {
     if (action != nullptr) {
         action->finalize();

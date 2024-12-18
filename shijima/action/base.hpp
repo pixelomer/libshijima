@@ -12,6 +12,8 @@ class base {
 private:
     bool active = false;
     bool prevents_dragging;
+    math::vec2 start_anchor;
+    math::vec2 target_offset;
 protected:
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
@@ -36,6 +38,7 @@ protected:
 public:
     virtual bool requests_vars();
     virtual bool requests_broadcast();
+    virtual bool requests_interpolation();
 
     std::map<std::string, std::string> init_attr;
 
@@ -49,6 +52,11 @@ public:
     virtual bool tick();
     virtual void finalize();
     virtual ~base() {}
+
+    // Actions may implement tick(int idx) instead to support subticks
+    // and produce smoother animation. The default implementation creates a
+    // linear motion based on the position change from tick().
+    virtual bool subtick(int idx);
 };
 
 }

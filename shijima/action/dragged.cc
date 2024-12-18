@@ -12,19 +12,26 @@ void dragged::init(mascot::tick &ctx) {
     vars.add_attr({ { "FootX", foot_x }, { "footX", foot_x } });
 }
 
-bool dragged::tick() {
+bool dragged::requests_interpolation() {
+    return false;
+}
+
+bool dragged::subtick(int idx) {
     mascot->looking_right = false;
     auto cursor = mascot->get_cursor();
-    foot_dx = (foot_dx + ((cursor.x - foot_x) * 0.1)) * 0.8;
-    foot_x += foot_dx;
-    vars.add_attr({ { "FootX", foot_x }, { "footX", foot_x },
-        { "FootDX", foot_dx }, { "footDX", foot_dx } });
+    if (idx == 0) {
+        foot_dx = (foot_dx + ((cursor.x - foot_x) * 0.1)) * 0.8;
+        foot_x += foot_dx;
+        vars.add_attr({ { "FootX", foot_x }, { "footX", foot_x },
+            { "FootDX", foot_dx }, { "footDX", foot_dx } });
+    }
     auto offset_x = vars.get_num("OffsetX", 0);
     auto offset_y = vars.get_num("OffsetY", 120);
-    if (std::abs(cursor.x - mascot->anchor.x + offset_x) >= 5) {
+    auto subtick_count = mascot->env->subtick_count;
+    if (std::abs(cursor.x - mascot->anchor.x + offset_x) >= (5.0 / subtick_count)) {
         reset_elapsed();
     }
-    if (!animation::tick()) {
+    if (!animation::subtick(idx)) {
         return false;
     }
     mascot->anchor.x = cursor.x + offset_x;
