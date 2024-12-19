@@ -45,6 +45,7 @@ public:
     std::vector<math::vec2> stored_dcursor_data;
     environment::dvec2 stored_dcursor;
     int next_dcursor_roll;
+    math::vec2 active_ie_offset = { 0, 0 };
 
     void roll_dcursor();
     environment::dvec2 &get_raw_cursor();

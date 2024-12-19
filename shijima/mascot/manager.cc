@@ -133,6 +133,8 @@ void manager::pre_tick() {
         state->anchor *= state->env->get_scale();
     }
     state->roll_dcursor();
+    state->active_ie_offset.x += state->env->active_ie.dx;
+    state->active_ie_offset.y += state->env->active_ie.dy;
     if (next_subtick == 0) {
         state->time++;
         if (behavior == nullptr) {
@@ -172,26 +174,29 @@ void manager::pre_tick() {
             state->was_on_ie = false;
             state->dragging = false;
         }
+        if (state->env->sticky_ie && state->was_on_ie &&
+            state->env->floor.y > state->anchor.y)
+        {
+            // Try to stick to IE by following its dx/dy.
+            auto anchor = state->anchor;
+            anchor += state->active_ie_offset;
+            if (state->env->active_ie.is_on(anchor)) {
+                state->anchor = anchor;
+            }
+        }
+        state->active_ie_offset = { 0, 0 };
     }
     else if (behavior == nullptr) {
         throw std::runtime_error("cannot determine first behavior on non-zero subtick");
     }
-    if (state->env->sticky_ie && state->was_on_ie &&
-        state->env->floor.y > state->anchor.y)
-    {
-        // Try to stick to IE by following its dx/dy.
-        auto anchor = state->anchor;
-        anchor.x += state->env->active_ie.dx;
-        anchor.y += state->env->active_ie.dy;
-        if (state->env->active_ie.is_on(anchor)) {
-            state->anchor = anchor;
-        }
-    }
 }
 
 void manager::post_tick() {
-    state->was_on_ie = state->env->active_ie.is_on(state->anchor) &&
-        !state->env->floor.is_on(state->anchor);
+    if ((next_subtick - 1) == 0 || state->env->subtick_count == 1) {
+        // completed subtick 0
+        state->was_on_ie = state->env->active_ie.is_on(state->anchor) &&
+            !state->env->floor.is_on(state->anchor);
+    }
     if (!state->active_frame.sound.empty() && state->active_sound != state->active_frame.sound) {
         state->active_sound_changed = true;
         state->active_sound = state->active_frame.sound;
