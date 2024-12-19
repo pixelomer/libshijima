@@ -95,7 +95,8 @@ void manager::detach_from_borders() {
 void manager::next_behavior(std::string const& name) {
     // Only for public use
     tick_ctx.reset();
-    _next_behavior(name);
+    state->interaction.finalize();
+    state->queued_behavior = name;
 }
 
 std::shared_ptr<const behavior::base> manager::active_behavior() {
