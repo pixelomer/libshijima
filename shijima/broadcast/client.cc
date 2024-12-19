@@ -1,4 +1,5 @@
 #include "client.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace broadcast {

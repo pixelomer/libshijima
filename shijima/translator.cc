@@ -1,6 +1,5 @@
 #include "translator.hpp"
 #include "xml_doc.hpp"
-#include <sstream>
 #include <rapidxml/rapidxml_print.hpp>
 
 namespace shijima {

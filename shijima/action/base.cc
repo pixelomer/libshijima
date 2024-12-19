@@ -1,4 +1,5 @@
 #include "base.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace action {

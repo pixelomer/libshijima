@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace broadcast {

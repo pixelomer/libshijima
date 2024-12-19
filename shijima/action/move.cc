@@ -1,4 +1,5 @@
 #include "move.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace action {

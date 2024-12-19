@@ -1,6 +1,7 @@
 #include "context.hpp"
 #include "duktape/duktape.h"
 #include <algorithm>
+#include <stdexcept>
 
 namespace shijima {
 namespace scripting {

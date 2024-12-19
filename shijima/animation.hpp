@@ -1,9 +1,7 @@
 #pragma once
-#include <string>
 #include <vector>
 #include "scripting/condition.hpp"
 #include "pose.hpp"
-#include "math.hpp"
 
 namespace shijima {
 
@@ -14,26 +12,9 @@ private:
 public:
     scripting::condition condition;
     // time is 0-indexed. The first frame happens at t=0
-    pose const& get_pose(int time) {
-        time %= duration;
-        for (auto const& pose : poses) {
-            time -= pose.duration;
-            if (time < 0) {
-                return pose;
-            }
-        }
-        throw std::logic_error("impossible condition");
-    }
-    int get_duration() {
-        return duration;
-    }
-    animation(std::vector<shijima::pose> const& poses): poses(poses),
-        condition(true)
-    {
-        for (auto const& pose : poses) {
-            duration += pose.duration;
-        }
-    }
+    pose const& get_pose(int time);
+    int get_duration();
+    animation(std::vector<shijima::pose> const& poses);
 };
 
 }

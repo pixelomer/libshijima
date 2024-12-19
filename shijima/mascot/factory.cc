@@ -1,4 +1,5 @@
 #include "factory.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace mascot {

@@ -1,4 +1,5 @@
 #include "log.hpp"
+#include <iostream>
 
 namespace shijima {
 

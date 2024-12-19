@@ -60,6 +60,7 @@ add_library(
     shijima/scripting/duktape/duktape.cc
     shijima/scripting/context.cc
     shijima/scripting/variables.cc
+    shijima/animation.cc
     shijima/log.cc
     shijima/parser.cc
     shijima/translator.cc

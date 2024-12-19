@@ -8,6 +8,7 @@
 #include "behavior/behavior.hpp"
 #include "xml_doc.hpp"
 #include "translator.hpp"
+#include <stdexcept>
 
 namespace shijima {
 

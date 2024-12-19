@@ -1,4 +1,5 @@
 #include "animation.hpp"
+#include <stdexcept>
 
 namespace shijima {
 namespace action {
