@@ -17,7 +17,6 @@ private:
     std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
     std::map<std::string, std::string> constants;
-    int next_subtick = 0;
 public:
     behavior::list const& initial_behavior_list() {
         return behaviors.get_initial_list();

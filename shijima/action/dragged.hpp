@@ -11,6 +11,7 @@ protected:
     double foot_x;
     double foot_dx;
     int time_to_resist;
+    virtual bool handle_dragging() override;
 public:
     virtual bool requests_interpolation() override;
     virtual void init(mascot::tick &ctx) override;

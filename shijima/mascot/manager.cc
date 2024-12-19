@@ -43,11 +43,11 @@ void manager::_next_behavior(std::string const& name) {
 
 bool manager::action_tick() {
     // the return value of tick() is ignored for all subticks other than 0
-    bool ignore_did_tick = (next_subtick != 0);
-    bool did_tick = action->subtick(next_subtick);
+    bool ignore_did_tick = (state->next_subtick != 0);
+    bool did_tick = action->subtick(state->next_subtick);
     bool ret = ignore_did_tick || did_tick;
     if (ret) {
-        next_subtick = (next_subtick + 1) % state->env->subtick_count;
+        state->next_subtick = (state->next_subtick + 1) % state->env->subtick_count;
     }
     return ret;
 }
@@ -131,6 +131,7 @@ bool manager::has_queued_behavior() {
 
 void manager::activate_queued_behavior() {
     if (has_queued_behavior()) {
+        state->next_subtick = 0;
         auto &behavior = state->queued_behavior;
         if (state->interaction.available() && !state->interaction.started &&
             state->interaction.behavior() == behavior)
@@ -154,7 +155,7 @@ void manager::pre_tick() {
     state->roll_dcursor();
     state->active_ie_offset.x += state->env->active_ie.dx;
     state->active_ie_offset.y += state->env->active_ie.dy;
-    if (next_subtick == 0) {
+    if (state->next_subtick == 0) {
         state->time++;
         if (behavior == nullptr) {
             // First tick
@@ -179,7 +180,7 @@ void manager::pre_tick() {
 }
 
 void manager::post_tick() {
-    if ((next_subtick - 1) == 0 || state->env->subtick_count == 1) {
+    if (state->next_subtick == 1 || state->env->subtick_count == 1) {
         // completed subtick 0
         state->was_on_ie = state->env->active_ie.is_on(state->anchor) &&
             !state->env->floor.is_on(state->anchor);

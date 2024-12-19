@@ -11,6 +11,8 @@ protected:
     virtual std::shared_ptr<shijima::animation> &get_animation();
     pose const& get_pose();
     bool animation_finished();
+    virtual bool check_border_type();
+    virtual bool handle_dragging();
 public:
     virtual bool requests_broadcast() override;
     std::vector<std::shared_ptr<shijima::animation>> animations;

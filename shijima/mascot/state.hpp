@@ -37,6 +37,7 @@ public:
     bool dead;
     long time;
     bool can_breed = true;
+    int next_subtick = 0;
 
     bool drag_with_local_cursor;
     environment::dvec2 local_cursor;

@@ -16,10 +16,6 @@ bool base::requests_interpolation() {
     return true;
 }
 
-bool base::prevents_dragging() {
-    return m_prevents_dragging;
-}
-
 void base::init(mascot::tick &ctx) {
     ctx.will_init();
     #ifdef SHIJIMA_LOGGING_ENABLED
@@ -35,7 +31,6 @@ void base::init(mascot::tick &ctx) {
     if (active) {
         throw std::logic_error("init() called twice");
     }
-    m_prevents_dragging = false;
     active = true;
     mascot = ctx.script->state;
     start_time = mascot->time;
@@ -45,8 +40,6 @@ void base::init(mascot::tick &ctx) {
     }
     if (requests_vars()) {
         vars.init(*ctx.script, attr);
-        bool draggable = vars.get_bool("Draggable", true);
-        m_prevents_dragging = !draggable;
         if (requests_broadcast()) {
             auto affordance = vars.get_string("Affordance");
             if (affordance != "") {
@@ -55,9 +48,6 @@ void base::init(mascot::tick &ctx) {
                 vars.add_attr({ { "Affordance", "" } });
             }
         }
-    }
-    else {
-        m_prevents_dragging = false;
     }
 }
 
@@ -81,36 +71,7 @@ bool base::tick() {
     if (!vars.get_bool("Condition", true)) {
         return false;
     }
-
-    if (mascot->dragging && !prevents_dragging()) {
-        // Started dragging
-        mascot->was_on_ie = false;
-        mascot->interaction.finalize();
-        mascot->queued_behavior = "Dragged";
-        return false;
-    }
-
-    auto border_type = vars.get_string("BorderType");
-    if (border_type == "Floor") {
-        return mascot->env->floor.is_on(mascot->anchor) ||
-            mascot->env->active_ie.top_border().is_on(mascot->anchor);
-    }
-    else if (border_type == "Wall") {
-        return mascot->env->work_area.left_border().is_on(mascot->anchor) ||
-            mascot->env->work_area.right_border().is_on(mascot->anchor) ||
-            mascot->env->active_ie.left_border().is_on(mascot->anchor) ||
-            mascot->env->active_ie.right_border().is_on(mascot->anchor);
-    }
-    else if (border_type == "Ceiling") {
-        return mascot->env->work_area.top_border().is_on(mascot->anchor) ||
-            mascot->env->active_ie.bottom_border().is_on(mascot->anchor);
-    }
-    else if (border_type == "") {
-        return true;
-    }
-    else {
-        throw std::logic_error("Unknown border: " + border_type);
-    }
+    return true;
 }
 
 bool base::subtick(int idx) {
@@ -143,7 +104,10 @@ void base::finalize() {
         }
     #endif
     if (!active) {
-        throw std::logic_error("finalize() called twice");
+        throw std::runtime_error("finalize() called twice");
+    }
+    if (mascot->next_subtick != 0) {
+        throw std::runtime_error("finalize() called at non-zero subtick");
     }
     if (requests_vars()) {
         server.finalize();

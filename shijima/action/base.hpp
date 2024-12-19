@@ -14,7 +14,6 @@ private:
     math::vec2 start_anchor;
     math::vec2 target_offset;
 protected:
-    bool m_prevents_dragging;
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
     broadcast::server server;
@@ -39,7 +38,6 @@ public:
     virtual bool requests_vars();
     virtual bool requests_broadcast();
     virtual bool requests_interpolation();
-    virtual bool prevents_dragging();
 
     std::map<std::string, std::string> init_attr;
 
