@@ -7,6 +7,10 @@ bool sequence::requests_interpolation() {
     return false;
 }
 
+bool sequence::prevents_dragging() {
+    return m_prevents_dragging || action->prevents_dragging();
+}
+
 std::shared_ptr<base> sequence::next_action() {
     if (action_idx >= (int)actions.size()) {
         if (vars.get_bool("Loops", false)) {

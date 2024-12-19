@@ -25,6 +25,8 @@ public:
 private:
     void _next_behavior(std::string const& name = "");
     bool action_tick();
+    bool has_queued_behavior();
+    void activate_queued_behavior();
 public:
     void reset_position();
     void detach_from_borders();

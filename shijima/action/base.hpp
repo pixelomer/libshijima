@@ -11,10 +11,10 @@ namespace action {
 class base {
 private:
     bool active = false;
-    bool prevents_dragging;
     math::vec2 start_anchor;
     math::vec2 target_offset;
 protected:
+    bool m_prevents_dragging;
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
     broadcast::server server;
@@ -39,6 +39,7 @@ public:
     virtual bool requests_vars();
     virtual bool requests_broadcast();
     virtual bool requests_interpolation();
+    virtual bool prevents_dragging();
 
     std::map<std::string, std::string> init_attr;
 
@@ -53,9 +54,9 @@ public:
     virtual void finalize();
     virtual ~base() {}
 
-    // Actions may implement tick(int idx) instead to support subticks
+    // Actions may implement subtick(int idx) instead to support subticks
     // and produce smoother animation. The default implementation creates a
-    // linear motion based on the position change from tick().
+    // linear motion based on the position change from tick(). 
     virtual bool subtick(int idx);
 };
 

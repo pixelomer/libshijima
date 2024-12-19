@@ -9,6 +9,7 @@ void dragged::init(mascot::tick &ctx) {
     foot_dx = 0;
     foot_x = mascot->get_cursor().x + offset_x;
     time_to_resist = 250;
+    m_prevents_dragging = true;
     vars.add_attr({ { "FootX", foot_x }, { "footX", foot_x } });
 }
 
@@ -20,6 +21,12 @@ bool dragged::subtick(int idx) {
     mascot->looking_right = false;
     auto cursor = mascot->get_cursor();
     if (idx == 0) {
+        if (!mascot->dragging) {
+            // Stopped dragging
+            mascot->queued_behavior = "Thrown";
+            mascot->was_on_ie = false;
+            return false;
+        }
         foot_dx = (foot_dx + ((cursor.x - foot_x) * 0.1)) * 0.8;
         foot_x += foot_dx;
         vars.add_attr({ { "FootX", foot_x }, { "footX", foot_x },

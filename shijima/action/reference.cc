@@ -11,6 +11,10 @@ bool reference::requests_interpolation() {
     return false;
 }
 
+bool reference::prevents_dragging() {
+    return m_prevents_dragging || target->prevents_dragging();
+}
+
 void reference::init(mascot::tick &ctx) {
     base::init(ctx);
     mascot::tick target_ctx = ctx.overlay(init_attr);
