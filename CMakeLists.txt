@@ -61,6 +61,7 @@ add_library(
     shijima/scripting/context.cc
     shijima/scripting/variables.cc
     shijima/animation.cc
+    shijima/hotspot.cc
     shijima/log.cc
     shijima/parser.cc
     shijima/translator.cc

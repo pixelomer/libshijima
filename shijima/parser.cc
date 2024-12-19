@@ -6,6 +6,8 @@
 #include <functional>
 #include <memory>
 #include "behavior/behavior.hpp"
+#include "shijima/log.hpp"
+#include "shijima/math.hpp"
 #include "xml_doc.hpp"
 #include "translator.hpp"
 #include <stdexcept>
@@ -40,6 +42,34 @@ pose parser::parse_pose(xml_node<> *node) {
     return pose;
 }
 
+bool parser::parse_hotspot(xml_node<> *node, shijima::hotspot &hotspot) {
+    if (std::string(node->name()) != "Hotspot") {
+        throw std::invalid_argument("Expected Hotspot node");
+    }
+    auto attr = all_attributes(node);
+    if (node->first_node() != nullptr) {
+        throw std::invalid_argument("Non-empty Pose contents");
+    }
+    hotspot::shape shape = hotspot::shape_from_name(attr.at("Shape"));
+    if (shape == hotspot::shape::INVALID) {
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "warning: invalid shape");
+        #endif
+        return false;
+    }
+    math::vec2 origin = attr.at("Origin");
+    math::vec2 size = attr.at("Size");
+    auto behavior = attr.at("Behavior");
+    if (behavior == "") {
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "warning: hotspot without behavior");
+        #endif
+        return false;
+    }
+    hotspot = { shape, origin, size, behavior };
+    return true;
+}
+
 // Parse Animations within Actions
 std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
     if (std::string(node->name()) != "Animation") {
@@ -57,21 +87,25 @@ std::shared_ptr<animation> parser::parse_animation(rapidxml::xml_node<> *node) {
         cond = js;
     }
     std::vector<pose> poses;
-    auto pose_node = node->first_node();
-    while (pose_node != nullptr) {
-        //FIXME: Hotspots are ignored
-        if (std::string(pose_node->name()) == "Hotspot") {
-            pose_node = pose_node->next_sibling();
-            continue;
+    std::vector<hotspot> hotspots;
+    auto subnode = node->first_node();
+    while (subnode != nullptr) {
+        if (std::string(subnode->name()) == "Hotspot") {
+            shijima::hotspot hotspot;
+            if (parse_hotspot(subnode, hotspot)) {
+                hotspots.push_back(hotspot);
+            }
         }
-        auto pose = parse_pose(pose_node);
-        poses.push_back(pose);
-        pose_node = pose_node->next_sibling();
+        else {
+            auto pose = parse_pose(subnode);
+            poses.push_back(pose);
+        }
+        subnode = subnode->next_sibling();
     }
     if (poses.size() == 0) {
         throw std::invalid_argument("Animation has no Poses");
     }
-    auto anim = std::make_shared<animation>(poses);
+    auto anim = std::make_shared<animation>(poses, hotspots);
     anim->condition = cond;
     return anim;
 }

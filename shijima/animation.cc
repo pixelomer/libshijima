@@ -18,12 +18,22 @@ int animation::get_duration() {
     return duration;
 }
 
-animation::animation(std::vector<shijima::pose> const& poses): poses(poses),
-    condition(true)
+animation::animation(std::vector<shijima::pose> const& poses,
+    std::vector<shijima::hotspot> const& hotspots): poses(poses),
+    hotspots(hotspots), condition(true)
 {
     for (auto const& pose : poses) {
         duration += pose.duration;
     }
+}
+
+std::string animation::hotspot_behavior_at(math::vec2 offset) {
+    for (auto const& hotspot : hotspots) {
+        if (hotspot.point_inside(offset)) {
+            return hotspot.get_behavior();
+        }
+    }
+    return "";
 }
 
 }

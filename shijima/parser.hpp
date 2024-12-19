@@ -9,6 +9,7 @@
 #include "action/reference.hpp"
 #include "behavior/list.hpp"
 #include "behavior/base.hpp"
+#include "hotspot.hpp"
 
 namespace shijima {
 
@@ -22,6 +23,7 @@ private:
         rapidxml::xml_node<> *node, std::string const& type);
     std::shared_ptr<animation> parse_animation(rapidxml::xml_node<> *node);
     pose parse_pose(rapidxml::xml_node<> *node);
+    bool parse_hotspot(rapidxml::xml_node<> *node, shijima::hotspot &hotspot);
     static std::map<std::string, std::string> all_attributes(rapidxml::xml_node<> *node,
         std::map<std::string, std::string> const& defaults = {});
     std::shared_ptr<action::base> parse_action(rapidxml::xml_node<> *action, bool is_child);
