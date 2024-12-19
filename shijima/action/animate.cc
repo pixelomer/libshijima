@@ -4,10 +4,10 @@ namespace shijima {
 namespace action {
 
 bool animate::tick() {
-    if (!animation::tick()) {
+    if (animation_finished()) {
         return false;
     }
-    return !animation_finished();
+    return animation::tick();
 }
 
 }
