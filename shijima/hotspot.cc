@@ -34,7 +34,16 @@ bool hotspot::point_inside(math::vec2 point) const {
 hotspot::hotspot(hotspot::shape shape, math::vec2 origin,
     math::vec2 size, std::string const& behavior):
     m_shape(shape), m_origin(origin),
-    m_size(size), m_behavior(behavior) {}
+    m_size(size), m_behavior(behavior)
+{
+    if (m_shape < shape::INVALID || m_shape > shape::SHAPE_MAX) {
+        m_shape = shape::INVALID;
+    }
+}
+
+bool hotspot::valid() const {
+    return m_shape != shape::INVALID;
+}
 
 hotspot::hotspot(): m_shape(shape::INVALID), m_behavior("") {}
 

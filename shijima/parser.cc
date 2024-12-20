@@ -59,7 +59,10 @@ bool parser::parse_hotspot(xml_node<> *node, shijima::hotspot &hotspot) {
     }
     math::vec2 origin = attr.at("Origin");
     math::vec2 size = attr.at("Size");
-    auto behavior = attr.at("Behavior");
+    std::string behavior;
+    if (attr.count("Behavior")) {
+        behavior = attr.at("Behavior");
+    }
     if (behavior == "") {
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_WARNINGS, "warning: hotspot without behavior");

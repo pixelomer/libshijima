@@ -8,7 +8,8 @@ class hotspot {
 public:
     enum class shape {
         INVALID = 0,
-        ELLIPSE = 1
+        ELLIPSE = 1,
+        SHAPE_MAX = 2,
     };
 private:
     shape m_shape;
@@ -20,6 +21,7 @@ public:
     shape get_shape() const;
     std::string const& get_behavior() const;
     bool point_inside(math::vec2 point) const;
+    bool valid() const;
     hotspot();
     hotspot(hotspot::shape shape, math::vec2 origin,
         math::vec2 size, std::string const& behavior);

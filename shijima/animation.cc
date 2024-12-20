@@ -27,13 +27,13 @@ animation::animation(std::vector<shijima::pose> const& poses,
     }
 }
 
-std::string animation::hotspot_behavior_at(math::vec2 offset) {
+hotspot animation::hotspot_at(math::vec2 offset) {
     for (auto const& hotspot : hotspots) {
         if (hotspot.point_inside(offset)) {
-            return hotspot.get_behavior();
+            return hotspot;
         }
     }
-    return "";
+    return {};
 }
 
 }

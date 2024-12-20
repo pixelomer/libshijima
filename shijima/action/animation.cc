@@ -72,14 +72,21 @@ bool animation::handle_dragging() {
         }
         math::vec2 cursor_rel = cursor - topleft;
         auto &anim = get_animation();
-        auto triggered = anim->hotspot_behavior_at(cursor_rel);
-        if (!triggered.empty()) {
+        auto hotspot = anim->hotspot_at(cursor_rel);
+        if (hotspot.valid()) {
             // Hotspot pressed
-            mascot->queued_behavior = triggered;
-            mascot->dragging = false;
-            return false;
+            if (hotspot.get_behavior().empty()) {
+                // Restart animation
+                start_time = mascot->time;
+            }
+            else {
+                // Activate target behavior
+                mascot->queued_behavior = hotspot.get_behavior();
+                mascot->dragging = false;
+                return false;
+            }
         }
-        if (draggable) {
+        else if (draggable) {
             // Started dragging
             mascot->was_on_ie = false;
             mascot->interaction.finalize();
