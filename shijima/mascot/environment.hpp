@@ -183,6 +183,7 @@ public:
     darea active_ie;
     dvec2 cursor;
     bool allows_breeding = true;
+    bool allows_hotspots = true;
     long mascot_count = 0;
     bool sticky_ie = true;
     int subtick_count = 1;

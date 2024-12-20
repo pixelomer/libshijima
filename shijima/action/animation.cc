@@ -72,8 +72,10 @@ bool animation::handle_dragging() {
         }
         math::vec2 cursor_rel = cursor - topleft;
         auto &anim = get_animation();
-        auto hotspot = anim->hotspot_at(cursor_rel);
-        if (hotspot.valid()) {
+        shijima::hotspot hotspot;
+        if (mascot->env->allows_hotspots &&
+            (hotspot = anim->hotspot_at(cursor_rel)).valid())
+        {
             // Hotspot pressed
             if (hotspot.get_behavior().empty()) {
                 // Restart animation
