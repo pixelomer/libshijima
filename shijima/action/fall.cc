@@ -4,16 +4,9 @@ namespace shijima {
 namespace action {
 
 void fall::init(mascot::tick &ctx) {
-    auto &mascot = ctx.script->state;
-    bool was_dragging = mascot->dragging;
-    if (!was_dragging && mascot->drag_with_local_cursor) {
-        // Force script to use local cursor
-        mascot->dragging = true;
-    }
     animation::init(ctx);
     velocity.x = vars.get_num("InitialVX", 0);
     velocity.y = vars.get_num("InitialVY", 0);
-    mascot->dragging = was_dragging;
 }
 
 bool fall::requests_interpolation() {

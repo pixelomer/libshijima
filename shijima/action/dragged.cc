@@ -44,8 +44,10 @@ bool dragged::subtick(int idx) {
     if (!animation::subtick(idx)) {
         return false;
     }
-    mascot->anchor.x = cursor.x + offset_x;
-    mascot->anchor.y = cursor.y + offset_y;
+    if (mascot->dragging) {
+        mascot->anchor.x = cursor.x + offset_x;
+        mascot->anchor.y = cursor.y + offset_y;
+    }
     if (elapsed() >= time_to_resist) {
         return false;
     }
