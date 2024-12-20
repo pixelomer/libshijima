@@ -49,7 +49,9 @@ bool sequence::subtick(int idx) {
     if (action == nullptr) {
         return false;
     }
-    while (action != nullptr && !action->subtick(idx) && (idx == 0)) {
+    while (action != nullptr && !action->subtick(idx) && (idx == 0) &&
+        mascot->queued_behavior.empty())
+    {
         next_action();
     }
     return action != nullptr;
