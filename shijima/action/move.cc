@@ -1,5 +1,5 @@
 #include "move.hpp"
-#include <stdexcept>
+#include <shijima/log.hpp>
 
 namespace shijima {
 namespace action {
@@ -54,7 +54,10 @@ bool move::tick() {
         }
     }
     else {
-        throw std::logic_error("Neither TargetX nor TargetY defined");
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "warning: neither TargetX nor TargetY defined");
+        #endif
+        return false;
     }
     return true;
 }
