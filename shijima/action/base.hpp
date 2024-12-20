@@ -11,7 +11,6 @@ namespace action {
 class base {
 private:
     bool active = false;
-    math::vec2 start_anchor;
     math::vec2 target_offset;
 protected:
     std::shared_ptr<mascot::state> mascot;

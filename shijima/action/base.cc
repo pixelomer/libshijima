@@ -77,14 +77,15 @@ bool base::tick() {
 bool base::subtick(int idx) {
     if (requests_interpolation()) {
         if (idx == 0) {
-            start_anchor = mascot->anchor;
+            auto start_anchor = mascot->anchor;
             if (!tick()) {
                 return false;
             }
             target_offset = mascot->anchor - start_anchor;
+            mascot->anchor = start_anchor;
         }
-        mascot->anchor = start_anchor + target_offset *
-            ((idx + 1) / (double)mascot->env->subtick_count);
+        mascot->anchor += target_offset *
+            (1 / (double)mascot->env->subtick_count);
         return true;
     }
     else {
