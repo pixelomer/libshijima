@@ -641,14 +641,16 @@ std::string context::eval_string(std::string js, bool log) {
 }
 
 void context::log_javascript(std::string const& js, std::string const& result) {
-    if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
-        std::string m_js = js;
-        size_t i;
-        for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
-            m_js[i] = ' ';
+    #ifdef SHIJIMA_LOGGING_ENABLED
+        if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+            std::string m_js = js;
+            size_t i;
+            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
+                m_js[i] = ' ';
+            }
+            log("\"" + m_js + "\" = " + result);
         }
-        log("\"" + m_js + "\" = " + result);
-    }
+    #endif
 }
 
 std::string context::eval_json(std::string js) {
