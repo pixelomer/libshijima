@@ -168,10 +168,13 @@ void tick() {
             if (breed_request.name == "") {
                 breed_request.name = mascot.tmpl->name;
             }
-            auto product = factory.spawn(breed_request.name,
-                { breed_request.anchor, breed_request.behavior });
-            product.manager->state->looking_right = breed_request.looking_right;
-            new_mascots.push_back(std::move(product));
+            try {
+                auto product = factory.spawn(breed_request.name,
+                    { breed_request.anchor, breed_request.behavior });
+                product.manager->state->looking_right = breed_request.looking_right;
+                new_mascots.push_back(std::move(product));
+            }
+            catch (...) {}
         }
     }
 

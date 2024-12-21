@@ -209,12 +209,13 @@ bool manager::_tick() {
             return false;
         }
         state->interaction.finalize();
-        if (!state->on_land()) {
+        /*if (!state->on_land()) {
             _next_behavior("Fall");
         }
         else {
             _next_behavior();
-        }
+        }*/
+        _next_behavior();
     }
     post_tick();
     return true;
