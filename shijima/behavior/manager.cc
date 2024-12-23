@@ -18,7 +18,12 @@ manager::manager(scripting::context &ctx, list initial_list,
 
 void manager::set_next(std::string const& next_name) {
     next_list = {};
-    next_list.children.push_back(initial_list.find(next_name));
+    if (!next_name.empty()) {
+        next_list.children.push_back(initial_list.find(next_name));
+    }
+    else {
+        next_list.sublists.push_back(initial_list);
+    }
 }
 
 std::shared_ptr<base> manager::next(std::shared_ptr<mascot::state> state) {

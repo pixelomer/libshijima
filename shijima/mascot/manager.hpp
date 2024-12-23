@@ -35,7 +35,7 @@ public:
         math::vec2 anchor;
         std::string behavior;
         bool looking_right;
-        initializer(math::vec2 anchor = {0,0}, std::string behavior = "Fall",
+        initializer(math::vec2 anchor = {0,0}, std::string behavior = "",
             bool looking_right = false):
             anchor(anchor), behavior(behavior), looking_right(looking_right) {}
         initializer(mascot::state::breed_request_data const& data):
