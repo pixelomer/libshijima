@@ -9,7 +9,8 @@ public:
     enum class shape {
         INVALID = 0,
         ELLIPSE = 1,
-        SHAPE_MAX = 2,
+        RECTANGLE = 2,
+        SHAPE_MAX = 3,
     };
 private:
     shape m_shape;
