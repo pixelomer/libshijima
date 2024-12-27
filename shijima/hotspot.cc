@@ -26,8 +26,8 @@ std::string const& hotspot::get_behavior() const {
 bool hotspot::point_inside(math::vec2 point) const {
     switch (m_shape) {
         case shape::ELLIPSE: {
-            return (std::pow((point.x - m_origin.x) / m_size.x, 2) +
-                std::pow((point.y - m_origin.y) / m_size.y, 2)) < 1;
+            return (std::pow((point.x - (m_origin.x + m_size.x / 2)) / m_size.x, 2) +
+                std::pow((point.y - (m_origin.y + m_size.y / 2)) / m_size.y, 2)) < 1;
         }
         case shape::RECTANGLE: {
             return (point.x >= m_origin.x) && (point.x <= (m_origin.x + m_size.x)) &&
