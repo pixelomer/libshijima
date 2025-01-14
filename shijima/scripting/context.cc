@@ -650,6 +650,8 @@ void context::log_javascript(std::string const& js, std::string const& result) {
             }
             log("\"" + m_js + "\" = " + result);
         }
+    #else
+        (void)js; (void)result;
     #endif
 }
 
