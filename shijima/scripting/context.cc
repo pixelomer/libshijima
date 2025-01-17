@@ -680,10 +680,15 @@ context::context() {
 
     // Math.random()
     duk_get_global_string(duk, "Math");
-    push_function([this](duk_context *duk) {
+    std::function<duk_ret_t (duk_context *)> random_func = [this](duk_context *duk) {
         duk_push_number(duk, this->state->env->random());
         return 1;
-    }, 0);
+    };
+    push_function(random_func, 0);
+    push_function(random_func, 0);
+    // (Math.random * x) = (Math.random.valueOf() * x) = (Math.random() * x)
+    // Required by some shimeji
+    duk_put_prop_string(duk, -2, "valueOf");
     duk_put_prop_string(duk, -2, "random");
     duk_pop(duk);
 
