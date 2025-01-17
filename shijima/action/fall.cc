@@ -17,7 +17,8 @@ bool fall::subtick(int idx) {
     if (!animation::subtick(idx)) {
         return false;
     }
-    if (mascot->on_land()) {
+    // Don't check for land on the first tick
+    if ((elapsed() > 0) && mascot->on_land()) {
         return false;
     }
 
