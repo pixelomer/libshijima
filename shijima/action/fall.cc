@@ -17,8 +17,15 @@ bool fall::subtick(int idx) {
     if (!animation::subtick(idx)) {
         return false;
     }
-    // Don't check for land on the first tick
-    if ((elapsed() > 0) && mascot->on_land()) {
+    bool on_land = mascot->env->floor.is_on(mascot->anchor) ||
+        mascot->env->ceiling.is_on(mascot->anchor) ||
+        mascot->env->work_area.is_on(mascot->anchor);
+    if (elapsed() > 0) {
+        // Don't consider IE on the first tick
+        on_land = on_land ||
+            mascot->env->active_ie.is_on(mascot->anchor);
+    }
+    if (on_land) {
         return false;
     }
 
