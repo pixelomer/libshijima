@@ -99,4 +99,4 @@ std::string translator::translate(std::string const& xml) {
     return ret;
 }
 
-};
+}

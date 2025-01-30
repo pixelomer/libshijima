@@ -24,4 +24,4 @@ void set_logger(std::function<void(std::string const&)> logger);
 
 #endif
 
-};
+}

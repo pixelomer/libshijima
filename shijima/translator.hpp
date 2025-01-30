@@ -12,4 +12,4 @@ public:
     static std::string translate(std::string const& xml);
 };
 
-};
+}
