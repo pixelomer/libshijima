@@ -611,8 +611,20 @@ int context::random(int upper_range) {
 }
 
 bool context::eval_bool(std::string const& js, bool log) {
-    duk_eval_string(duk, js.c_str());
-    bool ret = duk_to_boolean(duk, -1);
+    bool ret;
+    try {
+        duk_eval_string(duk, js.c_str());
+        ret = duk_to_boolean(duk, -1);
+    }
+    catch (std::exception &ex) {
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            shijima::log(SHIJIMA_LOG_WARNINGS, "warning: eval_bool() failed: "
+                + std::string(ex.what()));
+            shijima::log(SHIJIMA_LOG_WARNINGS, "warning: relevant script: "
+                + normalize_js(js));
+        #endif
+        ret = false;
+    }
     if (log) {
         log_javascript(js, (ret ? "true" : "false"));
     }
@@ -640,15 +652,19 @@ std::string context::eval_string(std::string js, bool log) {
     return ret;
 }
 
+std::string context::normalize_js(std::string js) {
+    size_t i;
+    for (i=0; (i = js.find_first_of("\r\t\n", i)) != std::string::npos;) {
+        js[i] = ' ';
+    }
+    return js;
+}
+
+
 void context::log_javascript(std::string const& js, std::string const& result) {
     #ifdef SHIJIMA_LOGGING_ENABLED
         if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
-            std::string m_js = js;
-            size_t i;
-            for (i=0; (i = m_js.find_first_of("\r\t\n", i)) != std::string::npos;) {
-                m_js[i] = ' ';
-            }
-            log("\"" + m_js + "\" = " + result);
+            log("\"" + normalize_js(js) + "\" = " + result);
         }
     #else
         (void)js; (void)result;

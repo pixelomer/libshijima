@@ -23,6 +23,7 @@ private:
     static math::vec2 duk_to_point(duk_context *ctx, duk_idx_t idx);
     static duk_ret_t duk_getter(duk_context *ctx);
     static duk_ret_t duk_setter(duk_context *ctx);
+    static std::string normalize_js(std::string js);
 
     duk_idx_t build_mascot();
     duk_idx_t build_console();
