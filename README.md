@@ -1,6 +1,8 @@
 # libshijima
 
-C++ library for shimeji desktop mascots
+C++ library for shimeji desktop mascots.
+
+(**Disclaimer:** libshijima is currently not accepting contributions. Any pull requests will be closed without review.)
 
 ## Usage
 
