@@ -28,6 +28,7 @@ class animation : public base {
 private:
     bool has_fixed_velocity;
     math::vec2 fixed_velocity;
+    std::shared_ptr<shijima::animation> active_animation;
 protected:
     int anim_idx;
     virtual std::shared_ptr<shijima::animation> &get_animation();
