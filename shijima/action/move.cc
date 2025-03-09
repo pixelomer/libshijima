@@ -28,11 +28,11 @@ bool move::tick() {
     if (vars.has("TargetX")) {
         double x = vars.get_num("TargetX");
         vars.add_attr({{ "目的地X", x }});
-        auto &pose = get_pose();
-        if (pose.velocity.x > 0) {
+        auto velocity = get_velocity();
+        if (velocity.x > 0) {
             mascot->looking_right = (x < mascot->anchor.x);
         }
-        else if (pose.velocity.x < 0) {
+        else if (velocity.x < 0) {
             mascot->looking_right = (x > mascot->anchor.x);
         }
     }

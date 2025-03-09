@@ -27,9 +27,25 @@ bool animation::requests_broadcast() {
     return true;
 }
 
+math::vec2 animation::get_velocity() {
+    if (has_fixed_velocity) {
+        return fixed_velocity;
+    }
+    else {
+        return get_pose().velocity;
+    }
+}
+
 void animation::init(mascot::tick &ctx) {
     base::init(ctx);
     anim_idx = -1;
+    if (vars.has("FixedVelocity")) {
+        has_fixed_velocity = true;
+        fixed_velocity = vars.get_string("FixedVelocity");
+    }
+    else {
+        has_fixed_velocity = false;
+    }
 }
 
 bool animation::tick() {
@@ -42,10 +58,10 @@ bool animation::tick() {
     if (!handle_dragging()) {
         return false;
     }
-    auto &pose = get_pose();
-    mascot->anchor.x += dx(pose.velocity.x);
-    mascot->anchor.y += dy(pose.velocity.y);
-    mascot->active_frame = pose;
+    auto velocity = get_velocity();
+    mascot->anchor.x += dx(velocity.x);
+    mascot->anchor.y += dy(velocity.y);
+    mascot->active_frame = get_pose();
     return true;
 }
 

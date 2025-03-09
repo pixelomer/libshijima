@@ -25,10 +25,14 @@ namespace shijima {
 namespace action {
 
 class animation : public base {
+private:
+    bool has_fixed_velocity;
+    math::vec2 fixed_velocity;
 protected:
     int anim_idx;
     virtual std::shared_ptr<shijima::animation> &get_animation();
     pose const& get_pose();
+    math::vec2 get_velocity();
     bool animation_finished();
     virtual bool check_border_type();
     virtual bool handle_dragging();
