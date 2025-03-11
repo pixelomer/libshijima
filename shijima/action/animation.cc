@@ -143,22 +143,17 @@ bool animation::handle_dragging() {
 }
 
 std::shared_ptr<shijima::animation> &animation::get_animation() {
-    if (mascot->next_subtick == 0) {
-        for (int i=0; i<(int)animations.size(); i++) {
-            auto &anim = animations[i];
-            if (vars.get_bool(anim->condition)) {
-                if (anim_idx != i) {
-                    anim_idx = i;
-                    start_time = mascot->time;
-                }
-                return active_animation = anim;
+    for (int i=0; i<(int)animations.size(); i++) {
+        auto &anim = animations[i];
+        if (vars.get_bool(anim->condition)) {
+            if (anim_idx != i) {
+                anim_idx = i;
+                start_time = mascot->time;
             }
+            return anim;
         }
-        throw std::logic_error("no animation available");
     }
-    else {
-        return active_animation;
-    }
+    throw std::logic_error("no animation available");
 }
 
 pose const& animation::get_pose() {
