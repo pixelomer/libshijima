@@ -28,6 +28,8 @@ class animation : public base {
 private:
     bool has_fixed_velocity;
     math::vec2 fixed_velocity;
+    int current_anim_time;
+    std::shared_ptr<shijima::animation> current_anim;
 protected:
     int anim_idx;
     virtual std::shared_ptr<shijima::animation> &get_animation();
@@ -41,6 +43,7 @@ public:
     std::vector<std::shared_ptr<shijima::animation>> animations;
     virtual void init(mascot::tick &ctx) override;
     virtual bool tick() override;
+    virtual void finalize() override;
 };
 
 }

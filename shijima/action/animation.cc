@@ -39,6 +39,7 @@ math::vec2 animation::get_velocity() {
 void animation::init(mascot::tick &ctx) {
     base::init(ctx);
     anim_idx = -1;
+    current_anim_time = -1;
     if (vars.has("FixedVelocity")) {
         has_fixed_velocity = true;
         fixed_velocity = vars.get_string("FixedVelocity");
@@ -46,6 +47,11 @@ void animation::init(mascot::tick &ctx) {
     else {
         has_fixed_velocity = false;
     }
+}
+
+void animation::finalize() {
+    current_anim = nullptr;
+    base::finalize();
 }
 
 bool animation::tick() {
@@ -143,6 +149,9 @@ bool animation::handle_dragging() {
 }
 
 std::shared_ptr<shijima::animation> &animation::get_animation() {
+    if (current_anim_time == mascot->time) {
+        return current_anim;
+    }
     for (int i=0; i<(int)animations.size(); i++) {
         auto &anim = animations[i];
         if (vars.get_bool(anim->condition)) {
@@ -150,7 +159,9 @@ std::shared_ptr<shijima::animation> &animation::get_animation() {
                 anim_idx = i;
                 start_time = mascot->time;
             }
-            return anim;
+            current_anim_time = mascot->time;
+            current_anim = anim;
+            return current_anim;
         }
     }
     throw std::logic_error("no animation available");
