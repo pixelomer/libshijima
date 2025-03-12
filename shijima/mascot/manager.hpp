@@ -33,7 +33,6 @@ class manager {
 private:
     behavior::manager behaviors;
     mascot::tick tick_ctx;
-    std::shared_ptr<behavior::base> behavior;
     std::shared_ptr<action::base> action;
     std::map<std::string, std::string> constants;
 public:

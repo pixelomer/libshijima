@@ -25,6 +25,11 @@
 #include "environment.hpp"
 
 namespace shijima {
+
+namespace behavior {
+class base;
+}
+
 namespace mascot {
 
 class state {
@@ -65,6 +70,7 @@ public:
     environment::dvec2 stored_dcursor;
     int next_dcursor_roll;
     math::vec2 active_ie_offset = { 0, 0 };
+    std::shared_ptr<behavior::base> behavior;
 
     void roll_dcursor();
     environment::dvec2 &get_raw_cursor();

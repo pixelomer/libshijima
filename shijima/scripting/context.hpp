@@ -83,6 +83,9 @@ private:
         std::function<double()> getter, std::function<void(double)> setter);
     void register_boolean_property(const char *name,
         std::function<bool()> getter, std::function<void(bool)> setter);
+    void register_string_property(const char *name,
+        std::function<bool(std::string &)> getter,
+        std::function<void(std::string const&)> setter);
 
     duk_uarridx_t global_counter = 0;
     duk_uarridx_t globals_available = 0;

@@ -20,6 +20,7 @@
 #include "duktape/duktape.h"
 #include <algorithm>
 #include <stdexcept>
+#include <shijima/behavior/base.hpp>
 
 namespace shijima {
 namespace scripting {
@@ -202,6 +203,46 @@ void context::register_boolean_property(const char *name,
     put_prop_functions(name);
 }
 
+void context::register_string_property(const char *name,
+    std::function<bool(std::string &)> getter,
+    std::function<void(std::string const&)> setter)
+{
+    duk_push_string(duk, name);
+    duk_uint_t flags = DUK_DEFPROP_SET_ENUMERABLE;
+    duk_idx_t idx = -2;
+    if (getter != nullptr) {
+        push_function([getter](duk_context *duk){
+            std::string str;
+            if (getter(str)) {
+                duk_push_string(duk, str.c_str());
+            }
+            else {
+                duk_push_null(duk);
+            }
+            return (duk_ret_t)1;
+        }, 0);
+        idx -= 1;
+        flags |= DUK_DEFPROP_HAVE_GETTER;
+    }
+    if (setter != nullptr) {
+        push_function([setter](duk_context *duk){
+            const char *str = duk_get_string(duk, 0);
+            if (str == NULL) {
+                str = "";
+            }
+            setter(str);
+            return (duk_ret_t)0;
+        }, 1);
+        idx -= 1;
+        flags |= DUK_DEFPROP_HAVE_SETTER;
+    }
+    if (idx == -2) {
+        throw std::invalid_argument("Both getter and setter are null.");
+    }
+    duk_def_prop(duk, idx, flags);
+    put_prop_functions(name);
+}
+
 duk_idx_t context::build_console() {
     auto console = duk_push_bare_object(duk);
     duk_push_c_function(duk, duk_console_log, DUK_VARARGS);
@@ -218,6 +259,22 @@ duk_idx_t context::build_mascot() {
     // mascot.bounds
     build_rectangle([this]() -> math::rec& { return this->state->bounds; });
     put_prop(-2, "bounds");
+
+    // mascot.activeBehavior
+    register_string_property("activeBehavior", [this](std::string &str) {
+        if (!this->state->queued_behavior.empty()) {
+            str = this->state->queued_behavior;
+        }
+        else if (this->state->behavior != nullptr) {
+            str = this->state->behavior->name;
+        }
+        else {
+            return false;
+        }
+        return true;
+    }, [this](const std::string &str){
+        this->state->queued_behavior = str;
+    });
 
     // mascot.anchor
     build_vec2([this]() -> math::vec2& { return this->state->anchor; });

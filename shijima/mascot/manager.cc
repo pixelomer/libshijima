@@ -29,14 +29,14 @@ void manager::_next_behavior(std::string const& name) {
     }
     if (action != nullptr) {
         #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + behavior->name
+            log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + state->behavior->name
                 + "::finalize()");
         #endif
         action->finalize();
     }
 
-    behavior = behaviors.next(state);
-    if (behavior == nullptr) {
+    state->behavior = behaviors.next(state);
+    if (state->behavior == nullptr) {
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_WARNINGS, "warning: no next behavior");
         #endif
@@ -44,7 +44,7 @@ void manager::_next_behavior(std::string const& name) {
         //reset_position();
         
         behaviors.set_next("Fall");
-        behavior = behaviors.next(state);
+        state->behavior = behaviors.next(state);
     }
     
     // stop active sound before moving onto next behavior
@@ -52,10 +52,10 @@ void manager::_next_behavior(std::string const& name) {
     state->active_sound_changed = true;
 
     #ifdef SHIJIMA_LOGGING_ENABLED
-        log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + behavior->name
+        log(SHIJIMA_LOG_BEHAVIORS, "(behavior) " + state->behavior->name
             + "::init()");
     #endif
-    action = behavior->action;
+    action = state->behavior->action;
     action->init(tick_ctx);
 }
 
@@ -118,7 +118,7 @@ void manager::next_behavior(std::string const& name) {
 }
 
 std::shared_ptr<const behavior::base> manager::active_behavior() {
-    return behavior;
+    return state->behavior;
 }
 
 manager::manager(std::string const& actions_xml, std::string const& behaviors_xml,
@@ -175,7 +175,7 @@ void manager::pre_tick() {
     state->active_ie_offset.y += state->env->active_ie.dy;
     if (state->next_subtick == 0) {
         state->time++;
-        if (behavior == nullptr) {
+        if (state->behavior == nullptr) {
             // First tick
             _next_behavior();
         }
@@ -192,7 +192,7 @@ void manager::pre_tick() {
         }
         state->active_ie_offset = { 0, 0 };
     }
-    else if (behavior == nullptr) {
+    else if (state->behavior == nullptr) {
         throw std::runtime_error("cannot determine first behavior on non-zero subtick");
     }
 }
