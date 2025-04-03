@@ -100,7 +100,7 @@ void translator::translate(pugi::xml_node root) {
             }
             str = attr.value();
             if (map.count(str) == 1) {
-                attr.set_name(map.at(str).c_str());
+                attr.set_value(map.at(str).c_str());
             }
             attr = attr.next_attribute();
         }
@@ -114,7 +114,10 @@ std::string translator::translate(std::string const& xml) {
     doc.load_string(xml.c_str());
     translate(doc);
     std::ostringstream stream;
-    doc.save(stream);
+    stream << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << std::endl;
+    doc.save(stream, PUGIXML_TEXT("\t"),
+        pugi::format_default | pugi::format_no_declaration,
+        pugi::xml_encoding::encoding_utf8);
     return stream.str();
 }
 

@@ -298,7 +298,7 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
 void parser::parse_actions(std::string const& actions_xml) {
     std::string translated_xml = translator::translate(actions_xml);
     pugi::xml_document doc;
-    doc.load_string(actions_xml.c_str(), pugi::parse_default);
+    doc.load_string(translated_xml.c_str(), pugi::parse_default);
     auto mascot = doc.child("Mascot");
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
@@ -411,7 +411,7 @@ void parser::cleanup() {
 void parser::parse_behaviors(std::string const& behaviors_xml) {
     std::string translated_xml = translator::translate(behaviors_xml);
     pugi::xml_document doc;
-    doc.load_string(behaviors_xml.c_str());
+    doc.load_string(translated_xml.c_str());
     auto mascot = doc.child("Mascot");
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
