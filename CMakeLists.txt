@@ -4,6 +4,7 @@ project(shijima)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_subdirectory(pugixml)
 include_directories(.)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
@@ -67,12 +68,16 @@ add_library(
     shijima/translator.cc
 )
 
+add_dependencies(shijima pugixml)
+target_link_libraries(shijima pugixml)
+
 if(SHIJIMA_BUILD_EXAMPLES)
     find_package(SDL2 REQUIRED)
     find_package(SDL2_image REQUIRED)
     include_directories(${SDL2_INCLUDE_DIRS})
     
     add_executable(shijima-sandbox main.cc)
+    add_dependencies(shijima-sandbox shijima)
     target_link_libraries(shijima-sandbox shijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})
 
     add_custom_command(TARGET shijima-sandbox POST_BUILD

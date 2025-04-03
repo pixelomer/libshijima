@@ -21,6 +21,7 @@
 #include <fstream>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <cassert>
 #include <iostream>
 
 #define WINDOW_TITLE "Shijima"
