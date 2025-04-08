@@ -17,6 +17,7 @@
 // 
 
 #include "factory.hpp"
+#include <fstream>
 #include <stdexcept>
 #include <sstream>
 

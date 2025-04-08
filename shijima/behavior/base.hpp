@@ -18,13 +18,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "../config.hpp"
 #include <memory>
 #include <shijima/action/base.hpp>
 #include <shijima/scripting/condition.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/types/string.hpp>
-//#include <cereal/types/polymorphic.hpp>
 
 namespace shijima {
 namespace behavior {

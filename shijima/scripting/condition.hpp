@@ -18,9 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "../config.hpp"
 #include "context.hpp"
-#include <cereal/types/string.hpp>
 
 namespace shijima {
 namespace scripting {

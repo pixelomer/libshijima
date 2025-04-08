@@ -20,7 +20,6 @@
 
 #include "base.hpp"
 #include <memory>
-#include <cereal/types/memory.hpp>
 
 namespace shijima {
 namespace action {
@@ -36,7 +35,7 @@ public:
 
     template<class Archive>
     void serialize(Archive &ar) {
-        ar(cereal::base_class<base>(this), target);
+        ar(init_attr, target);
     }
 };
 

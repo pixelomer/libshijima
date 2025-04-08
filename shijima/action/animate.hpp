@@ -18,9 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "../config.hpp"
 #include "animation.hpp"
-#include <cereal/types/polymorphic.hpp>
 
 namespace shijima {
 namespace action {

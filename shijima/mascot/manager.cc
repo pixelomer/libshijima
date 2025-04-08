@@ -24,7 +24,6 @@
 #pragma GCC diagnostic ignored "-Wcpp"
 #include <strstream>
 #pragma GCC diagnostic pop
-#include "../serialization.hpp"
 
 namespace shijima {
 namespace mascot {

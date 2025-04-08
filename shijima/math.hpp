@@ -18,9 +18,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "config.hpp"
 #include <string>
-#include <cereal/types/common.hpp>
 
 namespace shijima {
 namespace math {

@@ -16,8 +16,70 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "parser.hpp"
+// reduce serialized cereal data size by limiting size tags
+#define CEREAL_SIZE_TYPE uint16_t
+
+#include <cereal/types/map.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
 #include "action/action.hpp"
+#include <cereal/archives/portable_binary.hpp>
+
+// these macros break clangd
+#ifndef __CLANGD__
+
+// register types for serialization/deserialization
+CEREAL_REGISTER_TYPE(shijima::action::animate);
+CEREAL_REGISTER_TYPE(shijima::action::animation);
+CEREAL_REGISTER_TYPE(shijima::action::base);
+CEREAL_REGISTER_TYPE(shijima::action::breed);
+CEREAL_REGISTER_TYPE(shijima::action::dragged);
+CEREAL_REGISTER_TYPE(shijima::action::fall);
+CEREAL_REGISTER_TYPE(shijima::action::instant);
+CEREAL_REGISTER_TYPE(shijima::action::interact);
+CEREAL_REGISTER_TYPE(shijima::action::jump);
+CEREAL_REGISTER_TYPE(shijima::action::look);
+CEREAL_REGISTER_TYPE(shijima::action::move);
+CEREAL_REGISTER_TYPE(shijima::action::movewithturn);
+CEREAL_REGISTER_TYPE(shijima::action::offset);
+CEREAL_REGISTER_TYPE(shijima::action::reference);
+CEREAL_REGISTER_TYPE(shijima::action::resist);
+CEREAL_REGISTER_TYPE(shijima::action::scanmove);
+CEREAL_REGISTER_TYPE(shijima::action::select);
+CEREAL_REGISTER_TYPE(shijima::action::selfdestruct);
+CEREAL_REGISTER_TYPE(shijima::action::sequence);
+CEREAL_REGISTER_TYPE(shijima::action::stay);
+CEREAL_REGISTER_TYPE(shijima::action::transform);
+CEREAL_REGISTER_TYPE(shijima::action::turn);
+
+// register polymorphic relations
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::animate);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::animation);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::breed);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::dragged);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::fall);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::instant);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::interact);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::jump);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::look);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::move);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::movewithturn);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::offset);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::reference);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::resist);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::scanmove);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::sequence,  shijima::action::select);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::selfdestruct);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::sequence);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::stay);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::transform);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::turn);
+
+#endif
+
+#include "parser.hpp"
 #include "animation.hpp"
 #include <iostream>
 #include <map>
@@ -29,7 +91,6 @@
 #include "xml_doc.hpp"
 #include "translator.hpp"
 #include <stdexcept>
-#include "serialization.hpp"
 
 namespace shijima {
 

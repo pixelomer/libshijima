@@ -23,7 +23,4 @@
 #define SHIJIMA_LOGGING_ENABLED
 #endif
 
-// reduce serialized cereal data size by limiting size tags
-#define CEREAL_SIZE_TYPE uint16_t
-
 #endif

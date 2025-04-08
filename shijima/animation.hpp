@@ -18,12 +18,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "config.hpp"
 #include <vector>
 #include "scripting/condition.hpp"
 #include "pose.hpp"
 #include "hotspot.hpp"
-#include <cereal/types/vector.hpp>
 
 namespace shijima {
 

@@ -18,14 +18,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "../config.hpp"
 #include <shijima/scripting/variables.hpp>
 #include <shijima/mascot/tick.hpp>
 #include <shijima/broadcast/client.hpp>
 #include <shijima/broadcast/server.hpp>
 #include <shijima/log.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/polymorphic.hpp>
 
 namespace shijima {
 namespace action {
