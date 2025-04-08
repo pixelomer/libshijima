@@ -17,8 +17,8 @@
 // 
 
 #include "translator.hpp"
-#include "xml_doc.hpp"
-#include <rapidxml/rapidxml_print.hpp>
+#include <pugixml.hpp>
+#include <sstream>
 
 namespace shijima {
 
@@ -85,36 +85,40 @@ const std::map<std::string, std::string> translator::map = {
     { "投げられる", "Thrown" }
 };
 
-void translator::translate(xml_node<> *root) {
-    auto node = root->first_node();
+void translator::translate(pugi::xml_node root) {
+    auto node = root.first_child();
     while (node != nullptr) {
-        std::string str = node->name();
+        std::string str = node.name();
         if (map.count(str) == 1) {
-            node->name(map.at(str).c_str());
+            node.set_name(map.at(str).c_str());
         }
-        auto attr = node->first_attribute();
+        auto attr = node.first_attribute();
         while (attr != nullptr) {
-            str = attr->name();
+            str = attr.name();
             if (map.count(str) == 1) {
-                attr->name(map.at(str).c_str());
+                attr.set_name(map.at(str).c_str());
             }
-            str = attr->value();
+            str = attr.value();
             if (map.count(str) == 1) {
-                attr->value(map.at(str).c_str());
+                attr.set_value(map.at(str).c_str());
             }
-            attr = attr->next_attribute();
+            attr = attr.next_attribute();
         }
         translate(node);
-        node = node->next_sibling();
+        node = node.next_sibling();
     }
 }
 
 std::string translator::translate(std::string const& xml) {
-    xml_doc(doc, xml, 0);
-    translate(&doc);
-    std::string ret = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
-    rapidxml::print(std::back_inserter(ret), doc, 0);
-    return ret;
+    pugi::xml_document doc;
+    doc.load_string(xml.c_str());
+    translate(doc);
+    std::ostringstream stream;
+    stream << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" << std::endl;
+    doc.save(stream, PUGIXML_TEXT("\t"),
+        pugi::format_default | pugi::format_no_declaration,
+        pugi::xml_encoding::encoding_utf8);
+    return stream.str();
 }
 
 }

@@ -1,6 +1,5 @@
 *
-!rapidxml/
-!rapidxml/*.hpp
+!pugixml
 !shijima/
 !shijima/*.cc
 !shijima/*.hpp
