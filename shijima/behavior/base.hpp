@@ -45,8 +45,15 @@ public:
     // Referred action
     std::shared_ptr<action::base> action;
 
+    explicit base();
     base(std::string const& name, int freq, bool hidden,
         scripting::condition const& cond);
+    
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(next_list, add_next, name, frequency, hidden, condition, referenced,
+            action);
+    }
 };
 
 }

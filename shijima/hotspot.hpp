@@ -45,6 +45,11 @@ public:
     hotspot();
     hotspot(hotspot::shape shape, math::vec2 origin,
         math::vec2 size, std::string const& behavior);
+    
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(m_shape, m_origin, m_size, m_behavior);
+    }
 };
 
 }

@@ -17,7 +17,9 @@
 // 
 
 #include "factory.hpp"
+#include <fstream>
 #include <stdexcept>
+#include <sstream>
 
 namespace shijima {
 namespace mascot {
@@ -39,8 +41,8 @@ factory::factory(factory &&rhs) {
 factory::product factory::spawn(std::string const& name, manager::initializer init) {
     product ret;
     auto& tmpl = ret.tmpl = templates.at(name);
-    ret.manager = std::make_unique<mascot::manager>(
-        tmpl->actions_xml, tmpl->behaviors_xml, init, script_ctx);
+    ret.manager = std::make_unique<mascot::manager>(tmpl->data.c_str(),
+        tmpl->data.size(), init, script_ctx);
     ret.manager->state->env = env;
     return ret;
 }
@@ -57,7 +59,12 @@ void factory::register_template(tmpl const& tmpl) {
     if (templates.count(tmpl.name) != 0) {
         throw std::logic_error("cannot register same template twice");
     }
-    templates[tmpl.name] = std::make_shared<factory::tmpl>(tmpl);
+    std::ostringstream out;
+    shijima::parser parser;
+    parser.parse(tmpl.actions_xml, tmpl.behaviors_xml);
+    parser.saveTo(out);
+    templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(tmpl.name,
+        out.str(), tmpl.path);
 }
 
 void factory::deregister_template(std::string const& name) {
@@ -67,11 +74,15 @@ void factory::deregister_template(std::string const& name) {
     templates.erase(name);
 }
 
-const std::map<std::string, std::shared_ptr<const factory::tmpl>> &factory::get_all_templates() const {
+const std::map<std::string, std::shared_ptr<const factory::registered_tmpl>> &
+    factory::get_all_templates() const
+{
     return templates;
 }
 
-std::shared_ptr<const factory::tmpl> factory::get_template(std::string const& name) const {
+std::shared_ptr<const factory::registered_tmpl> factory::get_template(
+    std::string const& name) const
+{
     if (templates.count(name) == 0) {
         return nullptr;
     }

@@ -72,8 +72,12 @@ public:
     std::shared_ptr<const behavior::base> active_behavior();
     manager(std::string const& actions_xml, std::string const& behaviors_xml,
         initializer init = {}, std::shared_ptr<scripting::context> script_ctx = nullptr);
+    manager(const char *serialized_data, size_t length, initializer init = {},
+        std::shared_ptr<scripting::context> script_ctx = nullptr);
     std::string export_state();
 private:
+    void init(shijima::parser const& parser, initializer const& init,
+        std::shared_ptr<scripting::context> script_ctx);
     void pre_tick();
     void post_tick();
     bool _tick();

@@ -29,15 +29,24 @@ class animation {
 private:
     std::vector<pose> poses;
     std::vector<hotspot> hotspots;
-    int duration = 0;
+    int duration;
 public:
     scripting::condition condition;
     // time is 0-indexed. The first frame happens at t=0
     pose const& get_pose(int time);
     hotspot hotspot_at(math::vec2 offset);
     int get_duration();
+
+    // must be used with serialize()
+    explicit animation();
+    // use this unless deserializing
     animation(std::vector<shijima::pose> const& poses,
         std::vector<shijima::hotspot> const& hotspots);
+    
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(poses, hotspots, duration, condition);
+    }
 };
 
 }

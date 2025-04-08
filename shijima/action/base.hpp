@@ -74,6 +74,11 @@ public:
     // and produce smoother animation. The default implementation creates a
     // linear motion based on the position change from tick(). 
     virtual bool subtick(int idx);
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(init_attr);
+    }
 };
 
 }

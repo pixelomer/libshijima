@@ -66,6 +66,11 @@ public:
         }
         return ctx->eval_bool(js);
     }
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(is_constant, value, js);
+    }
 };
 
 }

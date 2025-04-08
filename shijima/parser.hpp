@@ -29,6 +29,8 @@
 #include "behavior/list.hpp"
 #include "behavior/base.hpp"
 #include "hotspot.hpp"
+#include <ostream>
+#include <istream>
 
 namespace shijima {
 
@@ -73,6 +75,17 @@ public:
         action_refs.clear();
         behavior_refs.clear();
         actions.clear();
+    }
+
+    // save parsed objects to output stream
+    void saveTo(std::ostream &out);
+    // load parsed objects from output stream
+    void loadFrom(std::istream &in);
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        //NOTE: pose set is *not* serialized
+        ar(behavior_list);
     }
 };
 

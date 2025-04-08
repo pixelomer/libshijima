@@ -43,6 +43,11 @@ public:
     list(scripting::condition const& cond);
     list();
     list(std::vector<std::shared_ptr<base>> const& children);
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(children, condition, sublists);
+    }
 };
 
 }
