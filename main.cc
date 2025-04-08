@@ -316,28 +316,41 @@ int main(int argc, char **argv) {
     #endif
     bool do_run_console = false;
 
-    if (argc > 2) {
+    if (argc == 2 && strcmp(argv[1], "console") == 0) {
+        do_run_console = true;
+    }
+    #if !defined(SHIJIMA_NO_PUGIXML)
+    else if (argc == 2 && strcmp(argv[1], "translate") == 0) {
+        std::stringstream buf;
+        buf << std::cin.rdbuf();
+        std::string input = buf.str();
+        std::string output = shijima::translator::translate(input);
+        std::cout << output;
+        std::cout.flush();
+        return EXIT_SUCCESS;
+    }
+    else if (argc == 5 && strcmp(argv[1], "serialize") == 0) {
+        std::string actions = read_file(argv[2]);
+        std::string behaviors = read_file(argv[3]);
+        shijima::parser parser;
+        parser.parse(actions, behaviors);
+        std::ofstream out;
+        out.open(argv[4], std::ios::out | std::ios::binary);
+        parser.saveTo(out);
+        out.close();
+        return EXIT_SUCCESS;
+    }
+    #endif
+    else {
         std::cerr << "Usage:" << std::endl;
         std::cerr << "    " << argv[0] << std::endl;
         std::cerr << "    " << argv[0] << " console" << std::endl;
-        std::cerr << "    " << argv[0] << " translate" << std::endl;
-        return EXIT_FAILURE;
-    }
-    if (argc == 2) {
-        if (strcmp(argv[1], "console") == 0) {
-            do_run_console = true;
-        }
         #if !defined(SHIJIMA_NO_PUGIXML)
-        else if (strcmp(argv[1], "translate") == 0) {
-            std::stringstream buf;
-            buf << std::cin.rdbuf();
-            std::string input = buf.str();
-            std::string output = shijima::translator::translate(input);
-            std::cout << output;
-            std::cout.flush();
-            return EXIT_SUCCESS;
-        }
+        std::cerr << "    " << argv[0] << " translate" << std::endl;
+        std::cerr << "    " << argv[0] << " serialize <actions.xml> <behaviors.xml> "
+            "<mascot.cereal>" << std::endl;
         #endif
+        return EXIT_FAILURE;
     }
 
     factory.script_ctx = std::make_shared<scripting::context>();
