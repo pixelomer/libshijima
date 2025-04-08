@@ -70,8 +70,10 @@ public:
     manager(manager&&) = default;
 
     std::shared_ptr<const behavior::base> active_behavior();
+#if !defined(SHIJIMA_NO_PUGIXML)
     manager(std::string const& actions_xml, std::string const& behaviors_xml,
         initializer init = {}, std::shared_ptr<scripting::context> script_ctx = nullptr);
+#endif // !defined(SHIJIMA_NO_PUGIXML)
     manager(const char *serialized_data, size_t length, initializer init = {},
         std::shared_ptr<scripting::context> script_ctx = nullptr);
     std::string export_state();

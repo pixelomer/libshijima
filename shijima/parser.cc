@@ -80,18 +80,23 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action
 #endif
 
 #include "parser.hpp"
-#include "animation.hpp"
 #include <iostream>
+#include "behavior/behavior.hpp"
+
+#if !defined(SHIJIMA_NO_PUGIXML)
+#include "animation.hpp"
 #include <map>
 #include <functional>
 #include <memory>
-#include "behavior/behavior.hpp"
 #include "shijima/log.hpp"
 #include "shijima/math.hpp"
 #include "translator.hpp"
 #include <stdexcept>
+#endif
 
 namespace shijima {
+
+#if !defined(SHIJIMA_NO_PUGIXML)
 
 pose parser::parse_pose(pugi::xml_node node) {
     if (std::string(node.name()) != "Pose") {
@@ -521,10 +526,27 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
     connect_actions(behavior_list);
 }
 
+void parser::parse(std::string const& actions_xml, std::string const& behaviors_xml) {
+    // Clean results from any previous parse calls
+    poses.clear();
+    constants.clear();
+    behavior_list = {};
+
+    parse_actions(actions_xml);
+    parse_behaviors(behaviors_xml);
+
+    // Clean intermediary variables
+    action_refs.clear();
+    behavior_refs.clear();
+    actions.clear();
+}
+
 void parser::saveTo(std::ostream &out) {
     cereal::PortableBinaryOutputArchive ar { out };
     ar(*this);
 }
+
+#endif //defined(SHIJIMA_NO_PUGIXML)
 
 void parser::loadFrom(std::istream &in) {
     cereal::PortableBinaryInputArchive ar { in };

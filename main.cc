@@ -32,35 +32,34 @@ bool enable_ie = false;
 
 mascot::factory factory;
 
-struct shimeji_meta {
-    std::string actions_xml;
-    std::string behaviors_xml;
-    std::string path;
-    shimeji_meta(std::string actions_xml, std::string behaviors_xml,
-        std::string path): actions_xml(actions_xml), behaviors_xml(behaviors_xml),
-        path(path) {}
-};
+#if !defined(SHIJIMA_NO_PUGIXML)
+typedef shijima::mascot::factory::tmpl shimeji_meta;
+#else
+typedef shijima::mascot::factory::registered_tmpl shimeji_meta;
+#endif
 
 struct shimeji_data {
     mascot::manager manager;
     std::shared_ptr<shimeji_meta> meta;
 };
 
+std::string read_file(std::string path) {
+    std::stringstream buf;
+    std::ifstream f(path, std::ios::in | std::ios::binary);
+    buf << f.rdbuf();
+    return buf.str();
+}
+
 shimeji_meta load_meta(std::string path) {
-    std::string actions, behaviors;
-    {
-        std::stringstream buf;
-        std::ifstream f(path + "/actions.xml");
-        buf << f.rdbuf();
-        actions = buf.str();
-    }
-    {   
-        std::stringstream buf;
-        std::ifstream f(path + "/behaviors.xml");
-        buf << f.rdbuf();
-        behaviors = buf.str();
-    }
-    return { actions, behaviors, path };
+    auto name = path.substr(path.find_last_of('/')+1);
+    #if !defined(SHIJIMA_NO_PUGIXML)
+        auto actions = read_file(path + "/actions.xml");
+        auto behaviors = read_file(path + "/behaviors.xml");
+        return { name, actions, behaviors, path };
+    #else
+        auto serialized = read_file(path + "/mascot.cereal");
+        return { name, serialized, path };
+    #endif
 }
 
 SDL_Window *window;
@@ -328,6 +327,7 @@ int main(int argc, char **argv) {
         if (strcmp(argv[1], "console") == 0) {
             do_run_console = true;
         }
+        #if !defined(SHIJIMA_NO_PUGIXML)
         else if (strcmp(argv[1], "translate") == 0) {
             std::stringstream buf;
             buf << std::cin.rdbuf();
@@ -337,6 +337,7 @@ int main(int argc, char **argv) {
             std::cout.flush();
             return EXIT_SUCCESS;
         }
+        #endif
     }
 
     factory.script_ctx = std::make_shared<scripting::context>();
@@ -346,12 +347,13 @@ int main(int argc, char **argv) {
     };
     for (auto &path : paths) {
         auto meta = load_meta(path);
-        mascot::factory::tmpl tmpl;
-        tmpl.name = path.substr(path.find_last_of('/')+1);
-        tmpl.actions_xml = meta.actions_xml;
-        tmpl.behaviors_xml = meta.behaviors_xml;
-        tmpl.path = path;
-        factory.register_template(tmpl);
+        auto tmpl = factory.register_template(meta);
+        #if !defined(SHIJIMA_NO_PUGIXML)
+        std::ofstream out;
+        out.open(path + "/mascot.cereal", std::ios::out | std::ios::binary);
+        out << tmpl->data;
+        out.close();
+        #endif
     }
     math::vec2 anchor { 100, 100 };
     mascots.push_back(factory.spawn("test1", { anchor }));

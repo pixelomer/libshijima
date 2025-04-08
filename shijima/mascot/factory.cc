@@ -17,9 +17,10 @@
 // 
 
 #include "factory.hpp"
-#include <fstream>
 #include <stdexcept>
+#if !defined(SHIJIMA_NO_PUGIXML)
 #include <sstream>
+#endif
 
 namespace shijima {
 namespace mascot {
@@ -55,7 +56,11 @@ void factory::clear() {
     templates.clear();
 }
 
-void factory::register_template(tmpl const& tmpl) {
+#if !defined(SHIJIMA_NO_PUGIXML)
+
+std::shared_ptr<const factory::registered_tmpl> factory::register_template(
+    tmpl const& tmpl)
+{
     if (templates.count(tmpl.name) != 0) {
         throw std::logic_error("cannot register same template twice");
     }
@@ -63,8 +68,19 @@ void factory::register_template(tmpl const& tmpl) {
     shijima::parser parser;
     parser.parse(tmpl.actions_xml, tmpl.behaviors_xml);
     parser.saveTo(out);
-    templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(tmpl.name,
-        out.str(), tmpl.path);
+    return templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(
+        tmpl.name, out.str(), tmpl.path);
+}
+
+#endif
+
+std::shared_ptr<const factory::registered_tmpl> factory::register_template(
+    registered_tmpl const& tmpl)
+{
+    if (templates.count(tmpl.name) != 0) {
+        throw std::logic_error("cannot register same template twice");
+    }
+    return templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(tmpl);
 }
 
 void factory::deregister_template(std::string const& name) {

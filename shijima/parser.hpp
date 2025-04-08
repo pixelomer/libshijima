@@ -22,7 +22,9 @@
 #include <vector>
 #include <map>
 #include <memory>
+#if !defined(SHIJIMA_NO_PUGIXML)
 #include <pugixml.hpp>
+#endif // !defined(SHIJIMA_NO_PUGIXML)
 #include <set>
 #include "animation.hpp"
 #include "action/reference.hpp"
@@ -36,6 +38,7 @@ namespace shijima {
 
 class parser {
 private:
+#if !defined(SHIJIMA_NO_PUGIXML)
     void try_parse_sequence(std::shared_ptr<action::base> &action,
         pugi::xml_node node, std::string const& type);
     void try_parse_instant(std::shared_ptr<action::base> &action,
@@ -53,7 +56,7 @@ private:
     void parse_behaviors(std::string const& behaviors);
     void connect_actions(behavior::list &behaviors);
     void cleanup();
-
+#endif // !defined(SHIJIMA_NO_PUGIXML)
     std::vector<std::shared_ptr<action::reference>> action_refs;
     std::vector<std::shared_ptr<behavior::base>> behavior_refs;
     std::map<std::string, std::shared_ptr<action::base>> actions;
@@ -62,23 +65,16 @@ public:
     std::set<shijima::pose> poses;
     std::map<std::string, std::string> constants;
     parser() {}
-    void parse(std::string const& actions_xml, std::string const& behaviors_xml) {
-        // Clean results from any previous parse calls
-        poses.clear();
-        constants.clear();
-        behavior_list = {};
+    
+#if !defined(SHIJIMA_NO_PUGIXML)
 
-        parse_actions(actions_xml);
-        parse_behaviors(behaviors_xml);
-
-        // Clean intermediary variables
-        action_refs.clear();
-        behavior_refs.clear();
-        actions.clear();
-    }
+    void parse(std::string const& actions_xml, std::string const& behaviors_xml);
 
     // save parsed objects to output stream
     void saveTo(std::ostream &out);
+
+#endif // !defined(SHIJIMA_NO_PUGIXML)
+
     // load parsed objects from output stream
     void loadFrom(std::istream &in);
 

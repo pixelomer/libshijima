@@ -59,7 +59,10 @@ public:
     product spawn(std::string const& name, manager::initializer init = {});
     product spawn(mascot::state::breed_request_data const& breed_request);
     void clear();
-    void register_template(tmpl const& tmpl);
+#if !defined(SHIJIMA_NO_PUGIXML)
+    std::shared_ptr<const registered_tmpl> register_template(tmpl const& tmpl);
+#endif // !defined(SHIJIMA_NO_PUGIXML)
+    std::shared_ptr<const registered_tmpl> register_template(registered_tmpl const& tmpl);
     void deregister_template(std::string const& name);
     const std::map<std::string, std::shared_ptr<const registered_tmpl>> &get_all_templates() const;
     std::shared_ptr<const registered_tmpl> get_template(std::string const& name) const;

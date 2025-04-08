@@ -126,6 +126,7 @@ std::shared_ptr<const behavior::base> manager::active_behavior() {
     return state->behavior;
 }
 
+#if !defined(SHIJIMA_NO_PUGIXML)
 manager::manager(std::string const& actions_xml, std::string const& behaviors_xml,
     initializer init, std::shared_ptr<scripting::context> script_ctx)
 {
@@ -133,6 +134,7 @@ manager::manager(std::string const& actions_xml, std::string const& behaviors_xm
     parser.parse(actions_xml, behaviors_xml);
     this->init(parser, init, script_ctx);
 }
+#endif // !defined(SHIJIMA_NO_PUGIXML)
 
 manager::manager(const char *serialized_data, size_t length, initializer init,
     std::shared_ptr<scripting::context> script_ctx)
