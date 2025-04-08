@@ -18,7 +18,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "config.hpp"
 #include <string>
+#include <cereal/types/common.hpp>
 
 namespace shijima {
 namespace math {
@@ -39,6 +41,11 @@ struct rec {
     }
     rec &operator/=(double rhs) {
         return *this = *this / rhs;
+    }
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(x, y, width, height);
     }
 };
 
@@ -109,6 +116,11 @@ struct vec2 {
     }
     vec2 &operator+=(vec2 const& rhs) {
         return *this = *this + rhs;
+    }
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(x, y);
     }
 };
 

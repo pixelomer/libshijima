@@ -18,7 +18,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "../config.hpp"
 #include "context.hpp"
+#include <cereal/types/string.hpp>
 
 namespace shijima {
 namespace scripting {
@@ -65,6 +67,11 @@ public:
             return value;
         }
         return ctx->eval_bool(js);
+    }
+    template<class Archive>
+    void serialize(Archive &ar)
+    {
+        ar(is_constant, value, js);
     }
 };
 

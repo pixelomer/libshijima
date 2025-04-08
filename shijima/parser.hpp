@@ -18,17 +18,22 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "config.hpp"
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
 #include <rapidxml/rapidxml.hpp>
 #include <set>
+#include <cereal/types/map.hpp>
+#include <cereal/types/string.hpp>
 #include "animation.hpp"
 #include "action/reference.hpp"
 #include "behavior/list.hpp"
 #include "behavior/base.hpp"
 #include "hotspot.hpp"
+#include <ostream>
+#include <istream>
 
 namespace shijima {
 
@@ -73,6 +78,17 @@ public:
         action_refs.clear();
         behavior_refs.clear();
         actions.clear();
+    }
+
+    // save parsed objects to output stream
+    void saveTo(std::ostream &out);
+    // load parsed objects from output stream
+    void loadFrom(std::istream &in);
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        //NOTE: pose set is *not* serialized
+        ar(behavior_list);
     }
 };
 

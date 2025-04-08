@@ -18,11 +18,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "../config.hpp"
 #include <shijima/scripting/variables.hpp>
 #include <shijima/mascot/tick.hpp>
 #include <shijima/broadcast/client.hpp>
 #include <shijima/broadcast/server.hpp>
 #include <shijima/log.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/polymorphic.hpp>
 
 namespace shijima {
 namespace action {
@@ -74,6 +77,11 @@ public:
     // and produce smoother animation. The default implementation creates a
     // linear motion based on the position change from tick(). 
     virtual bool subtick(int idx);
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(init_attr);
+    }
 };
 
 }

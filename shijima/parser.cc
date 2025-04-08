@@ -29,6 +29,7 @@
 #include "xml_doc.hpp"
 #include "translator.hpp"
 #include <stdexcept>
+#include "serialization.hpp"
 
 namespace shijima {
 
@@ -456,6 +457,16 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
 
     // Connect actions and behaviors
     connect_actions(behavior_list);
+}
+
+void parser::saveTo(std::ostream &out) {
+    cereal::PortableBinaryOutputArchive ar { out };
+    ar(*this);
+}
+
+void parser::loadFrom(std::istream &in) {
+    cereal::PortableBinaryInputArchive ar { in };
+    ar(*this);
 }
 
 }

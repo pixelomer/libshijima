@@ -19,6 +19,12 @@
 #include "manager.hpp"
 #include "shijima/mascot/environment.hpp"
 #include <stdexcept>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#pragma GCC diagnostic ignored "-Wcpp"
+#include <strstream>
+#pragma GCC diagnostic pop
+#include "../serialization.hpp"
 
 namespace shijima {
 namespace mascot {
@@ -126,6 +132,23 @@ manager::manager(std::string const& actions_xml, std::string const& behaviors_xm
 {
     shijima::parser parser;
     parser.parse(actions_xml, behaviors_xml);
+    this->init(parser, init, script_ctx);
+}
+
+manager::manager(const char *serialized_data, size_t length, initializer init,
+    std::shared_ptr<scripting::context> script_ctx)
+{
+    //FIXME: istrstream is deprecated
+    // stringstream performs a copy so it is not ideal
+    std::istrstream stream { serialized_data, (long)length };
+    shijima::parser parser;
+    parser.loadFrom(stream);
+    this->init(parser, init, script_ctx);
+}
+
+void manager::init(shijima::parser const& parser, initializer const& init,
+    std::shared_ptr<scripting::context> script_ctx)
+{
     if (script_ctx == nullptr) {
         script_ctx = std::make_shared<scripting::context>();
     }

@@ -18,8 +18,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "config.hpp"
 #include <string>
 #include "math.hpp"
+#include <cereal/types/string.hpp>
 
 namespace shijima {
 
@@ -59,6 +61,11 @@ public:
         math::vec2 anchor, math::vec2 velocity, int duration):
         frame(name, right_name, sound, anchor), velocity(velocity), duration(duration) {}
     pose(): frame() {}
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(visible, name, right_name, sound, anchor, velocity, duration);
+    }
 };
 
 }

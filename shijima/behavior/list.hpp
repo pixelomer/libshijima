@@ -18,11 +18,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "../config.hpp"
 #include "base.hpp"
 #include <vector>
 #include <memory>
 #include <shijima/scripting/context.hpp>
 #include <shijima/scripting/condition.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
 
 namespace shijima {
 namespace behavior {
@@ -43,6 +46,11 @@ public:
     list(scripting::condition const& cond);
     list();
     list(std::vector<std::shared_ptr<base>> const& children);
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(children, condition, sublists);
+    }
 };
 
 }

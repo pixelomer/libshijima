@@ -18,8 +18,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "../config.hpp"
 #include "base.hpp"
 #include <shijima/animation.hpp>
+#include <cereal/types/polymorphic.hpp>
 
 namespace shijima {
 namespace action {
@@ -44,6 +46,11 @@ public:
     virtual void init(mascot::tick &ctx) override;
     virtual bool tick() override;
     virtual void finalize() override;
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(cereal::base_class<base>(this), animations);
+    }
 };
 
 }

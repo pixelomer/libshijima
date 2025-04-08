@@ -18,9 +18,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
+#include "../config.hpp"
 #include <memory>
 #include <shijima/action/base.hpp>
 #include <shijima/scripting/condition.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+//#include <cereal/types/polymorphic.hpp>
 
 namespace shijima {
 namespace behavior {
@@ -45,8 +49,15 @@ public:
     // Referred action
     std::shared_ptr<action::base> action;
 
+    explicit base();
     base(std::string const& name, int freq, bool hidden,
         scripting::condition const& cond);
+    
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(next_list, add_next, name, frequency, hidden, condition, referenced,
+            action);
+    }
 };
 
 }

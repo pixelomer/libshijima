@@ -21,6 +21,7 @@
 #include "base.hpp"
 #include <vector>
 #include <memory>
+#include <cereal/types/vector.hpp>
 
 namespace shijima {
 namespace action {
@@ -39,6 +40,11 @@ public:
     virtual void init(mascot::tick &ctx) override;
     virtual bool subtick(int idx) override;
     virtual void finalize() override;
+
+    template<class Archive>
+    void serialize(Archive &ar) {
+        ar(cereal::base_class<base>(this), actions);
+    }
 };
 
 }
