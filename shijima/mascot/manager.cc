@@ -141,7 +141,10 @@ manager::manager(const char *serialized_data, size_t length, initializer init,
 {
     //FIXME: istrstream is deprecated
     // stringstream performs a copy so it is not ideal
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
     std::istrstream stream { serialized_data, (long)length };
+#pragma GCC diagnostic pop
     shijima::parser parser;
     parser.loadFrom(stream);
     this->init(parser, init, script_ctx);
