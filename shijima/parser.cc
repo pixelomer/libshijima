@@ -98,6 +98,21 @@ namespace shijima {
 
 #if !defined(SHIJIMA_NO_PUGIXML)
 
+static void strip_xml(pugi::xml_node node) {
+    pugi::xml_node child = node.first_child();
+    while (!child.empty()) {
+        if (child.type() != pugi::xml_node_type::node_element) {
+            pugi::xml_node unwanted = child;
+            child = child.next_sibling();
+            node.remove_child(unwanted);
+        }
+        else {
+            strip_xml(child);
+            child = child.next_sibling();
+        }
+    }
+}
+
 pose parser::parse_pose(pugi::xml_node node) {
     if (std::string(node.name()) != "Pose") {
         throw std::invalid_argument("Expected Pose node");
@@ -366,6 +381,7 @@ void parser::parse_actions(std::string const& actions_xml) {
     std::string translated_xml = translator::translate(actions_xml);
     pugi::xml_document doc;
     doc.load_string(translated_xml.c_str(), pugi::parse_default);
+    strip_xml(doc);
     auto mascot = doc.child("Mascot");
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
@@ -479,6 +495,7 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
     std::string translated_xml = translator::translate(behaviors_xml);
     pugi::xml_document doc;
     doc.load_string(translated_xml.c_str());
+    strip_xml(doc);
     auto mascot = doc.child("Mascot");
     if (mascot == nullptr) {
         throw std::invalid_argument("Root node is not named Mascot");
