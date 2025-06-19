@@ -22,6 +22,10 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 #pragma GCC diagnostic ignored "-Wcpp"
+// prevent backward_warning.h from being included
+#ifndef _BACKWARD_BACKWARD_WARNING_H
+#define _BACKWARD_BACKWARD_WARNING_H 1
+#endif
 #include <strstream>
 #pragma GCC diagnostic pop
 
