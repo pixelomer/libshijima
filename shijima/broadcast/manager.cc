@@ -48,7 +48,7 @@ bool manager::try_connect(client &peer, double y, std::string const& affordance,
             --i;
             continue;
         }
-        if (!isnanl(y) && std::fabs(y - server.get_anchor().y) > 1) {
+        if (!std::isnan(y) && std::fabs(y - server.get_anchor().y) > 1) {
             continue;
         }
         if (server.available()) {
