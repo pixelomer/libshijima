@@ -52,6 +52,7 @@ add_library(
     shijima/action/offset.cc
     shijima/action/reference.cc
     shijima/action/resist.cc
+    shijima/action/scaninteract.cc
     shijima/action/scanmove.cc
     shijima/action/select.cc
     shijima/action/selfdestruct.cc

@@ -32,6 +32,12 @@ bool server::available() {
 bool server::did_meet_up() {
     return m_state != nullptr && m_state->did_meet_up();
 }
+bool server::turn_requested() {
+    return m_state != nullptr && m_state->turn_requested();
+}
+bool server::requested_looking_right() {
+    return m_state != nullptr && m_state->requested_looking_right();
+}
 server::server() {}
 server::server(math::vec2 anchor): m_state(std::make_shared<server_state>()) {
     update_anchor(anchor);

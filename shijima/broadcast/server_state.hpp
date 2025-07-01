@@ -30,6 +30,8 @@ private:
     bool m_finalized = false;
     bool m_available = true;
     bool m_met_up = false;
+    bool m_looking_right;
+    bool m_turn_requested = false;
     std::shared_ptr<bool> m_ongoing_pt;
 public:
     math::vec2 anchor;
@@ -37,6 +39,12 @@ public:
     std::string server_behavior;
     bool did_meet_up() { return m_met_up; }
     void notify_arrival() { m_met_up = true; finalize(); }
+    void request_turn(bool looking_right) {
+        m_turn_requested = true;
+        m_looking_right = looking_right;
+    }
+    bool turn_requested() { return m_turn_requested; }
+    bool requested_looking_right() { return m_looking_right; }
     bool active() { return !m_finalized; }
     bool available() { return active() && m_available; }
     void finalize() { m_finalized = true; }

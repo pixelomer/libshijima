@@ -43,6 +43,13 @@ void client::notify_arrival() {
     m_server->notify_arrival();
 }
 
+void client::request_turn(bool looking_right) {
+    if (!connected()) {
+        throw std::runtime_error("request_turn() called on disconnected client");
+    }
+    m_server->request_turn(looking_right);
+}
+
 bool client::did_meet_up() {
     return m_server != nullptr && m_server->did_meet_up();
 }

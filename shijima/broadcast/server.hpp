@@ -34,6 +34,8 @@ private:
 public:
     bool active();
     bool available();
+    bool turn_requested();
+    bool requested_looking_right();
     bool did_meet_up();
     server();
     server(math::vec2 anchor);

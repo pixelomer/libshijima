@@ -46,6 +46,7 @@ CEREAL_REGISTER_TYPE(shijima::action::movewithturn);
 CEREAL_REGISTER_TYPE(shijima::action::offset);
 CEREAL_REGISTER_TYPE(shijima::action::reference);
 CEREAL_REGISTER_TYPE(shijima::action::resist);
+CEREAL_REGISTER_TYPE(shijima::action::scaninteract);
 CEREAL_REGISTER_TYPE(shijima::action::scanmove);
 CEREAL_REGISTER_TYPE(shijima::action::select);
 CEREAL_REGISTER_TYPE(shijima::action::selfdestruct);
@@ -69,6 +70,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::offset);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::reference);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::resist);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::scaninteract);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::scanmove);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::sequence,  shijima::action::select);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::selfdestruct);
@@ -293,6 +295,7 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         pair("Interact", action::interact),
         pair("SelfDestruct", action::selfdestruct),
         pair("Transform", action::transform),
+        pair("ScanInteract", action::scaninteract),
 
         //FIXME: Unimplemented types
         pair("FallWithIE", action::fall),

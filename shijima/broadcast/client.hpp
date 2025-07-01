@@ -39,6 +39,7 @@ public:
     client &operator=(client &&rhs);
     ~client();
     void notify_arrival();
+    void request_turn(bool looking_right);
     bool did_meet_up();
     math::vec2 get_target();
     interaction get_interaction();

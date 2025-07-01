@@ -79,6 +79,9 @@ bool base::tick() {
     if (server.did_meet_up()) {
         mascot->interaction = server.get_interaction();
         mascot->queued_behavior = mascot->interaction.behavior();
+        if (server.turn_requested()) {
+            mascot->looking_right = server.requested_looking_right();
+        }
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_BROADCASTS, "Server did meet client, starting interaction");
             log(SHIJIMA_LOG_BROADCASTS, "Queued behavior: " + mascot->queued_behavior);
