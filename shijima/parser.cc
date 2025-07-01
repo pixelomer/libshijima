@@ -190,7 +190,9 @@ std::shared_ptr<animation> parser::parse_animation(pugi::xml_node node) {
     auto is_turn = node.attribute("IsTurn");
     if (!is_turn.empty() && std::string(is_turn.value()) == "true") {
         //FIXME: IsTurn is not supported
-        log(SHIJIMA_LOG_PARSER, "warning: IsTurn is not supported, ignoring animation");
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_PARSER, "warning: IsTurn is not supported, ignoring animation");
+        #endif
         return nullptr;
     }
     auto condition_attr = node.attribute("Condition");
