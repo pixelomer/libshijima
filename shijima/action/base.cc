@@ -34,6 +34,10 @@ bool base::requests_interpolation() {
     return true;
 }
 
+bool base::requests_periodic_breed() {
+    return false;
+}
+
 void base::init(mascot::tick &ctx) {
     ctx.will_init();
     #ifdef SHIJIMA_LOGGING_ENABLED
@@ -91,6 +95,28 @@ bool base::tick() {
     vars.tick();
     if (!vars.get_bool("Condition", true)) {
         return false;
+    }
+    if (requests_periodic_breed()) {
+        int interval = (int)vars.get_num("BornInterval");
+        if (interval > 0 && elapsed() % interval == 0) {
+            bool transient = vars.get_bool("BornTransient", false);
+            if (!transient && (!mascot->env->allows_breeding || !mascot->can_breed)) {
+                // Not allowed to breed, but action can continue
+                return true;
+            }
+
+            // Create breed request and continue
+            auto &request = mascot->breed_request;
+            double born_x = vars.get_num("BornX", 0);
+            double born_y = vars.get_num("BornY", 0);
+            request.available = true;
+            request.behavior = vars.get_string("BornBehavior", "Fall");
+            request.name = vars.get_string("BornMascot", "");
+            request.transient = transient;
+            
+            request.anchor = { mascot->anchor.x + dx(born_x),
+                mascot->anchor.y + dy(born_y) };
+        }
     }
     return true;
 }

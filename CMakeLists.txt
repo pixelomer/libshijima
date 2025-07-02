@@ -41,6 +41,8 @@ add_library(
     shijima/action/animation.cc
     shijima/action/base.cc
     shijima/action/breed.cc
+    shijima/action/breedjump.cc
+    shijima/action/breedmove.cc
     shijima/action/dragged.cc
     shijima/action/fall.cc
     shijima/action/instant.cc

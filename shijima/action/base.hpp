@@ -56,6 +56,7 @@ public:
     virtual bool requests_vars();
     virtual bool requests_broadcast();
     virtual bool requests_interpolation();
+    virtual bool requests_periodic_breed();
 
     std::map<std::string, std::string> init_attr;
 

@@ -35,6 +35,8 @@ CEREAL_REGISTER_TYPE(shijima::action::animate);
 CEREAL_REGISTER_TYPE(shijima::action::animation);
 CEREAL_REGISTER_TYPE(shijima::action::base);
 CEREAL_REGISTER_TYPE(shijima::action::breed);
+CEREAL_REGISTER_TYPE(shijima::action::breedjump);
+CEREAL_REGISTER_TYPE(shijima::action::breedmove);
 CEREAL_REGISTER_TYPE(shijima::action::dragged);
 CEREAL_REGISTER_TYPE(shijima::action::fall);
 CEREAL_REGISTER_TYPE(shijima::action::instant);
@@ -78,6 +80,8 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::stay);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::transform);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::turn);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::jump,      shijima::action::breedjump);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::breedmove);
 
 #endif
 
@@ -284,6 +288,8 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         pair("Animate", action::animate),
         pair("Broadcast", action::animate),
         pair("Breed", action::breed),
+        pair("BreedJump", action::breedjump),
+        pair("BreedMove", action::breedmove),
         pair("Dragged", action::dragged),
         pair("Regist", action::resist), // not a typo
         pair("Stay", action::stay),
