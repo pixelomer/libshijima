@@ -195,6 +195,7 @@ void manager::activate_queued_behavior() {
 
 void manager::pre_tick() {
     state->active_sound_changed = false;
+    state->hotspot_triggered = false;
     tick_ctx.reset();
     script_ctx->state = state;
     if (state->env->get_scale() != 1.0) {

@@ -72,6 +72,8 @@ public:
     math::vec2 active_ie_offset = { 0, 0 };
     std::shared_ptr<behavior::base> behavior;
 
+    bool hotspot_triggered;
+
     void roll_dcursor();
     environment::dvec2 &get_raw_cursor();
     environment::dvec2 get_cursor();

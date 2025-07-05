@@ -28,6 +28,11 @@ void dragged::init(mascot::tick &ctx) {
     foot_x = mascot->get_cursor().x + offset_x;
     time_to_resist = 250;
     vars.add_attr({ { "FootX", foot_x }, { "footX", foot_x } });
+    if (mascot->hotspot_triggered) {
+        // Special case: Dragged action started by hotspot
+        // Retain dragging flag
+        mascot->dragging = true;
+    }
 }
 
 bool dragged::requests_interpolation() {

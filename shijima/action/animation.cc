@@ -131,6 +131,7 @@ bool animation::handle_dragging() {
                 // Activate target behavior
                 mascot->queued_behavior = hotspot.get_behavior();
                 mascot->dragging = false;
+                mascot->hotspot_triggered = true;
                 return false;
             }
         }
