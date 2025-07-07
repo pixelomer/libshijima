@@ -24,8 +24,11 @@ namespace shijima {
 namespace action {
 
 class move : public animation {
+private:
+    bool target_warning_logged;
 public:
-    virtual bool tick();
+    virtual void init(mascot::tick &ctx) override;
+    virtual bool tick() override;
 };
 
 }

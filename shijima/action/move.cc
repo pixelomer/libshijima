@@ -24,6 +24,11 @@ namespace action {
 
 // "目的地Y" and "目的地X" are required for backwards compatibility
 
+void move::init(mascot::tick &ctx) {
+    animation::init(ctx);
+    target_warning_logged = false;
+}
+
 bool move::tick() {
     if (vars.has("TargetX")) {
         double x = vars.get_num("TargetX");
@@ -73,9 +78,13 @@ bool move::tick() {
     }
     else {
         #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: neither TargetX nor TargetY defined");
+        if (!target_warning_logged) {
+            log(SHIJIMA_LOG_WARNINGS, "warning: neither TargetX nor TargetY defined for Move");
+            log(SHIJIMA_LOG_WARNINGS, "did you mean to use Animate instead?");
+            target_warning_logged = true;
+        }
         #endif
-        return false;
+        return !animation_finished();
     }
     return true;
 }
