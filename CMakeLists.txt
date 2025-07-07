@@ -51,6 +51,7 @@ add_library(
     shijima/action/look.cc
     shijima/action/move.cc
     shijima/action/movewithturn.cc
+    shijima/action/mute.cc
     shijima/action/offset.cc
     shijima/action/reference.cc
     shijima/action/resist.cc

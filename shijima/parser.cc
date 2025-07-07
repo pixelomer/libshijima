@@ -56,6 +56,7 @@ CEREAL_REGISTER_TYPE(shijima::action::sequence);
 CEREAL_REGISTER_TYPE(shijima::action::stay);
 CEREAL_REGISTER_TYPE(shijima::action::transform);
 CEREAL_REGISTER_TYPE(shijima::action::turn);
+CEREAL_REGISTER_TYPE(shijima::action::mute);
 
 // register polymorphic relations
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::animate);
@@ -82,6 +83,7 @@ CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::turn);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::jump,      shijima::action::breedjump);
 CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::breedmove);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::mute);
 
 #endif
 
@@ -265,7 +267,8 @@ void parser::try_parse_instant(std::shared_ptr<action::base> &action,
     {
         #define pair(name, type) { name, []{ return std::make_shared<type>(); } }
         pair("Offset", action::offset),
-        pair("Look", action::look)
+        pair("Look", action::look),
+        pair("Mute", action::mute)
         #undef pair
     };
     if (instant_init.count(type) == 1) {
