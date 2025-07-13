@@ -102,7 +102,9 @@ bool base::tick() {
                     + mascot->queued_behavior);
             }
         #endif
-        return true;
+        if (!mascot->queued_behavior.empty()) {
+            return true;
+        }
     }
     if (!vars.get_bool("Condition", true)) {
         return false;
