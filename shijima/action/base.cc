@@ -67,7 +67,6 @@ void base::init(mascot::tick &ctx) {
             if (affordance != "") {
                 server = mascot->env->broadcasts.start_broadcast(
                     vars.get_string("Affordance"), mascot->anchor);
-                vars.add_attr({ { "Affordance", "" } });
             }
         }
     }
@@ -80,19 +79,31 @@ bool base::tick() {
     if (server.active()) {
         server.update_anchor(mascot->anchor);
     }
+    vars.tick();
     if (server.did_meet_up()) {
         mascot->interaction = server.get_interaction();
         mascot->queued_behavior = mascot->interaction.behavior();
+        if (mascot->queued_behavior.empty()) {
+            // TargetBehavior was not set, an interaction cannot happen
+            mascot->interaction.finalize();
+
+            // Reset the server so that other clients may find it
+            server.finalize();
+            server = mascot->env->broadcasts.start_broadcast(
+                vars.get_string("Affordance"), mascot->anchor);
+        }
         if (server.turn_requested()) {
             mascot->looking_right = server.requested_looking_right();
         }
         #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_BROADCASTS, "Server did meet client, starting interaction");
-            log(SHIJIMA_LOG_BROADCASTS, "Queued behavior: " + mascot->queued_behavior);
+            log(SHIJIMA_LOG_BROADCASTS, "Server did meet client");
+            if (!mascot->queued_behavior.empty()) {
+                log(SHIJIMA_LOG_BROADCASTS, "Starting interaction with behavior: "
+                    + mascot->queued_behavior);
+            }
         #endif
         return true;
     }
-    vars.tick();
     if (!vars.get_bool("Condition", true)) {
         return false;
     }
