@@ -83,6 +83,9 @@ bool base::tick() {
     if (server.did_meet_up()) {
         mascot->interaction = server.get_interaction();
         mascot->queued_behavior = mascot->interaction.behavior();
+        if (server.turn_requested()) {
+            mascot->looking_right = server.requested_looking_right();
+        }
         if (mascot->queued_behavior.empty()) {
             // TargetBehavior was not set, an interaction cannot happen
             mascot->interaction.finalize();
@@ -91,9 +94,6 @@ bool base::tick() {
             server.finalize();
             server = mascot->env->broadcasts.start_broadcast(
                 vars.get_string("Affordance"), mascot->anchor);
-        }
-        if (server.turn_requested()) {
-            mascot->looking_right = server.requested_looking_right();
         }
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_BROADCASTS, "Server did meet client");
