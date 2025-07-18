@@ -224,7 +224,12 @@ std::shared_ptr<animation> parser::parse_animation(pugi::xml_node node) {
         subnode = subnode.next_sibling();
     }
     if (poses.size() == 0) {
-        throw std::invalid_argument("Animation has no Poses");
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_PARSER, "warning: animation has no "
+                "poses");
+        #endif
+        return nullptr;
+        //throw std::invalid_argument("Animation has no Poses");
     }
     auto anim = std::make_shared<animation>(poses, hotspots);
     anim->condition = cond;

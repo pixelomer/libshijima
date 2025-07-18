@@ -58,6 +58,9 @@ bool animation::tick() {
     if (!base::tick()) {
         return false;
     }
+    if (animations.size() == 0) {
+        return false;
+    }
     if (!check_border_type()) {
         return false;
     }
