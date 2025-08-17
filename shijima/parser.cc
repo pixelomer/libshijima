@@ -245,7 +245,10 @@ void parser::try_parse_sequence(std::shared_ptr<action::base> &action,
     {
         #define pair(name, type) { name, []{ return std::make_shared<type>(); } }
         pair("Select", action::select),
-        pair("Sequence", action::sequence)
+        pair("Sequence", action::sequence),
+
+        //FIXME: unimplemented types
+        pair("OpenURL", action::sequence) // non-standard action used in KinitoPet
         #undef pair
     };
     if (sequence_init.count(type) == 1) {
@@ -376,9 +379,16 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
     
     std::shared_ptr<action::base> result;
 
+    // hardcoded fix for KinitoPet
+    if (type == "Animate" && attributes.count("Class") == 1 &&
+        attributes.at("Class") == "com.group_finity.mascot.action.Dragged")
+    {
+        type = "Embedded";
+    }
+
     if (type == "Embedded") {
         auto cls = attributes.at("Class");
-        const std::string prefix = "com.group_finity.mascot.action.";
+        static const std::string prefix = "com.group_finity.mascot.action.";
         if (cls.substr(0, prefix.size()) != prefix) {
             throw std::invalid_argument("Invalid class name");
         }
