@@ -9,8 +9,11 @@ if(NOT DEFINED SHIJIMA_USE_PUGIXML)
 endif()
 
 if(SHIJIMA_USE_PUGIXML)
+if(NOT TARGET pugixml)
     add_subdirectory(pugixml)
 endif()
+endif()
+
 include_directories(.)
 include_directories(cereal/include)
 
