@@ -551,7 +551,21 @@ void context::push_variables() {
     auto type = duk_get_type(duk, -1);
     if (type == DUK_TYPE_UNDEFINED) {
         duk_pop(duk);
+        //FIXME: duplicated proxy objects (?)
+        const char *builder =
+            "(function(target){"
+            "    return new Proxy(target, {"
+            "        \"get\": function(target, property, receiver) {"
+            "            if (Reflect.has(target, property)) {"
+            "                return Reflect.get(target, property);"
+            "            }"
+            "            return \"\";"
+            "        }"
+            "    })"
+            "})";
+        duk_eval_string(duk, builder);
         duk_push_bare_object(duk);
+        duk_call(duk, 1);
         duk_dup(duk, -1);
         duk_put_prop_string(duk, -3, key.c_str());
     }
