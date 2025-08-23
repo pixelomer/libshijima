@@ -25,18 +25,18 @@ bool sequence::requests_interpolation() {
     return false;
 }
 
-std::shared_ptr<base> sequence::next_action() {
+void sequence::next_action() {
+    if (action != nullptr) {
+        action->finalize();
+        action = nullptr;
+    }
     if (action_idx >= (int)actions.size()) {
         if (vars.get_bool("Loops", false)) {
             action_idx = -1;
         }
         else {
-            return nullptr;
+            return;
         }
-    }
-    if (action != nullptr) {
-        action->finalize();
-        action = nullptr;
     }
     action_idx++;
     if (action_idx >= (int)actions.size()) {
@@ -44,13 +44,12 @@ std::shared_ptr<base> sequence::next_action() {
             action_idx = 0;
         }
         else {
-            return nullptr;
+            return;
         }
     }
-    action = actions[action_idx];
+    action = actions.at(action_idx);
     mascot::tick ctx = { script_ctx, {} };
     action->init(ctx);
-    return action;
 }
 
 void sequence::init(mascot::tick &ctx) {

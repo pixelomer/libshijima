@@ -25,7 +25,7 @@ namespace action {
 
 class select : public sequence {
 protected:
-    virtual std::shared_ptr<base> next_action() override;
+    virtual void next_action() override;
 public:
     virtual void init(mascot::tick &ctx) override;
 };

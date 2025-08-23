@@ -21,11 +21,16 @@
 namespace shijima {
 namespace action {
 
-std::shared_ptr<base> select::next_action() {
+void select::next_action() {
     if (elapsed() > 0) {
-        return nullptr;
+        if (action != nullptr) {
+            action->finalize();
+            action = nullptr;
+        }
     }
-    return sequence::next_action();
+    else {
+        return sequence::next_action();
+    }
 }
 
 void select::init(mascot::tick &ctx) {
