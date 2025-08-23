@@ -305,5 +305,20 @@ void manager::tick() {
     throw std::logic_error("tick() failed after multiple attempts");
 }
 
+std::shared_ptr<scripting::context> manager::get_script_ctx() const {
+    return script_ctx;
+}
+
+void manager::set_script_ctx(std::shared_ptr<scripting::context> ctx) {
+    if (script_ctx != nullptr) {
+        script_ctx->erase_mascot_variables(state.get());
+    }
+    script_ctx = ctx;
+}
+
+manager::~manager() {
+    set_script_ctx(nullptr);
+}
+
 }
 }

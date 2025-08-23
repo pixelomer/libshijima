@@ -44,7 +44,7 @@ factory::product factory::spawn(std::string const& name, manager::initializer in
     auto& tmpl = ret.tmpl = templates.at(name);
     ret.manager = std::make_unique<mascot::manager>(tmpl->data.c_str(),
         tmpl->data.size(), init, script_ctx);
-    ret.manager->state->env = env;
+    ret.manager->get_state()->env = env;
     return ret;
 }
 

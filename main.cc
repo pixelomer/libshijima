@@ -92,8 +92,8 @@ SDL_Texture *get_image(std::string const& path) {
 std::vector<mascot::factory::product> mascots;
 
 void run_console(bool poll_events = true) {
-    scripting::context &ctx = *mascots[0].manager->script_ctx;
-    ctx.state = mascots[0].manager->state;
+    scripting::context &ctx = *mascots[0].manager->get_script_ctx();
+    ctx.state = mascots[0].manager->get_state();
     ctx.state->env = factory.env;
     std::string line;
     do {
@@ -180,7 +180,7 @@ void tick() {
     for (auto &mascot : mascots) {
         auto &manager = mascot.manager;
         manager->tick();
-        auto &breed_request = manager->state->breed_request;
+        auto &breed_request = manager->get_state()->breed_request;
         if (breed_request.available) {
             breed_request.available = false;
             if (breed_request.name == "") {
@@ -189,7 +189,7 @@ void tick() {
             try {
                 auto product = factory.spawn(breed_request.name,
                     { breed_request.anchor, breed_request.behavior });
-                product.manager->state->looking_right = breed_request.looking_right;
+                product.manager->get_state()->looking_right = breed_request.looking_right;
                 new_mascots.push_back(std::move(product));
             }
             catch (...) {}
@@ -197,7 +197,7 @@ void tick() {
     }
 
     // Reset scale after env has been used, then use anchors normally
-    // (manager->state->anchor will always have scale 1.0 after tick)
+    // (manager->get_state()->anchor will always have scale 1.0 after tick)
     env.reset_scale();
 
     uint32_t update_elapsed = SDL_GetTicks() - start_time;
@@ -217,23 +217,23 @@ void tick() {
     for (auto &product : mascots) {
         auto &manager = product.manager;
         SDL_Texture *texture = get_image(product.tmpl->path + "/img" +
-            manager->state->active_frame.name);
+            manager->get_state()->active_frame.name);
         SDL_Rect src = {}, dest;
         SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
-        if (manager->state->looking_right) {
+        if (manager->get_state()->looking_right) {
             dest = {
-                (int)(manager->state->anchor.x - src.w + manager->state->active_frame.anchor.x),
-                (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
+                (int)(manager->get_state()->anchor.x - src.w + manager->get_state()->active_frame.anchor.x),
+                (int)(manager->get_state()->anchor.y - manager->get_state()->active_frame.anchor.y),
                 src.w, src.h };
         }
         else {
             dest = {
-                (int)(manager->state->anchor.x - manager->state->active_frame.anchor.x),
-                (int)(manager->state->anchor.y - manager->state->active_frame.anchor.y),
+                (int)(manager->get_state()->anchor.x - manager->get_state()->active_frame.anchor.x),
+                (int)(manager->get_state()->anchor.y - manager->get_state()->active_frame.anchor.y),
                 src.w, src.h };
         }
         SDL_RenderCopyEx(renderer, texture, &src, &dest, 0.0, NULL,
-            manager->state->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+            manager->get_state()->looking_right ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
     }
     SDL_RenderPresent(renderer);
 
@@ -250,7 +250,7 @@ void tick() {
         spawn_more = false;
     }
 
-    //if (mascots[0].manager->state->time % 12 == 0) {
+    //if (mascots[0].manager->get_state()->time % 12 == 0) {
         std::string title = WINDOW_TITLE " (" + std::to_string(mascots.size()) + " active, "
             + std::to_string(update_elapsed) + "ms update, "
             + std::to_string(render_elapsed) + "ms render)";
@@ -295,11 +295,11 @@ bool handle_event(SDL_Event event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            mascots[random() % mascots.size()].manager->state->dragging = true;
+            mascots[random() % mascots.size()].manager->get_state()->dragging = true;
             break;
         case SDL_MOUSEBUTTONUP:
             for (auto &mascot : mascots) {
-                mascot.manager->state->dragging = false;
+                mascot.manager->get_state()->dragging = false;
             }
             break;
         case SDL_USEREVENT: {

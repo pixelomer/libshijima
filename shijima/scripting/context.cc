@@ -293,6 +293,16 @@ duk_idx_t context::build_mascot() {
     build_environment();
     put_prop(-2, "environment");
 
+    // mascot.variables
+    duk_push_string(duk, "variables");
+    push_function([this](duk_context *duk){
+        (void)duk;
+        push_variables();
+        return (duk_ret_t)1;
+    }, 0);
+    duk_def_prop(duk, -3, DUK_DEFPROP_HAVE_GETTER);
+    put_prop_functions("variables");
+
     duk_seal(duk, -1);    
     return mascot;
 }
@@ -530,6 +540,23 @@ void context::create_global(duk_uarridx_t idx) {
     duk_put_prop_index(duk, -2, idx);
     duk_pop_2(duk);
     globals_available++;
+}
+
+void context::push_variables() {
+    std::string key = "s" + std::to_string(
+        reinterpret_cast<unsigned long long>(state.get()));
+    duk_push_global_object(duk);
+    duk_get_prop_string(duk, -1, DUK_HIDDEN_SYMBOL("_globals"));
+    duk_get_prop_string(duk, -1, key.c_str());
+    auto type = duk_get_type(duk, -1);
+    if (type == DUK_TYPE_UNDEFINED) {
+        duk_pop(duk);
+        duk_push_bare_object(duk);
+        duk_dup(duk, -1);
+        duk_put_prop_string(duk, -3, key.c_str());
+    }
+    duk_swap(duk, -3, -1);
+    duk_pop_2(duk);
 }
 
 void context::delete_global(duk_uarridx_t idx) {
@@ -792,6 +819,14 @@ context::context() {
     auto idx = next_global_idx();
     create_global(idx);
     push_global(idx);
+}
+
+void context::erase_mascot_variables(const mascot::state *state) {
+    std::string key = "s" + std::to_string(
+        reinterpret_cast<unsigned long long>(state));
+    duk_push_global_object(duk);
+    duk_del_prop_string(duk, -1, key.c_str());
+    duk_pop(duk);
 }
 
 context::~context() {

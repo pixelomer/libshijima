@@ -96,6 +96,7 @@ private:
     void delete_global(duk_uarridx_t idx);
     void push_global(duk_uarridx_t idx);
     void pop_global(duk_uarridx_t idx);
+    void push_variables();
     duk_uarridx_t next_global_idx();
 
     std::shared_ptr<bool> invalidated_flag;
@@ -158,6 +159,7 @@ public:
 #undef log_javascript
     std::string eval_json(std::string js);
     void eval(std::string js);
+    void erase_mascot_variables(const mascot::state *state);
     context();
     ~context();
 

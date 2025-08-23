@@ -35,6 +35,8 @@ private:
     mascot::tick tick_ctx;
     std::shared_ptr<action::base> action;
     std::map<std::string, std::string> constants;
+    std::shared_ptr<scripting::context> script_ctx;
+    std::shared_ptr<mascot::state> state;
 public:
     behavior::list const& initial_behavior_list() {
         return behaviors.get_initial_list();
@@ -61,8 +63,10 @@ public:
             looking_right(data.looking_right) {}
     };
 
-    std::shared_ptr<scripting::context> script_ctx;
-    std::shared_ptr<mascot::state> state;
+    std::shared_ptr<mascot::state> get_state() { return state; }
+
+    std::shared_ptr<scripting::context> get_script_ctx() const;
+    void set_script_ctx(std::shared_ptr<scripting::context> ctx);
 
     manager &operator=(manager const&) = delete;
     manager &operator=(manager&&) = default;
@@ -77,6 +81,7 @@ public:
     manager(const char *serialized_data, size_t length, initializer init = {},
         std::shared_ptr<scripting::context> script_ctx = nullptr);
     std::string export_state();
+    ~manager();
 private:
     void init(shijima::parser const& parser, initializer const& init,
         std::shared_ptr<scripting::context> script_ctx);
