@@ -33,6 +33,7 @@
 #include "hotspot.hpp"
 #include <ostream>
 #include <istream>
+#include "parser_error.hpp"
 
 namespace shijima {
 
@@ -40,11 +41,11 @@ class parser {
 private:
 #if !defined(SHIJIMA_NO_PUGIXML)
     void try_parse_sequence(std::shared_ptr<action::base> &action,
-        pugi::xml_node node, std::string const& type);
+        pugi::xml_node node, std::string const& type, std::string const& name);
     void try_parse_instant(std::shared_ptr<action::base> &action,
-        pugi::xml_node node, std::string const& type);
+        pugi::xml_node node, std::string const& type, std::string const& name);
     void try_parse_animation(std::shared_ptr<action::base> &action,
-        pugi::xml_node node, std::string const& type);
+        pugi::xml_node node, std::string const& type, std::string const& name);
     std::shared_ptr<animation> parse_animation(pugi::xml_node node);
     pose parse_pose(pugi::xml_node node);
     bool parse_hotspot(pugi::xml_node node, shijima::hotspot &hotspot);
@@ -55,15 +56,23 @@ private:
     void parse_actions(std::string const& actions);
     void parse_behaviors(std::string const& behaviors);
     void connect_actions(behavior::list &behaviors);
+    pugi::xml_document load_xml(std::string const& xml);
+    void fail(std::string const& what);
+    void warn(std::string const& what);
+    void push_trace(std::string const& msg);
+    void pop_trace();
     void cleanup();
 #endif // !defined(SHIJIMA_NO_PUGIXML)
     std::vector<std::shared_ptr<action::reference>> action_refs;
     std::vector<std::shared_ptr<behavior::base>> behavior_refs;
     std::map<std::string, std::shared_ptr<action::base>> actions;
+    std::vector<std::string> parser_trace;
+    std::vector<parser_error> warnings;
 public:
     behavior::list behavior_list;
     std::set<shijima::pose> poses;
     std::map<std::string, std::string> constants;
+    const std::vector<parser_error> &get_warnings() const { return warnings; }
     parser() {}
     
 #if !defined(SHIJIMA_NO_PUGIXML)

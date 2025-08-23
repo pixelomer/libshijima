@@ -329,13 +329,40 @@ int main(int argc, char **argv) {
         std::cout.flush();
         return EXIT_SUCCESS;
     }
-    else if (argc == 5 && strcmp(argv[1], "serialize") == 0) {
-        std::string actions = read_file(argv[2]);
-        std::string behaviors = read_file(argv[3]);
+    else if ((argc == 5 || argc == 4) && strcmp(argv[1], "serialize") == 0) {
+        std::string actions, behaviors;
+        std::string out_path;
+        if (argc == 5) {
+            actions = read_file(argv[2]);
+            behaviors = read_file(argv[3]);
+            out_path = argv[4];
+        }
+        else /* if (argc == 4) */ {
+            actions = read_file(std::string(argv[2]) + "/actions.xml");
+            behaviors = read_file(std::string(argv[2]) + "/behaviors.xml");
+            out_path = argv[3];
+        }
         shijima::parser parser;
-        parser.parse(actions, behaviors);
+        bool parsed = true;
+        try {
+            parser.parse(actions, behaviors);
+        }
+        catch (std::exception &err) {
+            parsed = false;
+            std::cerr << "=== shijima::parser failed ===" << std::endl;
+            std::cerr << err.what() << std::endl;
+        }
+        if (parser.get_warnings().size() > 0) {
+            std::cerr << "=== shijima::parser produced warnings ===" << std::endl;
+        }
+        for (auto const& warn : parser.get_warnings()) {
+            std::cerr << warn.what() << std::endl;
+        }
+        if (!parsed) {
+            return EXIT_FAILURE;
+        }
         std::ofstream out;
-        out.open(argv[4], std::ios::out | std::ios::binary);
+        out.open(out_path, std::ios::out | std::ios::binary);
         parser.saveTo(out);
         out.close();
         return EXIT_SUCCESS;
@@ -349,6 +376,8 @@ int main(int argc, char **argv) {
         std::cerr << "    " << argv[0] << " translate" << std::endl;
         std::cerr << "    " << argv[0] << " serialize <actions.xml> <behaviors.xml> "
             "<mascot.cereal>" << std::endl;
+        std::cerr << "    " << argv[0] << " serialize <MyMascot.mascot> <mascot.cereal>"
+            << std::endl;
         #endif
         return EXIT_FAILURE;
     }

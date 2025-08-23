@@ -123,15 +123,15 @@ static void strip_xml(pugi::xml_node node) {
 
 pose parser::parse_pose(pugi::xml_node node) {
     if (std::string(node.name()) != "Pose") {
-        throw std::invalid_argument("Expected Pose node");
+        fail("expected Pose node, got " + std::string(node.name()));
     }
     auto attr = all_attributes(node);
-    if (!node.first_child().empty()) {
-        throw std::invalid_argument("Non-empty Pose contents");
-    }
     std::string image, anchor, sound, image_right, velocity;
     if (attr.count("Image") == 1) {
         image = attr.at("Image");
+    }
+    if (!node.first_child().empty()) {
+        warn("Pose node should not contain children (image=" + image + ")");
     }
     if (attr.count("ImageRight") == 1) {
         image_right = attr.at("ImageRight");
@@ -145,40 +145,63 @@ pose parser::parse_pose(pugi::xml_node node) {
     if (attr.count("Velocity") == 1) {
         velocity = attr.at("Velocity");
     }
+    if (attr.count("Duration") == 0) {
+        fail("Pose node is missing Duration attribute (image=" + image + ")");
+    }
+    std::string const& s_duration = attr.at("Duration");
+    const char *duration = s_duration.c_str(), *duration_end;
+    long l_duration = std::strtol(duration, (char **)&duration_end, 10);
+    if (l_duration < 0 || duration_end == duration) {
+        fail("Pose node has invalid Duration attribute (image=" + image +
+            "): " + s_duration);
+    }
     shijima::pose pose { image, image_right, sound, anchor,
-        velocity, (int)std::strtol(attr.at("Duration").c_str(),
-        nullptr, 10) };
+        velocity, (int)l_duration };
     poses.insert(pose);
     return pose;
 }
 
 bool parser::parse_hotspot(pugi::xml_node node, shijima::hotspot &hotspot) {
     if (std::string(node.name()) != "Hotspot") {
-        throw std::invalid_argument("Expected Hotspot node");
+        warn("expected Hotspot node, got " + std::string(node.name()));
+        return false;
     }
     auto attr = all_attributes(node);
     if (!node.first_child().empty()) {
-        throw std::invalid_argument("Non-empty Hotspot contents");
+        warn("Hotspot node should not contain children");
     }
-    hotspot::shape shape = hotspot::shape_from_name(attr.at("Shape"));
+    std::string shape_name;
+    bool fail = false;
+    if (attr.count("Shape") == 1) {
+        shape_name = attr.at("Shape");
+    }
+    else {
+        warn("Hotspot node must contain Shape attribute");
+        fail = true;
+    }
+    hotspot::shape shape = hotspot::shape_from_name(shape_name);
     if (shape == hotspot::shape::INVALID) {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: invalid shape");
-        #endif
+        warn("invalid hotspot shape name: " + shape_name);
+        fail = true;
+    }
+    if (attr.count("Origin") == 0) {
+        warn("Hotspot node must contain Origin attribute");
+        fail = true;
+    }
+    if (attr.count("Size") == 0) {
+        warn("Hotspot node must contain Size attribute");
+        fail = true;
+    }
+    if (attr.count("Behavior") == 0) {
+        warn("Hotspot node must contain Behavior attribute");
+        fail = true;
+    }
+    if (fail) {
         return false;
     }
     math::vec2 origin = attr.at("Origin");
     math::vec2 size = attr.at("Size");
-    std::string behavior;
-    if (attr.count("Behavior")) {
-        behavior = attr.at("Behavior");
-    }
-    if (behavior == "") {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: hotspot without behavior");
-        #endif
-        return false;
-    }
+    std::string behavior = attr.at("Behavior");
     hotspot = { shape, origin, size, behavior };
     return true;
 }
@@ -186,19 +209,13 @@ bool parser::parse_hotspot(pugi::xml_node node, shijima::hotspot &hotspot) {
 // Parse Animations within Actions
 std::shared_ptr<animation> parser::parse_animation(pugi::xml_node node) {
     if (std::string(node.name()) != "Animation") {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_PARSER, "warning: ignoring invalid node in"
-                " animation action: " + std::string(node.name()));
-        #endif
+        warn("expected Animation node, got: " + std::string(node.name()));
         return nullptr;
-        //throw std::invalid_argument("Expected Animation node");
     }
     auto is_turn = node.attribute("IsTurn");
     if (!is_turn.empty() && std::string(is_turn.value()) == "true") {
         //FIXME: IsTurn is not supported
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_PARSER, "warning: IsTurn is not supported, ignoring animation");
-        #endif
+        warn("IsTurn is not supported, ignoring animation");
         return nullptr;
     }
     auto condition_attr = node.attribute("Condition");
@@ -224,12 +241,8 @@ std::shared_ptr<animation> parser::parse_animation(pugi::xml_node node) {
         subnode = subnode.next_sibling();
     }
     if (poses.size() == 0) {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_PARSER, "warning: animation has no "
-                "poses");
-        #endif
+        warn("animation has no poses");
         return nullptr;
-        //throw std::invalid_argument("Animation has no Poses");
     }
     auto anim = std::make_shared<animation>(poses, hotspots);
     anim->condition = cond;
@@ -238,7 +251,7 @@ std::shared_ptr<animation> parser::parse_animation(pugi::xml_node node) {
 
 // Parse Actions with inner Actions and ActionReferences.
 void parser::try_parse_sequence(std::shared_ptr<action::base> &action,
-    pugi::xml_node node, std::string const& type)
+    pugi::xml_node node, std::string const& type, std::string const& name)
 {
     static const std::map<std::string,
         std::function<std::shared_ptr<action::sequence>()>> sequence_init =
@@ -252,23 +265,28 @@ void parser::try_parse_sequence(std::shared_ptr<action::base> &action,
         #undef pair
     };
     if (sequence_init.count(type) == 1) {
+        push_trace("parsing sequence-like action (type=" + type + ", "
+            "name=" + name + ")");
         std::shared_ptr<action::sequence> seq = sequence_init.at(type)();
         auto sub_action = node.first_child();
+        push_trace("parsing action");
         while (!sub_action.empty()) {
             seq->actions.push_back(parse_action(sub_action, true));
             sub_action = sub_action.next_sibling();
         }
+        pop_trace();
         if (seq->actions.size() == 0) {
-            throw std::invalid_argument("Sequence has no Actions");
+            fail("sequence has no actions");
         }
         action = seq;
+        pop_trace();
     }
 }
 
 // Parse Actions with no contents. Behavior is determined solely
 // through attributes.
 void parser::try_parse_instant(std::shared_ptr<action::base> &action,
-    pugi::xml_node node, std::string const& type)
+    pugi::xml_node node, std::string const& type, std::string const& name)
 {
     static const std::map<std::string,
         std::function<std::shared_ptr<action::instant>()>> instant_init =
@@ -280,16 +298,19 @@ void parser::try_parse_instant(std::shared_ptr<action::base> &action,
         #undef pair
     };
     if (instant_init.count(type) == 1) {
+        push_trace("parsing instant-like action type (type=" + type + ", "
+            "name=" + name + ")");
         action = instant_init.at(type)();
         if (!node.first_child().empty()) {
-            throw std::invalid_argument("Instant action with non-empty contents");
+            warn("instant action node should not contain children");
         }
+        pop_trace();
     }
 }
 
 // Parse Actions with Animation content.
 void parser::try_parse_animation(std::shared_ptr<action::base> &action,
-    pugi::xml_node node, std::string const& type)
+    pugi::xml_node node, std::string const& type, std::string const& name)
 {
     static const std::map<std::string,
         std::function<std::shared_ptr<action::animation>()>> animation_init =
@@ -323,8 +344,11 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         #undef pair
     };
     if (animation_init.count(type) == 1) {
+        push_trace("parsing animation-like action (type=" + type + ", "
+            "name=" + name + ")");
         std::shared_ptr<action::animation> anim_action = animation_init.at(type)();
         auto anim_node = node.first_child();
+        push_trace("parsing animation");
         while (!anim_node.empty()) {
             auto anim = this->parse_animation(anim_node);
             if (anim != nullptr) {
@@ -332,7 +356,9 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
             }
             anim_node = anim_node.next_sibling();
         }
+        pop_trace();
         action = anim_action;
+        pop_trace();
     }
 }
 
@@ -372,9 +398,18 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
         return ref;
     }
     if (node_name != "Action") {
-        throw std::invalid_argument("Expected Action node, got " + node_name);
+        fail("expected Action node, got " + node_name);
     }
 
+    std::string name;
+    if (!is_child && attributes.count("Name") == 0) {
+        fail("root actions must have a name, but Name attribute was missing");
+    }
+    name = attributes.count("Name") == 1 ? attributes.at("Name") : "(null)";
+
+    if (attributes.count("Type") == 0) {
+        fail("missing Type attribute in action");
+    }
     auto type = attributes.at("Type");
     
     std::shared_ptr<action::base> result;
@@ -395,33 +430,58 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
         type = cls.substr(prefix.size());
     }
 
-    try_parse_sequence(result, action, type);
-    try_parse_instant(result, action, type);
-    try_parse_animation(result, action, type);
+    try_parse_sequence(result, action, type, name);
+    try_parse_instant(result, action, type, name);
+    try_parse_animation(result, action, type, name);
 
     if (result == nullptr) {
-        throw std::invalid_argument("Unrecognized type: " + type);
+        fail("unrecognized action type: " + type);
     }
     
     result->init_attr = attributes;
     if (!is_child) {
-        auto name = attributes.at("Name");
         actions[name] = result;
     }
 
     return result;
 }
 
-void parser::parse_actions(std::string const& actions_xml) {
-    std::string translated_xml = translator::translate(actions_xml);
+void parser::fail(std::string const& what) {
+    parser_error error(parser_trace, what);
+    parser_trace.clear();
+    throw error;
+}
+
+void parser::warn(std::string const& what) {
+    parser_error error(parser_trace, what);
+    warnings.push_back(error);
+}
+
+pugi::xml_document parser::load_xml(std::string const& xml) {
+    std::string translated = translator::translate(xml);
+    push_trace("loading translated xml");
     pugi::xml_document doc;
-    doc.load_string(translated_xml.c_str(), pugi::parse_default);
+    auto load_result = doc.load_string(translated.c_str(), pugi::parse_default);
+    if (!load_result) {
+        fail("failed to load xml: " + std::string(load_result.description()) +
+            " (encoding=" + std::to_string(load_result.encoding) +
+            ", offset=" + std::to_string(load_result.offset) +
+            ", status=" + std::to_string(load_result.status) + ")");
+    }
+    pop_trace();
     strip_xml(doc);
+    
+    return doc;
+}
+
+void parser::parse_actions(std::string const& actions_xml) {
+    auto doc = load_xml(actions_xml);
     auto mascot = doc.child("Mascot");
     if (mascot == nullptr) {
-        throw std::invalid_argument("Root node is not named Mascot");
+        fail("root node is not named Mascot");
     }
     auto action_list = mascot.child("ActionList");
+    push_trace("parsing action");
     while (!action_list.empty()) {
         auto action = action_list.first_child();
         while (!action.empty()) {
@@ -430,32 +490,36 @@ void parser::parse_actions(std::string const& actions_xml) {
         }
         action_list = action_list.next_sibling("ActionList");
     }
+    pop_trace();
     bool linked = true;
+    push_trace("linking actions with action references");
     for (auto &ref : action_refs) {
         auto &target_name = ref->init_attr.at("Name");
         if (actions.count(target_name) == 0) {
             linked = false;
-            std::cerr << "Referenced unknown action: " << target_name << std::endl;
+            warn("referenced unknown action: " + target_name);
             continue;
         }
         ref->target = actions.at(target_name);
     }
     if (!linked) {
-        throw std::invalid_argument("Failed to link ActionReferences");
+        fail("failed to link action references");
     }
+    pop_trace();
 }
 
 behavior::list parser::parse_behavior_list(pugi::xml_node root,
     bool allow_references)
 {
     behavior::list list;
+    push_trace("parsing behavior list");
     auto node = root.first_child();
     while (!node.empty()) {
         std::string name = node.name();
         if (name == "Behavior" || name == "BehaviorReference") {
             bool reference = (name == "BehaviorReference");
             if (reference && !allow_references) {
-                throw std::logic_error("allow_references == false");
+                fail("BehaviorReference in unexpected location");
             }
             auto attr = all_attributes(node, {{ "Name", "" }, { "Condition", "true" },
                 { "Hidden", "false" }, { "Frequency", "0" }});
@@ -475,7 +539,7 @@ behavior::list parser::parse_behavior_list(pugi::xml_node root,
                 behavior->add_next = add;
                 subnode = subnode.next_sibling("NextBehaviorList");
                 if (!subnode.empty()) {
-                    throw std::invalid_argument("Multiple NextBehaviorList nodes");
+                    fail("multiple NextBehaviorList nodes");
                 }
             }
             list.children.push_back(behavior);
@@ -494,12 +558,11 @@ behavior::list parser::parse_behavior_list(pugi::xml_node root,
             list.sublists.push_back(sublist);
         }
         else {
-            #ifdef SHIJIMA_LOGGING_ENABLED
-                log(SHIJIMA_LOG_PARSER, "warning: ignoring invalid behavior node: " + name);
-            #endif
+            warn("ignoring invalid behavior list subnode: " + name);
         }
         node = node.next_sibling();
     }
+    pop_trace();
     return list;
 }
 
@@ -507,6 +570,9 @@ void parser::connect_actions(behavior::list &behaviors) {
     for (auto &child : behaviors.children) {
         if (child->referenced != nullptr) {
             continue;
+        }
+        if (actions.count(child->name) == 0) {
+            fail("behavior without matching action: " + child->name);
         }
         child->action = actions.at(child->name);
         if (child->next_list != nullptr) {
@@ -527,13 +593,10 @@ void parser::cleanup() {
 }
 
 void parser::parse_behaviors(std::string const& behaviors_xml) {
-    std::string translated_xml = translator::translate(behaviors_xml);
-    pugi::xml_document doc;
-    doc.load_string(translated_xml.c_str());
-    strip_xml(doc);
+    auto doc = load_xml(behaviors_xml);
     auto mascot = doc.child("Mascot");
     if (mascot == nullptr) {
-        throw std::invalid_argument("Root node is not named Mascot");
+        fail("root node is not named Mascot");
     }
     auto node = mascot.first_child();
     while (!node.empty()) {
@@ -541,14 +604,19 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
         if (tag_name == "Constant") {
             auto name_attr = node.attribute("Name");
             auto value_attr = node.attribute("Value");
-            if (name_attr == nullptr || value_attr == nullptr) {
-                throw std::invalid_argument("Invalid constant");
+            if (name_attr == nullptr) {
+                fail("constant is missing the Name attribute "
+                    "(value=" + std::string(value_attr == nullptr ?
+                    "(null)" : value_attr.value()) + ")");
+            }
+            if (value_attr == nullptr) {
+                fail("constant is missing the Value attribute "
+                    "(name=" + std::string(name_attr.value()) + ")");
             }
             std::string name = name_attr.value();
             std::string value = value_attr.value();
             if (constants.count(name) != 0) {
-                throw std::invalid_argument("Multiple constants with "
-                    "same name: " + name);
+                fail("multiple constants named " + name);
             }
             constants[name] = value;
         }
@@ -556,36 +624,55 @@ void parser::parse_behaviors(std::string const& behaviors_xml) {
             behavior_list.sublists.push_back(parse_behavior_list(node, false));
         }
         else {
-            throw std::invalid_argument("Invalid tag in behaviours XML: "
-                + tag_name);
+            fail("invalid tag name in Mascot: " + tag_name);
         }
         node = node.next_sibling();
+    }
+
+    auto fall_behavior = behavior_list.find("Fall", false);
+    if (fall_behavior == nullptr) {
+        fail("missing Fall behavior");
     }
 
     // Build references
     for (auto &ref : behavior_refs) {
         auto target = behavior_list.find(ref->name, false);
         if (target == nullptr) {
-            #ifdef SHIJIMA_LOGGING_ENABLED
-                log(SHIJIMA_LOG_PARSER, "invalid behavior reference: " + ref->name);
-            #endif
-            target = behavior_list.find("Fall");
+            warn("reference to non-existing behavior: " + ref->name);
+            target = fall_behavior;
         }
         ref->referenced = target;
     }
 
     // Connect actions and behaviors
+    push_trace("connecting behaviors to actions");
     connect_actions(behavior_list);
+    pop_trace();
+}
+
+void parser::push_trace(std::string const& msg) {
+    parser_trace.push_back(msg);
+}
+
+void parser::pop_trace() {
+    parser_trace.pop_back();
 }
 
 void parser::parse(std::string const& actions_xml, std::string const& behaviors_xml) {
     // Clean results from any previous parse calls
+    parser_trace.clear();
+    warnings.clear();
     poses.clear();
     constants.clear();
     behavior_list = {};
 
+    push_trace("parsing actions.xml");
     parse_actions(actions_xml);
+    pop_trace();
+
+    push_trace("parsing behaviors.xml");
     parse_behaviors(behaviors_xml);
+    pop_trace();
 
     // Clean intermediary variables
     action_refs.clear();

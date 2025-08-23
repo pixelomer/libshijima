@@ -83,6 +83,7 @@ add_library(
     shijima/hotspot.cc
     shijima/log.cc
     shijima/parser.cc
+    shijima/parser_error.cc
     shijima/translator.cc
 )
 
