@@ -62,7 +62,8 @@ void base::init(mascot::tick &ctx) {
     }
     if (requests_vars()) {
         vars.init(*ctx.script, attr);
-        if (requests_broadcast()) {
+        condition_satisfied = vars.get_bool("Condition", true);
+        if (condition_satisfied && requests_broadcast()) {
             auto affordance = vars.get_string("Affordance");
             if (affordance != "") {
                 server = mascot->env->broadcasts.start_broadcast(
@@ -75,6 +76,9 @@ void base::init(mascot::tick &ctx) {
 bool base::tick() {
     if (!requests_vars()) {
         return true;
+    }
+    if (!condition_satisfied) {
+        return false;
     }
     if (server.active()) {
         server.update_anchor(mascot->anchor);
@@ -105,9 +109,6 @@ bool base::tick() {
         if (!mascot->queued_behavior.empty()) {
             return true;
         }
-    }
-    if (!vars.get_bool("Condition", true)) {
-        return false;
     }
     if (requests_periodic_breed()) {
         int interval = (int)vars.get_num("BornInterval");
