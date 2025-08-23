@@ -30,7 +30,6 @@ namespace action {
 class base {
 private:
     bool active = false;
-    bool condition_satisfied = false;
     math::vec2 target_offset;
 protected:
     std::shared_ptr<mascot::state> mascot;
