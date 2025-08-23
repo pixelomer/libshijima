@@ -316,7 +316,8 @@ int main(int argc, char **argv) {
     #endif
     bool do_run_console = false;
 
-    if (argc == 2 && strcmp(argv[1], "console") == 0) {
+    if (argc == 1) {}
+    else if (argc == 2 && strcmp(argv[1], "console") == 0) {
         do_run_console = true;
     }
     #if !defined(SHIJIMA_NO_PUGIXML)
