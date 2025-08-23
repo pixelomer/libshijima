@@ -99,7 +99,11 @@ bool animation::check_border_type() {
         throw std::logic_error("Unknown border: " + border_type);
     }
     if (!on_border) {
-        mascot->queued_behavior = "Fall";
+        if (!mascot->env->active_ie.is_on(mascot->anchor) &&
+            !mascot->env->work_area.is_on(mascot->anchor))
+        {
+            mascot->queued_behavior = "Fall";
+        }
         return false;
     }
     return true;
