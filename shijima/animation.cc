@@ -36,11 +36,11 @@ int animation::get_duration() {
     return duration;
 }
 
-animation::animation(): duration(0), condition(true) {}
+animation::animation(): duration(0), condition("true") {}
 
 animation::animation(std::vector<shijima::pose> const& poses,
     std::vector<shijima::hotspot> const& hotspots): poses(poses),
-    hotspots(hotspots), duration(0), condition(true)
+    hotspots(hotspots), duration(0), condition("true")
 {
     for (auto const& pose : poses) {
         duration += pose.duration;

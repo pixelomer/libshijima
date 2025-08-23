@@ -47,6 +47,10 @@ void animation::init(mascot::tick &ctx) {
     else {
         has_fixed_velocity = false;
     }
+    for (int i=0; i<(int)animations.size(); i++) {
+        auto key = "___Anim" + std::to_string(i);
+        vars.add_attr({ { key, animations.at(i)->condition } });
+    }
 }
 
 void animation::finalize() {
@@ -162,7 +166,7 @@ std::shared_ptr<shijima::animation> &animation::get_animation() {
     }
     for (int i=0; i<(int)animations.size(); i++) {
         auto &anim = animations[i];
-        if (vars.get_bool(anim->condition)) {
+        if (vars.get_bool("___Anim" + std::to_string(i))) {
             if (anim_idx != i) {
                 anim_idx = i;
                 start_time = mascot->time;

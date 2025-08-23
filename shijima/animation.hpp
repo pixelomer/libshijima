@@ -31,7 +31,7 @@ private:
     std::vector<hotspot> hotspots;
     int duration;
 public:
-    scripting::condition condition;
+    std::string condition;
     // time is 0-indexed. The first frame happens at t=0
     pose const& get_pose(int time);
     hotspot hotspot_at(math::vec2 offset);

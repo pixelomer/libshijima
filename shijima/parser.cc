@@ -219,10 +219,9 @@ std::shared_ptr<animation> parser::parse_animation(pugi::xml_node node) {
         return nullptr;
     }
     auto condition_attr = node.attribute("Condition");
-    scripting::condition cond = true;
+    std::string cond = "true";
     if (!condition_attr.empty()) {
-        std::string js = condition_attr.value();
-        cond = js;
+        cond = condition_attr.value();
     }
     std::vector<pose> poses;
     std::vector<hotspot> hotspots;
