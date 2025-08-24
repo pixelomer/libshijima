@@ -60,6 +60,11 @@ bool dragged::subtick(int idx) {
     }
     auto offset_x = vars.get_num("OffsetX", 0);
     auto offset_y = vars.get_num("OffsetY", 120);
+    auto offset_type = vars.get_string("OffsetType");
+    if (offset_type == "Origin") {
+        offset_x = mascot->active_frame.anchor.x - offset_x;
+        offset_y = mascot->active_frame.anchor.y - offset_y;
+    }
     auto subtick_count = mascot->env->subtick_count;
     if (std::abs(cursor.x - mascot->anchor.x + offset_x) >= (5.0 / subtick_count)) {
         reset_elapsed();

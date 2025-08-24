@@ -24,9 +24,12 @@ namespace shijima {
 namespace action {
 
 class resist : public animate {
+private:
+    math::vec2 start_cursor;
 protected:
     virtual bool handle_dragging() override;
 public:
+    virtual void init(mascot::tick &ctx) override;
     virtual bool tick() override;
 };
 

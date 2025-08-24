@@ -31,8 +31,13 @@ bool resist::handle_dragging() {
     return true;
 }
 
+void resist::init(mascot::tick &ctx) {
+    animate::init(ctx);
+    start_cursor = mascot->get_cursor();
+}
+
 bool resist::tick() {
-    if (std::abs(mascot->get_cursor().x - mascot->anchor.x) >= 5) {
+    if (std::abs(mascot->get_cursor().x - start_cursor.x) >= 5) {
         // Cursor moved, abort without escaping
         mascot->queued_behavior = "Dragged";
         mascot->was_on_ie = false;
