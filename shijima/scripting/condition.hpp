@@ -28,44 +28,14 @@ private:
     bool is_constant;
     bool value;
     std::string js;
-    void init(std::string const& str) {
-        if (str.size() > 3 && (str[0] == '$' || str[0] == '#') &&
-            str[1] == '{' && str[str.size()-1] == '}')
-        {
-            is_constant = false;
-            js = str.substr(2, str.size()-3);
-        }
-        else {
-            is_constant = true;
-            value = (str == "true");
-        }
-    }
-    void init(bool val) {
-        this->is_constant = true;
-        this->value = val;
-    }
+    void init(std::string const& str);
+    void init(bool val);
 public:
-    condition(std::string const& str) {
-        init(str);
-    }
-    condition(const char *str) {
-        init(std::string(str));
-    }
-    condition(bool value) {
-        init(value);
-    }
-    bool eval(context &ctx) const {
-        if (is_constant) {
-            return value;
-        }
-        return ctx.eval_bool(js);
-    }
-    bool eval(context::global::active &ctx) const {
-        if (is_constant) {
-            return value;
-        }
-        return ctx->eval_bool(js);
-    }
+    condition(std::string const& str);
+    condition(const char *str);
+    condition(bool value);
+    bool eval(context &ctx) const;
+    bool eval(context::global::active &ctx) const;
     template<class Archive>
     void serialize(Archive &ar)
     {

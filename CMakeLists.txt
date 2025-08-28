@@ -77,6 +77,7 @@ add_library(
     shijima/mascot/manager.cc
     shijima/mascot/state.cc
     shijima/scripting/duktape/duktape.cc
+    shijima/scripting/condition.cc
     shijima/scripting/context.cc
     shijima/scripting/variables.cc
     shijima/animation.cc
