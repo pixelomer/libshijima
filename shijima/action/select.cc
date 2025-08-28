@@ -34,7 +34,7 @@ void select::next_action() {
 }
 
 void select::init(mascot::tick &ctx) {
-    mascot::tick overlay_ctx = ctx.overlay({ { "Loops", "false "} });
+    mascot::tick overlay_ctx = ctx.overlay({ { "Loop", "false" } });
     sequence::init(overlay_ctx);
 }
 
