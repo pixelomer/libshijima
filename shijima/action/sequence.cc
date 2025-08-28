@@ -66,10 +66,17 @@ bool sequence::subtick(int idx) {
     if (action == nullptr) {
         return false;
     }
+    size_t attempts = 0;
+    size_t attempts_max = actions.size() + 1;
     while (action != nullptr && !action->subtick(idx) && (idx == 0) &&
-        mascot->queued_behavior.empty())
+        mascot->queued_behavior.empty() && (attempts != attempts_max))
     {
         next_action();
+        ++attempts;
+    }
+    if (attempts == attempts_max && action != nullptr) {
+        action->finalize();
+        action = nullptr;
     }
     return action != nullptr;
 }
