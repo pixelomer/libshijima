@@ -31,7 +31,7 @@ void sequence::next_action() {
         action = nullptr;
     }
     if (action_idx >= (int)actions.size()) {
-        if (vars.get_bool("Loops", false)) {
+        if (vars.get_bool("Loop", false)) {
             action_idx = -1;
         }
         else {
@@ -40,7 +40,7 @@ void sequence::next_action() {
     }
     action_idx++;
     if (action_idx >= (int)actions.size()) {
-        if (vars.get_bool("Loops", false)) {
+        if (vars.get_bool("Loop", false)) {
             action_idx = 0;
         }
         else {
