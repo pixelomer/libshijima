@@ -32,8 +32,8 @@ private:
     std::shared_ptr<shijima::animation> current_anim;
 protected:
     int anim_idx;
-    virtual std::shared_ptr<shijima::animation> &get_animation();
-    pose const& get_pose();
+    virtual std::shared_ptr<shijima::animation> get_animation();
+    const pose *get_pose();
     math::vec2 get_velocity();
     bool animation_finished();
     virtual bool check_border_type();

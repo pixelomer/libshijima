@@ -21,15 +21,15 @@
 
 namespace shijima {
 
-pose const& animation::get_pose(int time) {
+const pose *animation::get_pose(int time) {
     time %= duration;
     for (auto const& pose : poses) {
         time -= pose.duration;
         if (time < 0) {
-            return pose;
+            return &pose;
         }
     }
-    throw std::logic_error("impossible condition");
+    return nullptr;
 }
 
 int animation::get_duration() {

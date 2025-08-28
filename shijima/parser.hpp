@@ -49,7 +49,7 @@ private:
     std::shared_ptr<animation> parse_animation(pugi::xml_node node);
     pose parse_pose(pugi::xml_node node);
     bool parse_hotspot(pugi::xml_node node, shijima::hotspot &hotspot);
-    static std::map<std::string, std::string> all_attributes(pugi::xml_node node,
+    std::map<std::string, std::string> all_attributes(pugi::xml_node node,
         std::map<std::string, std::string> const& defaults = {});
     std::shared_ptr<action::base> parse_action(pugi::xml_node action, bool is_child);
     behavior::list parse_behavior_list(pugi::xml_node node, bool allow_references);

@@ -31,7 +31,7 @@ bool movewithturn::needs_turn() {
         (!mascot->looking_right && headed_right());
 }
 
-std::shared_ptr<shijima::animation> &movewithturn::get_animation() {
+std::shared_ptr<shijima::animation> movewithturn::get_animation() {
     if (animations.size() < 2) {
         return move::get_animation();
     }

@@ -32,7 +32,13 @@ math::vec2 animation::get_velocity() {
         return fixed_velocity;
     }
     else {
-        return get_pose().velocity;
+        auto pose = get_pose();
+        if (pose == nullptr) {
+            return {0, 0};
+        }
+        else {
+            return pose->velocity;
+        }
     }
 }
 
@@ -71,10 +77,17 @@ bool animation::tick() {
     if (!handle_dragging()) {
         return false;
     }
+    auto pose = get_pose();
+    if (pose == nullptr) {
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "warning: no pose");
+        #endif
+        return false;
+    }
     auto velocity = get_velocity();
     mascot->anchor.x += dx(velocity.x);
     mascot->anchor.y += dy(velocity.y);
-    mascot->active_frame = get_pose();
+    mascot->active_frame = *pose;
     return true;
 }
 
@@ -100,7 +113,10 @@ bool animation::check_border_type() {
         on_border = true;
     }
     else {
-        throw std::logic_error("Unknown border: " + border_type);
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_WARNINGS, "unknown border: " + border_type);
+        #endif
+        on_border = false;
     }
     if (!on_border) {
         if (!mascot->env->active_ie.is_on(mascot->anchor) &&
@@ -128,9 +144,9 @@ bool animation::handle_dragging() {
             topleft = mascot->anchor - mascot->active_frame.anchor;
         }
         math::vec2 cursor_rel = cursor - topleft;
-        auto &anim = get_animation();
+        auto anim = get_animation();
         shijima::hotspot hotspot;
-        if (mascot->env->allows_hotspots &&
+        if (mascot->env->allows_hotspots && anim != nullptr &&
             (hotspot = anim->hotspot_at(cursor_rel)).valid())
         {
             // Hotspot pressed
@@ -160,7 +176,7 @@ bool animation::handle_dragging() {
     return true;
 }
 
-std::shared_ptr<shijima::animation> &animation::get_animation() {
+std::shared_ptr<shijima::animation> animation::get_animation() {
     if (current_anim_time == mascot->time) {
         return current_anim;
     }
@@ -176,15 +192,19 @@ std::shared_ptr<shijima::animation> &animation::get_animation() {
             return current_anim;
         }
     }
-    throw std::logic_error("no animation available");
+    return nullptr;
 }
 
-pose const& animation::get_pose() {
-    return get_animation()->get_pose(elapsed());
+const pose *animation::get_pose() {
+    auto anim = get_animation();
+    if (anim == nullptr) return nullptr;
+    return anim->get_pose(elapsed());
 }
 
 bool animation::animation_finished() {
-    return elapsed() >= get_animation()->get_duration();
+    auto anim = get_animation();
+    if (anim == nullptr) return true;
+    return elapsed() >= anim->get_duration();
 }
 
 }

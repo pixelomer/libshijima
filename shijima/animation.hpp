@@ -33,7 +33,7 @@ private:
 public:
     std::string condition;
     // time is 0-indexed. The first frame happens at t=0
-    pose const& get_pose(int time);
+    const pose *get_pose(int time);
     hotspot hotspot_at(math::vec2 offset);
     int get_duration();
 

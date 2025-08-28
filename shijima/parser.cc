@@ -370,7 +370,7 @@ std::map<std::string, std::string> parser::all_attributes(pugi::xml_node node,
     while (!attribute.empty()) {
         std::string name(attribute.name());
         if (map.count(name) != 0) {
-            throw std::invalid_argument("Duplicate attribute: " + name);
+            warn("duplicate attribute: " + name);
         }
         map[name] = attribute.value();
         attribute = attribute.next_attribute();
@@ -424,7 +424,7 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
         auto cls = attributes.at("Class");
         static const std::string prefix = "com.group_finity.mascot.action.";
         if (cls.substr(0, prefix.size()) != prefix) {
-            throw std::invalid_argument("Invalid class name");
+            fail("invalid class name: " + cls);
         }
         type = cls.substr(prefix.size());
     }
