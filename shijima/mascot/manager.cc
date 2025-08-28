@@ -46,9 +46,7 @@ void manager::_next_behavior(std::string const& name) {
 
     state->behavior = behaviors.next(state);
     if (state->behavior == nullptr) {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: no next behavior");
-        #endif
+        state->warn("no next behavior");
 
         //reset_position();
         

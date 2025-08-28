@@ -49,13 +49,14 @@ std::shared_ptr<shijima::animation> movewithturn::get_animation() {
 
 void movewithturn::init(mascot::tick &ctx) {
     move::init(ctx);
-    #ifdef SHIJIMA_LOGGING_ENABLED
-        if (animations.size() != 2) {
-            log(SHIJIMA_LOG_WARNINGS,
-                "warning: expected 2 animations for MoveWithTurn, got "
+    if (animations.size() != 2) {
+        #ifndef SHIJIMA_LOGGING_ENABLED
+        if (mascot->warnings_enabled)
+        #endif
+            mascot->warn(
+                "expected 2 animations for MoveWithTurn, got "
                 + std::to_string(animations.size()) + " animations");
-        }
-    #endif
+    }
 }
 
 }

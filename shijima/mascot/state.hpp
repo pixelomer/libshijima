@@ -22,6 +22,7 @@
 #include <shijima/math.hpp>
 #include <shijima/pose.hpp>
 #include <shijima/broadcast/interaction.hpp>
+#include <queue>
 #include "environment.hpp"
 
 namespace shijima {
@@ -73,6 +74,12 @@ public:
     std::shared_ptr<behavior::base> behavior;
 
     bool hotspot_triggered;
+
+    bool warnings_enabled = false;
+    std::queue<std::string> warnings;
+
+    void warn(const char *msg);
+    void warn(std::string const& msg);
 
     void roll_dcursor();
     environment::dvec2 &get_raw_cursor();

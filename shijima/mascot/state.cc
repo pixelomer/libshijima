@@ -17,6 +17,7 @@
 // 
 
 #include "state.hpp"
+#include <shijima/log.hpp>
 
 namespace shijima {
 namespace mascot {
@@ -67,6 +68,23 @@ bool state::on_land() {
         env->ceiling.is_on(anchor) ||
         env->work_area.is_on(anchor) ||
         env->active_ie.is_on(anchor);
+}
+
+void state::warn(std::string const& msg) {
+    #ifdef SHIJIMA_LOGGING_ENABLED
+        shijima::log(SHIJIMA_LOG_WARNINGS, msg);
+    #endif
+    if (warnings_enabled) {
+        warnings.push(msg);
+    }
+}
+void state::warn(const char *msg) {
+    #ifdef SHIJIMA_LOGGING_ENABLED
+        shijima::log(SHIJIMA_LOG_WARNINGS, msg);
+    #endif
+    if (warnings_enabled) {
+        warnings.push(msg);
+    }
 }
 
 }

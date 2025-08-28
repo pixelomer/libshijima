@@ -79,9 +79,7 @@ bool animation::tick() {
     }
     auto pose = get_pose();
     if (pose == nullptr) {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "warning: no pose");
-        #endif
+        mascot->warn("no pose");
         return false;
     }
     auto velocity = get_velocity();
@@ -113,9 +111,10 @@ bool animation::check_border_type() {
         on_border = true;
     }
     else {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            log(SHIJIMA_LOG_WARNINGS, "unknown border: " + border_type);
+        #ifndef SHIJIMA_LOGGING_ENABLED
+        if (mascot->warnings_enabled)
         #endif
+            mascot->warn("unknown border: " + border_type);
         on_border = false;
     }
     if (!on_border) {

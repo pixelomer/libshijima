@@ -733,12 +733,11 @@ bool context::eval_bool(std::string const& js, bool log) {
         ret = duk_to_boolean(duk, -1);
     }
     catch (std::exception &ex) {
-        #ifdef SHIJIMA_LOGGING_ENABLED
-            shijima::log(SHIJIMA_LOG_WARNINGS, "warning: eval_bool() failed: "
-                + std::string(ex.what()));
-            shijima::log(SHIJIMA_LOG_WARNINGS, "warning: relevant script: "
-                + normalize_js(js));
+        #ifndef SHIJIMA_LOGGING_ENABLED
+        if (state->warnings_enabled)
         #endif
+            state->warn("eval_bool() failed: " + std::string(ex.what()) + "\n" +
+                "relevant script: " + normalize_js(js));
         ret = false;
     }
     if (log) {
