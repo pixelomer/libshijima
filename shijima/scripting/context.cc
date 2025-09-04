@@ -243,6 +243,57 @@ void context::register_string_property(const char *name,
     put_prop_functions(name);
 }
 
+
+duk_idx_t context::build_vborder(std::function<mascot::environment::vborder()> getter) {
+    auto border = duk_push_bare_object(duk);
+
+    // border.isOn(point)
+    //   where point = { x: number, y: number }
+    push_function([getter](duk_context *ctx) -> duk_ret_t {
+        auto point = duk_to_point(ctx, 0);
+        duk_push_boolean(ctx, getter().is_on(point));
+        return 1;
+    }, 1);
+    duk_put_prop_string(duk, -2, "isOn");
+
+    register_number_property("x", [getter](){
+        return getter().x;
+    }, nullptr);
+    register_number_property("top", [getter](){
+        return getter().ystart;
+    }, nullptr);
+    register_number_property("bottom", [getter](){
+        return getter().yend;
+    }, nullptr);
+
+    return border;
+}
+
+duk_idx_t context::build_hborder(std::function<mascot::environment::hborder()> getter) {
+    auto border = duk_push_bare_object(duk);
+
+    // border.isOn(point)
+    //   where point = { x: number, y: number }
+    push_function([getter](duk_context *ctx) -> duk_ret_t {
+        auto point = duk_to_point(ctx, 0);
+        duk_push_boolean(ctx, getter().is_on(point));
+        return 1;
+    }, 1);
+    duk_put_prop_string(duk, -2, "isOn");
+
+    register_number_property("y", [getter](){
+        return getter().y;
+    }, nullptr);
+    register_number_property("left", [getter](){
+        return getter().xstart;
+    }, nullptr);
+    register_number_property("right", [getter](){
+        return getter().xend;
+    }, nullptr);
+
+    return border;
+}
+
 duk_idx_t context::build_console() {
     auto console = duk_push_bare_object(duk);
     duk_push_c_function(duk, duk_console_log, DUK_VARARGS);
@@ -311,19 +362,19 @@ duk_idx_t context::build_area(std::function<mascot::environment::area&()> getter
     auto area = duk_push_bare_object(duk);
 
     // area.rightBorder
-    build_border<mascot::environment::vborder>([getter]() { return getter().right_border(); });
+    build_vborder([getter]() { return getter().right_border(); });
     put_prop(-2, "rightBorder");
 
     // area.leftBorder
-    build_border<mascot::environment::vborder>([getter]() { return getter().left_border(); });
+    build_vborder([getter]() { return getter().left_border(); });
     put_prop(-2, "leftBorder");
 
     // area.topBorder
-    build_border<mascot::environment::hborder>([getter]() { return getter().top_border(); });
+    build_hborder([getter]() { return getter().top_border(); });
     put_prop(-2, "topBorder");
 
     // area.bottomBorder
-    build_border<mascot::environment::hborder>([getter]() { return getter().bottom_border(); });
+    build_hborder([getter]() { return getter().bottom_border(); });
     put_prop(-2, "bottomBorder");
 
     // area.width
@@ -456,11 +507,11 @@ duk_idx_t context::build_environment() {
     auto env = duk_push_bare_object(duk);
 
     // environment.floor
-    build_border<mascot::environment::hborder>([this]() { return this->state->env->floor; });
+    build_hborder([this]() { return this->state->env->floor; });
     put_prop(-2, "floor");
 
     // environment.ceiling
-    build_border<mascot::environment::hborder>([this]() { return this->state->env->ceiling; });
+    build_hborder([this]() { return this->state->env->ceiling; });
     put_prop(-2, "ceiling");
 
     // environment.workArea

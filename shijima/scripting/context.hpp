@@ -51,21 +51,8 @@ private:
     void put_prop_functions(std::string const& prop_name);
     void log_javascript(std::string const& js, std::string const& result);
 
-    template<typename T>
-    duk_idx_t build_border(std::function<T()> getter) {
-        auto border = duk_push_bare_object(duk);
-
-        // leftBorder.isOn(point)
-        //   where point = { x: number, y: number }
-        push_function([getter](duk_context *ctx) -> duk_ret_t {
-            auto point = duk_to_point(ctx, 0);
-            duk_push_boolean(ctx, getter().is_on(point));
-            return 1;
-        }, 1);
-        duk_put_prop_string(duk, -2, "isOn");
-
-        return border;
-    }
+    duk_idx_t build_vborder(std::function<mascot::environment::vborder()> getter);
+    duk_idx_t build_hborder(std::function<mascot::environment::hborder()> getter);
     
     duk_idx_t build_environment();
     duk_idx_t build_rectangle(std::function<math::rec&()> getter);
