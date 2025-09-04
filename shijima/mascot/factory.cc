@@ -61,11 +61,17 @@ void factory::clear() {
 std::shared_ptr<const factory::registered_tmpl> factory::register_template(
     tmpl const& tmpl)
 {
+    shijima::parser parser;
+    return register_template(tmpl, parser);
+}
+
+std::shared_ptr<const factory::registered_tmpl> factory::register_template(
+    tmpl const& tmpl, shijima::parser &parser)
+{
     if (templates.count(tmpl.name) != 0) {
         throw std::logic_error("cannot register same template twice");
     }
     std::ostringstream out;
-    shijima::parser parser;
     parser.parse(tmpl.actions_xml, tmpl.behaviors_xml);
     parser.saveTo(out);
     return templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(

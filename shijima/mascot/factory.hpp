@@ -24,6 +24,9 @@
 #include "state.hpp"
 
 namespace shijima {
+
+class parser;
+
 namespace mascot {
 
 class factory {
@@ -61,6 +64,7 @@ public:
     void clear();
 #if !defined(SHIJIMA_NO_PUGIXML)
     std::shared_ptr<const registered_tmpl> register_template(tmpl const& tmpl);
+    std::shared_ptr<const registered_tmpl> register_template(tmpl const& tmpl, shijima::parser &parser);
 #endif // !defined(SHIJIMA_NO_PUGIXML)
     std::shared_ptr<const registered_tmpl> register_template(registered_tmpl const& tmpl);
     void deregister_template(std::string const& name);
