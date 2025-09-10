@@ -72,7 +72,7 @@ SDL_Texture *get_image(std::string const& path) {
         return loaded_images.at(path);
     }
     SDL_Surface *loaded = IMG_Load(path.c_str());
-    assert(loaded != NULL);
+    if (loaded == NULL) return NULL;
     
     //FIXME: SDL_ConvertSurface() causes transparency to be lost on some systems (?)
     SDL_Surface *optimized = loaded;
@@ -83,7 +83,6 @@ SDL_Texture *get_image(std::string const& path) {
     */
     
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, optimized);
-    assert(texture != NULL);
     SDL_FreeSurface(optimized);
     loaded_images[path] = texture;
     return texture;
@@ -218,6 +217,9 @@ void tick() {
         auto &manager = product.manager;
         SDL_Texture *texture = get_image(product.tmpl->path + "/img" +
             manager->get_state()->active_frame.name);
+        if (texture == NULL) {
+            continue;
+        }
         SDL_Rect src = {}, dest;
         SDL_QueryTexture(texture, NULL, NULL, &src.w, &src.h);
         if (manager->get_state()->looking_right) {
