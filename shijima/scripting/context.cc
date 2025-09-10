@@ -552,6 +552,24 @@ duk_idx_t context::build_vec2(std::function<math::vec2&()> getter) {
         [getter](double val) { getter().x = val; })
     reg(x); reg(y);
     #undef reg
+    push_function([getter](duk_context *duk) -> duk_ret_t {
+        auto &vec = getter();
+        double dx = duk_get_number_default(duk, 0, 0);
+        double dy = duk_get_number_default(duk, 1, 0);
+        vec.x += dx;
+        vec.y += dy;
+        return 0;
+    }, 2);
+    duk_put_prop_string(duk, -2, "translate");
+    push_function([getter](duk_context *duk) -> duk_ret_t {
+        auto &vec = getter();
+        vec.x = duk_get_number_default(duk, 0, 0);
+        vec.y = duk_get_number_default(duk, 1, 0);
+        return 0;
+    }, 2);
+    duk_dup(duk, -1);
+    duk_put_prop_string(duk, -3, "move");
+    duk_put_prop_string(duk, -2, "setLocation");
     duk_seal(duk, -1);
     return vec2;
 }
