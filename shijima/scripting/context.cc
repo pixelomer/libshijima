@@ -354,6 +354,25 @@ duk_idx_t context::build_mascot() {
     duk_def_prop(duk, -3, DUK_DEFPROP_HAVE_GETTER);
     put_prop_functions("variables");
 
+    // mascot.getManager().getXXX() == null
+    //FIXME: getManager() is stubbed
+    const char *builder =
+        "(function(stub){"
+        "    return new Proxy({}, {"
+        "        \"get\": function(target, property, receiver) {"
+        "            if (typeof property === \"string\" &&"
+        "                property.startsWith(\"get\"))"
+        "            {"
+        "                return stub;"
+        "            }"
+        "            return null;"
+        "        },"
+        "        \"set\": function(target, property, value, receiver) {}"
+        "    });"
+        "})(function(){ return null; })";
+    duk_eval_string(duk, builder);
+    put_prop(-2, "manager");
+
     duk_seal(duk, -1);    
     return mascot;
 }
