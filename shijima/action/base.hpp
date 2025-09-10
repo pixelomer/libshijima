@@ -31,6 +31,10 @@ class base {
 private:
     bool active = false;
     math::vec2 target_offset;
+    int real_start_time;
+    int real_elapsed() {
+        return mascot->time - real_start_time;
+    }
 protected:
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;

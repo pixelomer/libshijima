@@ -55,7 +55,7 @@ void base::init(mascot::tick &ctx) {
     }
     active = true;
     mascot = ctx.script->state;
-    start_time = mascot->time;
+    real_start_time = start_time = mascot->time;
     std::map<std::string, std::string> attr = init_attr;
     for (auto const& pair : ctx.extra_attr) {
         attr[pair.first] = pair.second;
@@ -109,9 +109,12 @@ bool base::tick() {
     if (!vars.get_bool("Condition", true)) {
         return false;
     }
+    if (vars.has("Duration") && real_elapsed() >= (int)vars.get_num("Duration", INT_MAX)) {
+        return false;
+    }
     if (requests_periodic_breed()) {
         int interval = (int)vars.get_num("BornInterval");
-        if (interval > 0 && elapsed() % interval == 0) {
+        if (interval > 0 && real_elapsed() % interval == 0) {
             bool transient = vars.get_bool("BornTransient", false);
             if (!transient && (!mascot->env->allows_breeding || !mascot->can_breed)) {
                 // Not allowed to breed, but action can continue
