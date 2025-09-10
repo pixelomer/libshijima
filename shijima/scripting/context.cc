@@ -499,7 +499,11 @@ duk_idx_t context::build_proxy() {
         "    })"
         "})(globalThis)";
     duk_eval_string(duk, builder);
-    duk_seal(duk, -1);
+    
+    //FIXME: should the global object be sealed or not?
+    //       sealing the global object causes `var x = ...` to fail
+    //duk_seal(duk, -1);
+
     return duk_get_top_index(duk);
 }
     
