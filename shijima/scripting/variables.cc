@@ -39,6 +39,15 @@ bool variables::is_num(std::string const& str) {
 
 variables::variables() {}
 
+#ifdef SHIJIMA_LOGGING_ENABLED
+static void log_javascript(duk_context *duk, std::string const& js) {
+    duk_dup(duk, -1);
+    const char *result = duk_to_string(duk, -1);
+    log("\"" + scripting::context::normalize_js(js) + "\" = " + result);
+    duk_pop(duk);
+}
+#endif
+
 void variables::add_attr(std::map<std::string, double> const& attr) {
     auto ctx = global.use();
     for (auto const& pair : attr) {
@@ -75,6 +84,11 @@ void variables::add_attr(std::map<std::string, std::string> const& attr) {
             case '$':
                 // dynamic (once)
                 duk_eval_string(ctx->duk, val.substr(2, val.size()-3).c_str());
+                #ifdef SHIJIMA_LOGGING_ENABLED
+                    if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+                        log_javascript(ctx->duk, val.substr(2, val.size()-3));
+                    }
+                #endif
                 duk_put_global_string(ctx->duk, key.c_str());
                 break;
             case '#':
@@ -115,6 +129,11 @@ void variables::tick() {
         auto &key = pair.first;
         auto &js = pair.second;
         duk_eval_string(ctx->duk, js.c_str());
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            if (get_log_level() & SHIJIMA_LOG_JAVASCRIPT) {
+                log_javascript(ctx->duk, js);
+            }
+        #endif
         duk_put_global_string(ctx->duk, key.c_str());
     }
 }

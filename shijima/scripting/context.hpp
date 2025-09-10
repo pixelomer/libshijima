@@ -42,8 +42,10 @@ private:
     static math::vec2 duk_to_point(duk_context *ctx, duk_idx_t idx);
     static duk_ret_t duk_getter(duk_context *ctx);
     static duk_ret_t duk_setter(duk_context *ctx);
+public:
     static std::string normalize_js(std::string js);
-
+    
+private:
     duk_idx_t build_mascot();
     duk_idx_t build_console();
     duk_idx_t build_area(std::function<mascot::environment::area&()> getter);
