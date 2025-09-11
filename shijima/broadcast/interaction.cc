@@ -17,6 +17,7 @@
 // 
 
 #include "interaction.hpp"
+#include "../log.hpp"
 
 namespace shijima {
 namespace broadcast {
@@ -39,6 +40,11 @@ bool interaction::available() {
 
 void interaction::finalize() {
     if (m_ongoing != nullptr) {
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            if (*m_ongoing && (get_log_level() & SHIJIMA_LOG_BROADCASTS)) {
+                log("Interaction finalized");
+            }
+        #endif
         *m_ongoing = false;
     }
     m_ongoing = nullptr;
