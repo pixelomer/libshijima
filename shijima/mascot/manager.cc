@@ -256,7 +256,10 @@ bool manager::_tick() {
         if (tick_ctx.reached_init_limit()) {
             return false;
         }
-        state->interaction.finalize();
+        if (action->real_elapsed() > 0) {
+            //FIXME: this doesn't seem like the correct place to finalize interactions
+            state->interaction.finalize();
+        }
         /*if (!state->on_land()) {
             _next_behavior("Fall");
         }
