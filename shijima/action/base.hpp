@@ -32,11 +32,22 @@ private:
     bool active = false;
     math::vec2 target_offset;
     int real_start_time;
+    uint16_t characteristics;
+    void parse_characteristics();
 public:
     int real_elapsed() {
         return mascot->time - real_start_time;
     }
 protected:
+    enum class characteristic {
+        breed = (1 << 0),
+        scan = (1 << 1)
+    };
+
+    bool has(characteristic chr) {
+        return (characteristics & (uint16_t)chr) > 0;
+    }
+
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
     int start_time;
