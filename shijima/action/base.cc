@@ -35,11 +35,32 @@ bool base::requests_interpolation() {
 }
 
 bool base::requests_periodic_breed() {
-    return false;
+    return has(characteristic::breed);
+}
+
+void base::parse_characteristics() {
+    if (!vars.has("Characteristics")) return;
+    auto list = vars.get_string("Characteristics");
+    static_assert(std::string::npos == (size_t)-1, "npos must be (size_t)-1");
+    size_t start = (size_t)-1;
+    do {
+        start += 1;
+        size_t comma = list.find(',', start);
+        auto item = list.substr(start, comma-start);
+        
+        if (item == "Breed")
+            characteristics |= (uint8_t)characteristic::breed;
+        else if (item == "Scan")
+            characteristics |= (uint8_t)characteristic::scan;
+
+        start = comma;
+    }
+    while (start != (size_t)-1);
 }
 
 void base::init(mascot::tick &ctx) {
     ctx.will_init();
+    characteristics = 0;
     #ifdef SHIJIMA_LOGGING_ENABLED
         if (get_log_level() & SHIJIMA_LOG_ACTIONS) {
             if (init_attr.count("Name") == 1) {
@@ -62,6 +83,7 @@ void base::init(mascot::tick &ctx) {
     }
     if (requests_vars()) {
         vars.init(*ctx.script, attr);
+        parse_characteristics();
         if (requests_broadcast()) {
             auto affordance = vars.get_string("Affordance");
             if (affordance != "") {
