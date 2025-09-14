@@ -517,11 +517,13 @@ behavior::list parser::parse_behavior_list(pugi::xml_node root,
         std::string name = node.name();
         if (name == "Behavior" || name == "BehaviorReference") {
             bool reference = (name == "BehaviorReference");
-            if (reference && !allow_references) {
-                fail("BehaviorReference in unexpected location");
-            }
             auto attr = all_attributes(node, {{ "Name", "" }, { "Condition", "true" },
                 { "Hidden", "false" }, { "Frequency", "0" }});
+            if (reference && !allow_references) {
+                warn("BehaviorReference in unexpected location (name="
+                    + attr.at("Name") + ", frequency=" + attr.at("Frequency") + ")");
+                continue;
+            }
             int freq = std::stoi(attr.at("Frequency"));
             bool hidden = (attr.at("Hidden") == "true");
             auto behavior = std::make_shared<behavior::base>(attr.at("Name"),
