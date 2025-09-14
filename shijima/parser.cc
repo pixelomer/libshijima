@@ -522,6 +522,7 @@ behavior::list parser::parse_behavior_list(pugi::xml_node root,
             if (reference && !allow_references) {
                 warn("BehaviorReference in unexpected location (name="
                     + attr.at("Name") + ", frequency=" + attr.at("Frequency") + ")");
+                node = node.next_sibling();
                 continue;
             }
             int freq = std::stoi(attr.at("Frequency"));
