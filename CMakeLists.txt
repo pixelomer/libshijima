@@ -46,6 +46,8 @@ add_library(
     shijima/action/breed.cc
     shijima/action/breedjump.cc
     shijima/action/breedmove.cc
+    shijima/action/complexjump.cc
+    shijima/action/complexmove.cc
     shijima/action/dragged.cc
     shijima/action/fall.cc
     shijima/action/instant.cc
@@ -59,6 +61,7 @@ add_library(
     shijima/action/reference.cc
     shijima/action/resist.cc
     shijima/action/scaninteract.cc
+    shijima/action/scanjump.cc
     shijima/action/scanmove.cc
     shijima/action/select.cc
     shijima/action/selfdestruct.cc

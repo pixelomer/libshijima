@@ -1,0 +1,63 @@
+// 
+// libshijima - C++ library for shimeji desktop mascots
+// Copyright (C) 2024-2025 pixelomer
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+
+#include "complexmove.hpp"
+#include <cmath>
+#include <shijima/log.hpp>
+
+namespace shijima {
+namespace action {
+
+bool complexmove::requests_broadcast() {
+    return false;
+}
+
+void complexmove::init(mascot::tick &ctx) {
+    move::init(ctx);
+    if (has(characteristic::scan)) {
+        mascot->env->broadcasts.try_connect(mascot->client, mascot->anchor.y,
+            vars.get_string("Affordance"), vars.get_string("Behavior"),
+            vars.get_string("TargetBehavior"));
+    }
+}
+
+bool complexmove::tick() {
+    if (has(characteristic::scan)) {
+        if (!mascot->client.connected()) {
+            return false;
+        }
+        vars.add_attr({ { "TargetX", mascot->client.get_target().x } });
+    }
+    bool ret = move::tick();
+    auto target = mascot->client.get_target();
+    if (std::fabs(mascot->anchor.x - target.x) < 3) {
+        mascot->anchor.x = target.x;
+        mascot->client.notify_arrival();
+        mascot->interaction = mascot->client.get_interaction();
+        mascot->queued_behavior = mascot->interaction.behavior();
+        #ifdef SHIJIMA_LOGGING_ENABLED
+            log(SHIJIMA_LOG_BROADCASTS, "Client did meet server, starting interaction");
+            log(SHIJIMA_LOG_BROADCASTS, "Queued behavior: " + mascot->queued_behavior);
+        #endif
+        return true;
+    }
+    return ret;
+}
+
+}
+}

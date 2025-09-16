@@ -37,6 +37,8 @@ CEREAL_REGISTER_TYPE(shijima::action::base);
 CEREAL_REGISTER_TYPE(shijima::action::breed);
 CEREAL_REGISTER_TYPE(shijima::action::breedjump);
 CEREAL_REGISTER_TYPE(shijima::action::breedmove);
+CEREAL_REGISTER_TYPE(shijima::action::complexjump);
+CEREAL_REGISTER_TYPE(shijima::action::complexmove);
 CEREAL_REGISTER_TYPE(shijima::action::dragged);
 CEREAL_REGISTER_TYPE(shijima::action::fall);
 CEREAL_REGISTER_TYPE(shijima::action::instant);
@@ -49,6 +51,7 @@ CEREAL_REGISTER_TYPE(shijima::action::offset);
 CEREAL_REGISTER_TYPE(shijima::action::reference);
 CEREAL_REGISTER_TYPE(shijima::action::resist);
 CEREAL_REGISTER_TYPE(shijima::action::scaninteract);
+CEREAL_REGISTER_TYPE(shijima::action::scanjump);
 CEREAL_REGISTER_TYPE(shijima::action::scanmove);
 CEREAL_REGISTER_TYPE(shijima::action::select);
 CEREAL_REGISTER_TYPE(shijima::action::selfdestruct);
@@ -59,31 +62,34 @@ CEREAL_REGISTER_TYPE(shijima::action::turn);
 CEREAL_REGISTER_TYPE(shijima::action::mute);
 
 // register polymorphic relations
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::animate);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::animation);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::breed);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::dragged);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::fall);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::instant);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::interact);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::jump);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::look);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::move);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::movewithturn);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::offset);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::reference);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::resist);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::scaninteract);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::scanmove);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::sequence,  shijima::action::select);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::selfdestruct);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,      shijima::action::sequence);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation, shijima::action::stay);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::transform);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,   shijima::action::turn);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::jump,      shijima::action::breedjump);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,      shijima::action::breedmove);
-CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,   shijima::action::mute);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation,   shijima::action::animate);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,        shijima::action::animation);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::breed);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation,   shijima::action::dragged);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation,   shijima::action::fall);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,        shijima::action::instant);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::interact);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation,   shijima::action::jump);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,     shijima::action::look);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation,   shijima::action::move);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,        shijima::action::movewithturn);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,     shijima::action::offset);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,        shijima::action::reference);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::resist);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::scaninteract);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::jump,        shijima::action::complexjump);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,        shijima::action::complexmove);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::complexjump, shijima::action::scanjump);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::complexmove, shijima::action::scanmove);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::sequence,    shijima::action::select);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::selfdestruct);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::base,        shijima::action::sequence);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animation,   shijima::action::stay);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::transform);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::animate,     shijima::action::turn);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::jump,        shijima::action::breedjump);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::move,        shijima::action::breedmove);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(shijima::action::instant,     shijima::action::mute);
 
 #endif
 
@@ -329,12 +335,16 @@ void parser::try_parse_animation(std::shared_ptr<action::base> &action,
         pair("Turn", action::turn),
         pair("MoveWithTurn", action::movewithturn),
         pair("BroadcastMove", action::move),
+        pair("BroadcastJump", action::jump),
         pair("Fall", action::fall),
         pair("ScanMove", action::scanmove),
         pair("Interact", action::interact),
         pair("SelfDestruct", action::selfdestruct),
         pair("Transform", action::transform),
         pair("ScanInteract", action::scaninteract),
+        pair("ScanJump", action::scanjump),
+        pair("ComplexMove", action::complexmove),
+        pair("ComplexJump", action::complexjump),
 
         //FIXME: Unimplemented types
         pair("FallWithIE", action::fall),

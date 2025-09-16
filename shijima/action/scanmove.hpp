@@ -18,16 +18,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#include "move.hpp"
+#include "complexmove.hpp"
 
 namespace shijima {
 namespace action {
 
-class scanmove : public move {
+class scanmove : public complexmove {
 public:
-    virtual bool requests_broadcast() override;
     virtual void init(mascot::tick &ctx) override;
-    virtual bool tick() override;
 };
 
 }
