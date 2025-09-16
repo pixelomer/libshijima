@@ -29,7 +29,7 @@ server manager::start_broadcast(std::string const& affordance, math::vec2 anchor
     #ifdef SHIJIMA_LOGGING_ENABLED
         log(SHIJIMA_LOG_BROADCASTS, "Broadcasting affordance: " + affordance);
     #endif
-    server new_server { anchor };
+    server new_server { anchor, affordance };
     m_servers[affordance].push_back(new_server);
     return new_server;
 }

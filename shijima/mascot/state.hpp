@@ -22,6 +22,8 @@
 #include <shijima/math.hpp>
 #include <shijima/pose.hpp>
 #include <shijima/broadcast/interaction.hpp>
+#include <shijima/broadcast/server.hpp>
+#include <shijima/broadcast/client.hpp>
 #include <queue>
 #include "environment.hpp"
 
@@ -77,6 +79,11 @@ public:
 
     bool warnings_enabled = false;
     std::queue<std::string> warnings;
+
+    broadcast::server server;
+    broadcast::client client;
+
+    ~state();
 
     void warn(const char *msg);
     void warn(std::string const& msg);

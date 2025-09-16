@@ -39,8 +39,6 @@ public:
 protected:
     std::shared_ptr<mascot::state> mascot;
     scripting::variables vars;
-    broadcast::server server;
-    broadcast::client client;
     int start_time;
 
     void reset_elapsed() {

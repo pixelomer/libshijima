@@ -37,6 +37,7 @@ public:
     math::vec2 anchor;
     std::string client_behavior;
     std::string server_behavior;
+    std::string affordance;
     bool did_meet_up() { return m_met_up; }
     void notify_arrival() { m_met_up = true; finalize(); }
     void request_turn(bool looking_right) {

@@ -38,8 +38,17 @@ bool server::turn_requested() {
 bool server::requested_looking_right() {
     return m_state != nullptr && m_state->requested_looking_right();
 }
+std::string server::affordance() {
+    if (m_state != nullptr) {
+        return m_state->affordance;
+    }
+    return "";
+}
 server::server() {}
-server::server(math::vec2 anchor): m_state(std::make_shared<server_state>()) {
+server::server(math::vec2 anchor, std::string const& affordance):
+    m_state(std::make_shared<server_state>())
+{
+    m_state->affordance = affordance;
     update_anchor(anchor);
 }
 void server::update_anchor(math::vec2 anchor) {

@@ -27,25 +27,25 @@ bool scaninteract::requests_broadcast() {
 
 void scaninteract::init(mascot::tick &ctx) {
     animate::init(ctx);
-    mascot->env->broadcasts.try_connect(client, NAN,
+    mascot->env->broadcasts.try_connect(mascot->client, NAN,
         vars.get_string("Affordance"), vars.get_string("Behavior"),
         vars.get_string("TargetBehavior"));
 }
 
 bool scaninteract::tick() {
-    if (!client.connected()) {
+    if (!mascot->client.connected()) {
         return false;
     }
-    auto target = client.get_target();
+    auto target = mascot->client.get_target();
     mascot->looking_right = target.x > mascot->anchor.x;
     vars.add_attr({ { "TargetX", target.x }, { "TargetY", target.y } });
     bool ret = animate::tick();
     if (!ret && animation_finished()) {
         if (vars.get_bool("TargetLook", false)) {
-            client.request_turn(!mascot->looking_right);
+            mascot->client.request_turn(!mascot->looking_right);
         }
-        client.notify_arrival();
-        mascot->interaction = client.get_interaction();
+        mascot->client.notify_arrival();
+        mascot->interaction = mascot->client.get_interaction();
         mascot->queued_behavior = mascot->interaction.behavior();
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_BROADCASTS, "Client did meet server, starting interaction");

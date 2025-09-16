@@ -37,8 +37,9 @@ public:
     bool turn_requested();
     bool requested_looking_right();
     bool did_meet_up();
+    std::string affordance();
     server();
-    server(math::vec2 anchor);
+    server(math::vec2 anchor, std::string const& affordance);
     void update_anchor(math::vec2 anchor);
     math::vec2 get_anchor();
     void finalize();

@@ -65,9 +65,20 @@ void base::init(mascot::tick &ctx) {
         if (requests_broadcast()) {
             auto affordance = vars.get_string("Affordance");
             if (affordance != "") {
-                server = mascot->env->broadcasts.start_broadcast(
-                    vars.get_string("Affordance"), mascot->anchor);
+                if (mascot->server.active() && mascot->server.affordance() != affordance) {
+                    mascot->server.finalize();
+                }
+                if (!mascot->server.active()) {
+                    mascot->server = mascot->env->broadcasts.start_broadcast(
+                        affordance, mascot->anchor);
+                }
             }
+            else if (mascot->server.active()) {
+                mascot->server.finalize();
+            }
+        }
+        else if (mascot->server.active()) {
+            mascot->server.finalize();
         }
     }
 }
@@ -76,23 +87,23 @@ bool base::tick() {
     if (!requests_vars()) {
         return true;
     }
-    if (server.active()) {
-        server.update_anchor(mascot->anchor);
+    if (mascot->server.active()) {
+        mascot->server.update_anchor(mascot->anchor);
     }
     vars.tick();
-    if (server.did_meet_up()) {
-        mascot->interaction = server.get_interaction();
+    if (mascot->server.did_meet_up()) {
+        mascot->interaction = mascot->server.get_interaction();
         mascot->queued_behavior = mascot->interaction.behavior();
-        if (server.turn_requested()) {
-            mascot->looking_right = server.requested_looking_right();
+        if (mascot->server.turn_requested()) {
+            mascot->looking_right = mascot->server.requested_looking_right();
         }
         if (mascot->queued_behavior.empty()) {
             // TargetBehavior was not set, an interaction cannot happen
             mascot->interaction.finalize();
 
             // Reset the server so that other clients may find it
-            server.finalize();
-            server = mascot->env->broadcasts.start_broadcast(
+            mascot->server.finalize();
+            mascot->server = mascot->env->broadcasts.start_broadcast(
                 vars.get_string("Affordance"), mascot->anchor);
         }
         #ifdef SHIJIMA_LOGGING_ENABLED
@@ -103,6 +114,7 @@ bool base::tick() {
             }
         #endif
         if (!mascot->queued_behavior.empty()) {
+            mascot->server.finalize();
             return true;
         }
     }
@@ -174,8 +186,7 @@ void base::finalize() {
         throw std::runtime_error("finalize() called at non-zero subtick");
     }
     if (requests_vars()) {
-        server.finalize();
-        client.finalize();
+        mascot->client.finalize();
         vars.finalize();
     }
     mascot = nullptr;

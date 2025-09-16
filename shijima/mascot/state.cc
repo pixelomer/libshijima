@@ -86,6 +86,10 @@ void state::warn(const char *msg) {
         warnings.push(msg);
     }
 }
+state::~state() {
+    client.finalize();
+    server.finalize();
+}
 
 }
 }
