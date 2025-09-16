@@ -124,9 +124,10 @@ bool base::tick() {
             mascot->interaction.finalize();
 
             // Reset the server so that other clients may find it
+            auto affordance = mascot->server.affordance();
             mascot->server.finalize();
             mascot->server = mascot->env->broadcasts.start_broadcast(
-                vars.get_string("Affordance"), mascot->anchor);
+                affordance, mascot->anchor);
         }
         #ifdef SHIJIMA_LOGGING_ENABLED
             log(SHIJIMA_LOG_BROADCASTS, "Server did meet client");
