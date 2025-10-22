@@ -98,22 +98,22 @@ void manager::detach_from_borders() {
     if (active_ie.right_border().is_on(anchor) ||
         work_area.left_border().is_on(anchor))
     {
-        anchor.x += 1;
+        anchor.x += 1.1;
     }
     else if (active_ie.left_border().is_on(anchor) ||
         work_area.right_border().is_on(anchor))
     {
-        anchor.x -= 1;
+        anchor.x -= 1.1;
     }
     if (active_ie.bottom_border().is_on(anchor) ||
         work_area.top_border().is_on(anchor))
     {
-        anchor.y += 1;
+        anchor.y += 1.1;
     }
     else if (active_ie.top_border().is_on(anchor) ||
         work_area.bottom_border().is_on(anchor))
     {
-        anchor.y -= 1;
+        anchor.y -= 1.1;
     }
 }
 
