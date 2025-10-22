@@ -127,6 +127,24 @@ static void strip_xml(pugi::xml_node node) {
     }
 }
 
+void parser::register_image_anchor(std::string const& image_name,
+    std::string const& anchor)
+{
+    if (image_name.empty() || anchor.empty()) {
+        return;
+    }
+    if (image_anchors.count(image_name) == 1) {
+        auto const& old_anchor = image_anchors.at(image_name);
+        if (old_anchor != anchor) {
+            warn("mismatched anchors for image \"" + image_name + "\": "
+                + old_anchor + " ; " + anchor);
+        }
+    }
+    else {
+        image_anchors[image_name] = anchor;
+    }
+}
+
 pose parser::parse_pose(pugi::xml_node node) {
     if (std::string(node.name()) != "Pose") {
         fail("expected Pose node, got " + std::string(node.name()));
@@ -154,6 +172,8 @@ pose parser::parse_pose(pugi::xml_node node) {
     if (attr.count("Duration") == 0) {
         fail("Pose node is missing Duration attribute (image=" + image + ")");
     }
+    register_image_anchor(image, anchor);
+    register_image_anchor(image_right, anchor);
     std::string const& s_duration = attr.at("Duration");
     const char *duration = s_duration.c_str(), *duration_end;
     long l_duration = std::strtol(duration, (char **)&duration_end, 10);
@@ -446,15 +466,6 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
     if (result == nullptr) {
         fail("unrecognized action type: " + type);
     }
-
-    if (attributes.count("BorderType") == 1) {
-        auto const& border_type = attributes.at("BorderType");
-        if (border_type != "Floor" && border_type != "Ceiling" &&
-            border_type != "Wall")
-        {
-            warn("unrecognized border type: " + border_type);
-        }
-    }
     
     result->init_attr = attributes;
     if (!is_child) {
@@ -607,12 +618,6 @@ void parser::connect_actions(behavior::list &behaviors) {
     }
 }
 
-void parser::cleanup() {
-    behavior_refs.clear();
-    actions.clear();
-    action_refs.clear();
-}
-
 void parser::parse_behaviors(std::string const& behaviors_xml) {
     auto doc = load_xml(behaviors_xml);
     auto mascot = doc.child("Mascot");
@@ -698,6 +703,7 @@ void parser::parse(std::string const& actions_xml, std::string const& behaviors_
     // Clean intermediary variables
     action_refs.clear();
     behavior_refs.clear();
+    image_anchors.clear();
     actions.clear();
 }
 

@@ -59,13 +59,15 @@ private:
     pugi::xml_document load_xml(std::string const& xml);
     void fail(std::string const& what);
     void warn(std::string const& what);
+    void register_image_anchor(std::string const& image_name,
+        std::string const& anchor);
     void push_trace(std::string const& msg);
     void pop_trace();
-    void cleanup();
 #endif // !defined(SHIJIMA_NO_PUGIXML)
     std::vector<std::shared_ptr<action::reference>> action_refs;
     std::vector<std::shared_ptr<behavior::base>> behavior_refs;
     std::map<std::string, std::shared_ptr<action::base>> actions;
+    std::map<std::string, std::string> image_anchors;
     std::vector<std::string> parser_trace;
     std::vector<parser_error> warnings;
 public:
