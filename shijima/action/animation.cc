@@ -92,7 +92,7 @@ bool animation::tick() {
 
 bool animation::check_border_type() {
     auto border_type = vars.get_string("BorderType", "");
-    bool on_border = true;
+    bool on_border;
     if (border_type == "Floor") {
         on_border = mascot->env->floor.is_on(mascot->anchor) ||
             mascot->env->active_ie.top_border().is_on(mascot->anchor);
@@ -107,15 +107,8 @@ bool animation::check_border_type() {
         on_border = mascot->env->work_area.top_border().is_on(mascot->anchor) ||
             mascot->env->active_ie.bottom_border().is_on(mascot->anchor);
     }
-    else if (border_type == "") {
-        on_border = true;
-    }
     else {
-        #ifndef SHIJIMA_LOGGING_ENABLED
-        if (mascot->warnings_enabled)
-        #endif
-            mascot->warn("unknown border: " + border_type);
-        on_border = false;
+        on_border = true;
     }
     if (!on_border) {
         if (!mascot->env->active_ie.is_on(mascot->anchor) &&

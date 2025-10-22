@@ -446,6 +446,15 @@ std::shared_ptr<action::base> parser::parse_action(pugi::xml_node action, bool i
     if (result == nullptr) {
         fail("unrecognized action type: " + type);
     }
+
+    if (attributes.count("BorderType") == 1) {
+        auto const& border_type = attributes.at("BorderType");
+        if (border_type != "Floor" && border_type != "Ceiling" &&
+            border_type != "Wall")
+        {
+            warn("unrecognized border type: " + border_type);
+        }
+    }
     
     result->init_attr = attributes;
     if (!is_child) {
