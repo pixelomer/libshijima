@@ -67,11 +67,18 @@ bool fall::subtick(int idx) {
     mascot->anchor.x += velocity.x / subtick_count;
     mascot->anchor.y += velocity.y / subtick_count;
     
+    bool near_floor = std::fabs(mascot->anchor.y - mascot->env->floor.y) < 1.0;
     if (mascot->anchor.x > mascot->env->work_area.right) {
         mascot->anchor.x = mascot->env->work_area.right;
+        if (near_floor) {
+            mascot->anchor.y = mascot->env->floor.y - 1.1;
+        }
     }
     else if (mascot->anchor.x < mascot->env->work_area.left) {
         mascot->anchor.x = mascot->env->work_area.left;
+        if (near_floor) {
+            mascot->anchor.y = mascot->env->floor.y - 1.1;
+        }
     }
     if (mascot->anchor.y < mascot->env->ceiling.y) {
         mascot->anchor.y = mascot->env->ceiling.y;
