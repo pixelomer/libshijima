@@ -22,8 +22,27 @@ namespace shijima {
 namespace action {
 
 bool offset::tick() {
-    mascot->anchor.x += (int)vars.get_num("X", 0);
-    mascot->anchor.y += (int)vars.get_num("Y", 0);
+    auto old_anchor = mascot->anchor;
+    int dx = (int)vars.get_num("X", 0), dy = (int)vars.get_num("Y", 0);
+    mascot->anchor.x += dx;
+    mascot->anchor.y += dy;
+    if (dx == 0 && dy < 0 &&
+        ((mascot->env->work_area.left_border().is_on(old_anchor) &&
+        mascot->env->work_area.left_border().is_on(mascot->anchor)) ||
+        (mascot->env->work_area.right_border().is_on(old_anchor) &&
+         mascot->env->work_area.right_border().is_on(mascot->anchor))) &&
+        mascot->env->ceiling.is_on(mascot->anchor) &&
+        !mascot->env->ceiling.is_on(old_anchor))
+    {
+        //XXX: HACK: ensure that after Offset Y=-64, the ceiling action is triggered
+        //           (or, if the shimeji does not support ceiling movement, the shimeji falls)
+        if (mascot->env->work_area.right_border().is_on(mascot->anchor)) {
+            mascot->anchor.x -= 1.1;
+        }
+        else {
+            mascot->anchor.x += 1.1;
+        }
+    }
     return false;
 }
 
