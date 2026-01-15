@@ -106,10 +106,14 @@ bool animation::check_border_type() {
             mascot->env->active_ie.top_border().is_on(mascot->anchor);
     }
     else if (border_type == "Wall") {
-        on_border = mascot->env->work_area.left_border().is_on(mascot->anchor) ||
-            mascot->env->work_area.right_border().is_on(mascot->anchor) ||
-            mascot->env->active_ie.left_border().is_on(mascot->anchor) ||
+        bool should_look_right = mascot->env->work_area.right_border().is_on(mascot->anchor) ||
+            mascot->env->active_ie.left_border().is_on(mascot->anchor);
+        on_border = should_look_right ||
+            mascot->env->work_area.left_border().is_on(mascot->anchor) ||
             mascot->env->active_ie.right_border().is_on(mascot->anchor);
+        if (on_border) {
+            mascot->looking_right = should_look_right;
+        }
     }
     else if (border_type == "Ceiling") {
         on_border = mascot->env->work_area.top_border().is_on(mascot->anchor) ||
