@@ -30,6 +30,7 @@ void move::init(mascot::tick &ctx) {
 }
 
 bool move::tick() {
+    bool looking_right_orig = mascot->looking_right;
     if (vars.has("TargetX")) {
         double x = vars.get_num("TargetX");
         vars.add_attr({{ "目的地X", x }});
@@ -67,6 +68,7 @@ bool move::tick() {
 
     auto start = mascot->anchor;
     if (!animation::tick()) {
+        mascot->looking_right = looking_right_orig;
         return false;
     }
     auto end = mascot->anchor;
