@@ -32,6 +32,7 @@ private:
     std::shared_ptr<shijima::animation> current_anim;
 protected:
     int anim_idx;
+    int vertical_direction;
     virtual std::shared_ptr<shijima::animation> get_animation();
     const pose *get_pose();
     math::vec2 get_velocity();

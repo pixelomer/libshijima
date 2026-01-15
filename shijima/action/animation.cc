@@ -46,6 +46,7 @@ void animation::init(mascot::tick &ctx) {
     base::init(ctx);
     anim_idx = -1;
     current_anim_time = -1;
+    vertical_direction = 0;
     if (vars.has("FixedVelocity")) {
         has_fixed_velocity = true;
         fixed_velocity = vars.get_string("FixedVelocity");
@@ -84,7 +85,14 @@ bool animation::tick() {
     }
     auto velocity = get_velocity();
     mascot->anchor.x += dx(velocity.x);
-    mascot->anchor.y += dy(velocity.y);
+    auto real_dy = dy(velocity.y);
+    if (vertical_direction == 1) {
+        real_dy = std::abs(real_dy);
+    }
+    else if (vertical_direction == -1) {
+        real_dy = -std::abs(real_dy);
+    }
+    mascot->anchor.y += real_dy;
     mascot->active_frame = *pose;
     return true;
 }

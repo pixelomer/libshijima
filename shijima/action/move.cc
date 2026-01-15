@@ -42,7 +42,8 @@ bool move::tick() {
         }
     }
     if (vars.has("TargetY")) {
-        vars.add_attr({{ "目的地Y", vars.get_num("TargetY") }});
+        auto target = vars.get_num("TargetY");
+        vars.add_attr({{ "目的地Y", target }});
         if (mascot->env->work_area.left_border().is_on(mascot->anchor) ||
             mascot->env->active_ie.right_border().is_on(mascot->anchor))
         {
@@ -53,6 +54,15 @@ bool move::tick() {
         {
             mascot->looking_right = true;
         }
+        if (target > mascot->anchor.y) {
+            vertical_direction = 1;
+        }
+        else {
+            vertical_direction = -1;
+        }
+    }
+    else {
+        vertical_direction = 0;
     }
 
     auto start = mascot->anchor;
