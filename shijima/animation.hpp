@@ -37,16 +37,9 @@ public:
     hotspot hotspot_at(math::vec2 offset);
     int get_duration();
 
-    // must be used with serialize()
     explicit animation();
-    // use this unless deserializing
     animation(std::vector<shijima::pose> const& poses,
         std::vector<shijima::hotspot> const& hotspots);
-    
-    template<class Archive>
-    void serialize(Archive &ar) {
-        ar(poses, hotspots, duration, condition);
-    }
 };
 
 }

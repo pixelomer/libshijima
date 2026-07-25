@@ -18,9 +18,6 @@
 
 #include "factory.hpp"
 #include <stdexcept>
-#if !defined(SHIJIMA_NO_PUGIXML)
-#include <sstream>
-#endif
 
 namespace shijima {
 namespace mascot {
@@ -42,8 +39,8 @@ factory::factory(factory &&rhs) {
 factory::product factory::spawn(std::string const& name, manager::initializer init) {
     product ret;
     auto& tmpl = ret.tmpl = templates.at(name);
-    ret.manager = std::make_unique<mascot::manager>(tmpl->data.c_str(),
-        tmpl->data.size(), init, script_ctx);
+    ret.manager = std::make_unique<mascot::manager>(tmpl->actions_xml,
+        tmpl->behaviors_xml, init, script_ctx);
     ret.manager->get_state()->env = env;
     return ret;
 }
@@ -56,37 +53,23 @@ void factory::clear() {
     templates.clear();
 }
 
-#if !defined(SHIJIMA_NO_PUGIXML)
-
-std::shared_ptr<const factory::registered_tmpl> factory::register_template(
+std::shared_ptr<const factory::tmpl> factory::register_template(
     tmpl const& tmpl)
 {
     shijima::parser parser;
     return register_template(tmpl, parser);
 }
 
-std::shared_ptr<const factory::registered_tmpl> factory::register_template(
+std::shared_ptr<const factory::tmpl> factory::register_template(
     tmpl const& tmpl, shijima::parser &parser)
 {
     if (templates.count(tmpl.name) != 0) {
         throw std::logic_error("cannot register same template twice");
     }
-    std::ostringstream out;
+    // Parse eagerly so that invalid templates fail at registration time
+    // rather than on first spawn.
     parser.parse(tmpl.actions_xml, tmpl.behaviors_xml);
-    parser.saveTo(out);
-    return templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(
-        tmpl.name, out.str(), tmpl.path);
-}
-
-#endif
-
-std::shared_ptr<const factory::registered_tmpl> factory::register_template(
-    registered_tmpl const& tmpl)
-{
-    if (templates.count(tmpl.name) != 0) {
-        throw std::logic_error("cannot register same template twice");
-    }
-    return templates[tmpl.name] = std::make_shared<factory::registered_tmpl>(tmpl);
+    return templates[tmpl.name] = std::make_shared<factory::tmpl>(tmpl);
 }
 
 void factory::deregister_template(std::string const& name) {
@@ -96,13 +79,13 @@ void factory::deregister_template(std::string const& name) {
     templates.erase(name);
 }
 
-const std::map<std::string, std::shared_ptr<const factory::registered_tmpl>> &
+const std::map<std::string, std::shared_ptr<const factory::tmpl>> &
     factory::get_all_templates() const
 {
     return templates;
 }
 
-std::shared_ptr<const factory::registered_tmpl> factory::get_template(
+std::shared_ptr<const factory::tmpl> factory::get_template(
     std::string const& name) const
 {
     if (templates.count(name) == 0) {

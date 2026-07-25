@@ -40,11 +40,6 @@ struct rec {
     rec &operator/=(double rhs) {
         return *this = *this / rhs;
     }
-
-    template<class Archive>
-    void serialize(Archive &ar) {
-        ar(x, y, width, height);
-    }
 };
 
 struct vec2 {
@@ -114,11 +109,6 @@ struct vec2 {
     }
     vec2 &operator+=(vec2 const& rhs) {
         return *this = *this + rhs;
-    }
-
-    template<class Archive>
-    void serialize(Archive &ar) {
-        ar(x, y);
     }
 };
 

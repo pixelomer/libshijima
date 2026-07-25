@@ -32,11 +32,7 @@ bool enable_ie = false;
 
 mascot::factory factory;
 
-#if !defined(SHIJIMA_NO_PUGIXML)
 typedef shijima::mascot::factory::tmpl shimeji_meta;
-#else
-typedef shijima::mascot::factory::registered_tmpl shimeji_meta;
-#endif
 
 struct shimeji_data {
     mascot::manager manager;
@@ -52,14 +48,9 @@ std::string read_file(std::string path) {
 
 shimeji_meta load_meta(std::string path) {
     auto name = path.substr(path.find_last_of('/')+1);
-    #if !defined(SHIJIMA_NO_PUGIXML)
-        auto actions = read_file(path + "/actions.xml");
-        auto behaviors = read_file(path + "/behaviors.xml");
-        return { name, actions, behaviors, path };
-    #else
-        auto serialized = read_file(path + "/mascot.cereal");
-        return { name, serialized, path };
-    #endif
+    auto actions = read_file(path + "/actions.xml");
+    auto behaviors = read_file(path + "/behaviors.xml");
+    return { name, actions, behaviors, path };
 }
 
 SDL_Window *window;
@@ -322,7 +313,6 @@ int main(int argc, char **argv) {
     else if (argc == 2 && strcmp(argv[1], "console") == 0) {
         do_run_console = true;
     }
-    #if !defined(SHIJIMA_NO_PUGIXML)
     else if (argc == 2 && strcmp(argv[1], "translate") == 0) {
         std::stringstream buf;
         buf << std::cin.rdbuf();
@@ -332,56 +322,11 @@ int main(int argc, char **argv) {
         std::cout.flush();
         return EXIT_SUCCESS;
     }
-    else if ((argc == 5 || argc == 4) && strcmp(argv[1], "serialize") == 0) {
-        std::string actions, behaviors;
-        std::string out_path;
-        if (argc == 5) {
-            actions = read_file(argv[2]);
-            behaviors = read_file(argv[3]);
-            out_path = argv[4];
-        }
-        else /* if (argc == 4) */ {
-            actions = read_file(std::string(argv[2]) + "/actions.xml");
-            behaviors = read_file(std::string(argv[2]) + "/behaviors.xml");
-            out_path = argv[3];
-        }
-        shijima::parser parser;
-        bool parsed = true;
-        try {
-            parser.parse(actions, behaviors);
-        }
-        catch (std::exception &err) {
-            parsed = false;
-            std::cerr << "=== shijima::parser failed ===" << std::endl;
-            std::cerr << err.what() << std::endl;
-        }
-        if (parser.get_warnings().size() > 0) {
-            std::cerr << "=== shijima::parser produced warnings ===" << std::endl;
-        }
-        for (auto const& warn : parser.get_warnings()) {
-            std::cerr << warn.what() << std::endl;
-        }
-        if (!parsed) {
-            return EXIT_FAILURE;
-        }
-        std::ofstream out;
-        out.open(out_path, std::ios::out | std::ios::binary);
-        parser.saveTo(out);
-        out.close();
-        return EXIT_SUCCESS;
-    }
-    #endif
     else {
         std::cerr << "Usage:" << std::endl;
         std::cerr << "    " << argv[0] << std::endl;
         std::cerr << "    " << argv[0] << " console" << std::endl;
-        #if !defined(SHIJIMA_NO_PUGIXML)
         std::cerr << "    " << argv[0] << " translate" << std::endl;
-        std::cerr << "    " << argv[0] << " serialize <actions.xml> <behaviors.xml> "
-            "<mascot.cereal>" << std::endl;
-        std::cerr << "    " << argv[0] << " serialize <MyMascot.mascot> <mascot.cereal>"
-            << std::endl;
-        #endif
         return EXIT_FAILURE;
     }
 
@@ -392,13 +337,7 @@ int main(int argc, char **argv) {
     };
     for (auto &path : paths) {
         auto meta = load_meta(path);
-        auto tmpl = factory.register_template(meta);
-        #if !defined(SHIJIMA_NO_PUGIXML)
-        std::ofstream out;
-        out.open(path + "/mascot.cereal", std::ios::out | std::ios::binary);
-        out << tmpl->data;
-        out.close();
-        #endif
+        factory.register_template(meta);
     }
     math::vec2 anchor { 100, 100 };
     mascots.push_back(factory.spawn("test1", { anchor }));

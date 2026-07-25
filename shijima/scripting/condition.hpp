@@ -36,11 +36,6 @@ public:
     condition(bool value);
     bool eval(context &ctx) const;
     bool eval(context::global::active &ctx) const;
-    template<class Archive>
-    void serialize(Archive &ar)
-    {
-        ar(is_constant, value, js);
-    }
 };
 
 }

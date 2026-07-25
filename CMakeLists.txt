@@ -4,18 +4,11 @@ project(shijima)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(NOT DEFINED SHIJIMA_USE_PUGIXML)
-    set(SHIJIMA_USE_PUGIXML YES)
-endif()
-
-if(SHIJIMA_USE_PUGIXML)
 if(NOT TARGET pugixml)
     add_subdirectory(pugixml)
 endif()
-endif()
 
 include_directories(.)
-include_directories(cereal/include)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -30,10 +23,6 @@ if(CMAKE_BUILD_TYPE EQUAL "Release")
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-endif()
-
-if(NOT SHIJIMA_USE_PUGIXML)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSHIJIMA_NO_PUGIXML")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic")
@@ -91,16 +80,14 @@ add_library(
     shijima/translator.cc
 )
 
-if(SHIJIMA_USE_PUGIXML)
-    add_dependencies(shijima pugixml)
-    target_link_libraries(shijima pugixml)
-endif()
+add_dependencies(shijima pugixml)
+target_link_libraries(shijima pugixml)
 
 if(SHIJIMA_BUILD_EXAMPLES)
     find_package(SDL2 REQUIRED)
     find_package(SDL2_image REQUIRED)
     include_directories(${SDL2_INCLUDE_DIRS})
-    
+
     add_executable(shijima-sandbox main.cc)
     add_dependencies(shijima-sandbox shijima)
     target_link_libraries(shijima-sandbox shijima SDL2_image::SDL2_image ${SDL2_LIBRARIES})

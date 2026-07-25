@@ -45,11 +45,6 @@ public:
     virtual void init(mascot::tick &ctx) override;
     virtual bool tick() override;
     virtual void finalize() override;
-
-    template<class Archive>
-    void serialize(Archive &ar) {
-        ar(init_attr, animations);
-    }
 };
 
 }

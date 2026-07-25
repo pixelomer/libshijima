@@ -19,15 +19,6 @@
 #include "manager.hpp"
 #include "shijima/mascot/environment.hpp"
 #include <stdexcept>
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
-#pragma GCC diagnostic ignored "-Wcpp"
-// prevent backward_warning.h from being included
-#ifndef _BACKWARD_BACKWARD_WARNING_H
-#define _BACKWARD_BACKWARD_WARNING_H 1
-#endif
-#include <strstream>
-#pragma GCC diagnostic pop
 
 namespace shijima {
 namespace mascot {
@@ -128,27 +119,11 @@ std::shared_ptr<const behavior::base> manager::active_behavior() {
     return state->behavior;
 }
 
-#if !defined(SHIJIMA_NO_PUGIXML)
 manager::manager(std::string const& actions_xml, std::string const& behaviors_xml,
     initializer init, std::shared_ptr<scripting::context> script_ctx)
 {
     shijima::parser parser;
     parser.parse(actions_xml, behaviors_xml);
-    this->init(parser, init, script_ctx);
-}
-#endif // !defined(SHIJIMA_NO_PUGIXML)
-
-manager::manager(const char *serialized_data, size_t length, initializer init,
-    std::shared_ptr<scripting::context> script_ctx)
-{
-    //FIXME: istrstream is deprecated
-    // stringstream performs a copy so it is not ideal
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    std::istrstream stream { serialized_data, (long)length };
-#pragma GCC diagnostic pop
-    shijima::parser parser;
-    parser.loadFrom(stream);
     this->init(parser, init, script_ctx);
 }
 

@@ -18,8 +18,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#if !defined(SHIJIMA_NO_PUGIXML)
-
 #include <string>
 #include <pugixml.hpp>
 #include <map>
@@ -35,5 +33,3 @@ public:
 };
 
 }
-
-#endif

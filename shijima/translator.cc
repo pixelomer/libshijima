@@ -16,8 +16,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // 
 
-#if !defined(SHIJIMA_NO_PUGIXML)
-
 #include "translator.hpp"
 #include <pugixml.hpp>
 #include <sstream>
@@ -124,5 +122,3 @@ std::string translator::translate(std::string const& xml) {
 }
 
 }
-
-#endif
